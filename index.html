@@ -1,26 +1,35 @@
-<!doctype html>
+ <!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – Link Studio</title>
+  <title>Video Creator – WhatsApp App + Scheduling</title>
+
   <style>
     :root{
       --bg:#0b1120; --text:#f3f4f6; --muted:#a0adb8; --gold:#d8a23a; --border: rgba(225,225,225,0.18);
       --shadow: 0 14px 50px rgba(0,0,0,0.45); --radius: 18px; --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --stage-w: min(420px, 92vw); --zoom: 1; --wa:#25D366;
     }
     *{ box-sizing:border-box; }
-    body{ margin:0; font-family:var(--sans); color:var(--text); background: var(--bg); }
-    .wrap{ max-width:1100px; margin:0 auto; padding:14px 12px 30px; }
-    .card{ background: rgba(255,255,255,.04); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
-    .section{ padding:12px; }
-    .h{ margin:0 0 8px; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:950; }
-    .bar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    body{
+      margin:0; font-family:var(--sans); color:var(--text);
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(216,162,58,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 30%, rgba(123,79,189,.14), transparent 55%),
+        radial-gradient(900px 600px at 70% 85%, rgba(74,143,114,.14), transparent 55%),
+        var(--bg);
+    }
+    .wrap{ max-width:1200px; margin:0 auto; padding:14px 12px 84px; }
+    header{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:10px; }
+    .row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
     .btn{
       border:1px solid var(--border);
       background:rgba(255,255,255,.04);
       color:var(--text);
-      padding:9px 10px;
+      padding:8px 10px;
       border-radius:12px;
       cursor:pointer;
       font-weight:950;
@@ -34,106 +43,528 @@
       user-select:none;
       transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      overflow:hidden;
+      text-decoration:none;
     }
     .btn:hover{ transform: translateY(-2px) scale(1.01); border-color: rgba(216,162,58,.22); box-shadow: 0 14px 34px rgba(0,0,0,.30); filter: brightness(1.06); }
     .btn:active{ transform: translateY(0px) scale(.99); filter: brightness(0.98); }
     .btn.primary{ background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72)); color:#111; border-color: rgba(216,162,58,.55); }
-    .btn.blue{ background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70)); border-color: rgba(57,90,140,.55); }
-    .btn.violet{ background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70)); border-color: rgba(123,79,189,.55); }
     .btn.gray{ background: rgba(255,255,255,.04); }
-    .field textarea{
-      width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18); color:var(--text); outline:none; font-weight:850; resize: vertical; font-size:12px; line-height:1.25;
-      min-height:100px;
+    .btn.wa{
+      background: linear-gradient(135deg, rgba(37,211,102,.95), rgba(37,211,102,.70));
+      border-color: rgba(37,211,102,.55);
+      color:#07120b;
+      font-weight:1000;
     }
-    .chk{ display:inline-flex; align-items:center; gap:8px; user-select:none; color:var(--muted); font-weight:950; font-size:10px; }
-    .check{ width:16px; height:16px; accent-color: var(--gold); cursor:pointer; }
-    .mini{ font-size:11px; color:var(--muted); line-height:1.35; margin-top:8px; }
+
+    .pill{
+      font-size:10px; color:var(--muted); padding:6px 10px; border:1px solid var(--border); border-radius:999px;
+      background:rgba(0,0,0,.18); font-weight:900; letter-spacing:.2px; display:inline-flex; gap:8px; align-items:center; white-space:nowrap;
+    }
+
+    .layout{ display:grid; grid-template-columns: 1fr 440px; gap:12px; align-items:start; margin-top:12px; }
+    @media (max-width: 1020px){ .layout{ grid-template-columns:1fr; } }
+
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .section{ padding:12px; }
+    .section + .section{ border-top:1px solid rgba(255,255,255,.10); }
+    .h{ margin:0 0 8px; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:950; }
+    .subtle{ font-size:11px; color: var(--muted); line-height:1.35; margin-top:6px; }
+
+    .bar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .bar.between{ justify-content:space-between; }
+    .bar.left{ justify-content:flex-start; }
+
+    .field input, .field select, .field textarea{
+      width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18); color:var(--text); outline:none; font-weight:850; font-size:12px; line-height:1.25;
+    }
+    .field textarea{ min-height: 120px; resize: vertical; }
+
+    .mini{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    /* List */
+    .listItem{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+      background: rgba(0,0,0,.12);
+    }
+    .listTop{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .listTitle{ font-weight:1000; font-size:12px; }
+    .listMeta{ font-size:11px; color:var(--muted); line-height:1.35; margin-top:6px; white-space:pre-wrap; }
+    .listBtns{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .tiny{ font-size:10px; padding:6px 9px; border-radius:11px; box-shadow:none; }
+
+    .bottomBar{
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 10px 12px;
+      background: rgba(0,0,0,.35);
+      border-top: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      display:flex;
+      justify-content:flex-end;
+      z-index: 50;
+      gap:8px;
+      flex-wrap:wrap;
+    }
   </style>
 </head>
+
 <body>
 <div class="wrap">
 
-  <div class="card">
-    <div class="section">
-      <p class="h">Caption</p>
-      <div class="field">
-        <textarea id="captionBox" placeholder="Incolla qui la caption finale…"></textarea>
+  <header>
+    <div class="row" style="flex:1;">
+      <button class="btn primary" id="btnMockAddVideo" type="button">➕ Aggiungi video (demo)</button>
+      <button class="btn gray" id="btnClearAll" type="button">🧹 Reset dati</button>
+
+      <span class="pill">
+        <span id="pillPlatform">Piattaforma: —</span>
+        <span>•</span>
+        <span id="pillNextSlot">Prossimo slot: —</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <div class="card">
+      <div class="section">
+        <p class="h">Caption (testo)</p>
+        <div class="field">
+          <textarea id="captionBox" placeholder="Qui metti la caption del video…"></textarea>
+        </div>
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn gray" id="btnCopyCaption" type="button">📋 Copia caption</button>
+        </div>
       </div>
 
-      <div class="bar" style="margin-top:10px;">
-        <label class="chk"><input id="chkCopyBeforeOpen" class="check" type="checkbox" checked> Copia caption prima di aprire</label>
-        <button class="btn primary" id="btnCopy" type="button">📋 Copia caption</button>
-      </div>
-
-      <div class="mini">
-        Premendo i pulsanti sotto ti apro direttamente gli strumenti ufficiali per caricare e programmare.
+      <div class="section">
+        <p class="h">Video creati (con invio WhatsApp)</p>
+        <div class="subtle">
+          Il video lo scarichi e lo alleghi su WhatsApp. Il messaggio lo preparo io con: piattaforma + giorno/ora + funzionario + ID.
+        </div>
+        <div id="videoList" style="margin-top:10px;">—</div>
       </div>
     </div>
 
-    <div class="section">
-      <p class="h">Apri strumenti pubblicazione</p>
-      <div class="bar">
-        <button class="btn blue" id="btnMeta" type="button">🟦 Meta Business Suite</button>
-        <button class="btn gray" id="btnTikTok" type="button">⚫ TikTok Studio</button>
-        <button class="btn violet" id="btnYT" type="button">🔴 YouTube Studio (Shorts)</button>
+    <div class="card">
+      <div class="section">
+        <p class="h">Impostazioni invio</p>
+        <div class="bar">
+          <div class="field" style="flex:1; min-width:180px;">
+            <input id="operatorName" placeholder="Nome funzionario (es. Marco)" />
+          </div>
+          <div class="field" style="flex:1; min-width:180px;">
+            <input id="josephNumber" placeholder="Numero Joseph (es. 393331234567)" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:10px;">
+          <input id="groupInvite" placeholder="(Opz.) Link invito gruppo WhatsApp PUBBLICAZIONI" />
+        </div>
+
+        <div class="subtle">
+          Consiglio: usa il <b>gruppo</b>. Se metti solo il numero Joseph, posso aprire chat con testo già pronto.
+          Con il gruppo: apro il gruppo e copio il messaggio.
+        </div>
+
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn wa" id="btnOpenGroup" type="button">💬 Apri gruppo</button>
+          <button class="btn wa" id="btnOpenJoseph" type="button">💬 Apri chat Joseph</button>
+        </div>
       </div>
 
-      <div class="mini">
-        Nota: il caricamento/scheduling lo fai dentro le piattaforme. Qui velocizziamo l’accesso + la caption pronta.
+      <div class="section">
+        <p class="h">Piattaforma + frequenza</p>
+        <div class="bar">
+          <div class="field" style="flex:1; min-width: 170px;">
+            <select id="platform">
+              <option value="TIKTOK">TikTok</option>
+              <option value="INSTAGRAM">Instagram</option>
+              <option value="SHORTS">YouTube Shorts</option>
+              <option value="FACEBOOK">Facebook</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1; min-width: 170px;">
+            <select id="frequencyMode">
+              <option value="per_day">Tot post al giorno</option>
+              <option value="every_hours">Ogni X ore</option>
+              <option value="custom_minutes">Minuti minimi tra post</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1; min-width: 120px;">
+            <input id="frequencyValue" type="number" min="1" step="1" value="2" />
+          </div>
+        </div>
+
+        <div class="mini" style="margin-top:10px;">
+Regole slot:
+- post/giorno → gap ≈ 24h / N
+- ogni X ore → gap = X ore
+- minuti minimi → gap = minuti
+        </div>
+
+        <div class="bar left" style="margin-top:10px;">
+          <label style="display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:950; font-size:10px;">
+            <input id="chkAutoMark" type="checkbox" checked style="width:16px;height:16px; accent-color: var(--gold);" />
+            Quando apro WhatsApp, segna slot come “usato”
+          </label>
+        </div>
+
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn gray" id="btnClearHistory" type="button">🧹 Pulisci storico slot</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="h">Storico slot</p>
+        <div class="mini" id="historyBox">—</div>
       </div>
     </div>
+
   </div>
+</div>
 
+<div class="bottomBar">
+  <button class="btn tiny gray" id="btnScrollTop" type="button">↑ Su</button>
 </div>
 
 <script>
-const LINKS = {
-  META:   "https://business.facebook.com/latest/home",
-  TIKTOK: "https://www.tiktok.com/creator-center",
-  YT:     "https://studio.youtube.com/"
-};
+/* ==========================
+   STORAGE
+========================== */
+const K_SETTINGS = "wa_pub_settings_v1";
+const K_HISTORY  = "wa_pub_history_v1";  // {platform:[iso,...]}
+const K_VIDEOS   = "wa_videos_v1";
+const K_CAPTION  = "wa_caption_v1";
+const K_OP       = "wa_operator_v1";
+const K_JO       = "wa_joseph_v1";
+const K_GROUP    = "wa_group_v1";
+
+/* ==========================
+   HELPERS
+========================== */
+const $ = (id)=>document.getElementById(id);
+
+function loadJSON(key, fallback){
+  try{ return JSON.parse(localStorage.getItem(key) || ""); }catch(e){ return fallback; }
+}
+function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
 
 async function copyText(text){
   const t = String(text || "");
   if(!t.trim()) return false;
-  try{
-    await navigator.clipboard.writeText(t);
-    return true;
-  }catch(e){
+  try{ await navigator.clipboard.writeText(t); return true; }
+  catch(e){
     const ta = document.createElement("textarea");
-    ta.value = t;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
+    ta.value = t; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove();
     return true;
   }
 }
 
-async function openWithOptionalCopy(url){
-  const cap = document.getElementById("captionBox").value || "";
-  const doCopy = document.getElementById("chkCopyBeforeOpen").checked;
-  if(doCopy){
-    if(!cap.trim()){
-      alert("Caption vuota: scrivila/incollala prima.");
-      return;
-    }
-    await copyText(cap);
-  }
-  window.open(url, "_blank", "noopener,noreferrer");
+function pad2(n){ return String(n).padStart(2,"0"); }
+function fmtLocal(iso){
+  const d = new Date(iso);
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function toISO(ms){ return new Date(ms).toISOString(); }
+
+function minGapMinutes(s){
+  const v = Math.max(1, Number(s.frequencyValue) || 1);
+  if(s.frequencyMode === "per_day") return Math.round((24*60)/v);
+  if(s.frequencyMode === "every_hours") return v*60;
+  return v;
 }
 
-document.getElementById("btnCopy").addEventListener("click", async ()=>{
-  const cap = document.getElementById("captionBox").value || "";
-  if(!cap.trim()) return alert("Caption vuota.");
-  await copyText(cap);
+/* ==========================
+   SETTINGS / STATE
+========================== */
+function getSettings(){
+  const s = loadJSON(K_SETTINGS, null) || {};
+  return {
+    platform: s.platform || "TIKTOK",
+    frequencyMode: s.frequencyMode || "per_day",
+    frequencyValue: Number(s.frequencyValue || 2)
+  };
+}
+function setSettings(partial){
+  const prev = getSettings();
+  const next = { ...prev, ...partial };
+  saveJSON(K_SETTINGS, next);
+  return next;
+}
+function getHistory(){
+  return loadJSON(K_HISTORY, { TIKTOK:[], INSTAGRAM:[], SHORTS:[], FACEBOOK:[] });
+}
+function setHistory(h){ saveJSON(K_HISTORY, h); }
+
+function calcNextSlot(platform){
+  const s = getSettings();
+  const gap = minGapMinutes(s);
+  const h = getHistory();
+  const list = (h[platform] || []).slice().sort((a,b)=> new Date(b) - new Date(a));
+  const now = Date.now();
+  if(list.length === 0) return toISO(now);
+  const last = new Date(list[0]).getTime();
+  return toISO(Math.max(now, last + gap*60*1000));
+}
+function markSlotUsed(platform, iso){
+  const h = getHistory();
+  h[platform] = h[platform] || [];
+  h[platform].unshift(iso);
+  setHistory(h);
+}
+
+/* ==========================
+   VIDEOS (metadata)
+========================== */
+function getVideos(){ return loadJSON(K_VIDEOS, []); }
+function setVideos(v){ saveJSON(K_VIDEOS, v); }
+
+function buildVideoId(platform){
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+  const idx = String(getVideos().length + 1).padStart(3,"0");
+  return `VID_${platform}_${stamp}_${idx}`;
+}
+
+function buildWhatsAppText({ platform, scheduledAtISO, operator, videoId, caption }){
+  const when = fmtLocal(scheduledAtISO);
+  const head = `[${platform}] [${when}] [${operator || "—"}] [${videoId}]`;
+  const body = (caption || "").trim();
+  return `${head}\n\n${body}`.trim();
+}
+
+/* Open WhatsApp app with prefilled text to number (best case) */
+function openWhatsAppToNumber(numberE164NoPlus, text){
+  const url = `https://wa.me/${encodeURIComponent(numberE164NoPlus)}?text=${encodeURIComponent(text)}`;
+  window.location.href = url;
+}
+
+/* Group invite link: can't prefill text reliably -> we copy text, open group link */
+async function openWhatsAppGroup(inviteLink, text){
+  await copyText(text);
+  window.location.href = inviteLink;
+}
+
+/* ==========================
+   UI RENDER
+========================== */
+function render(){
+  const s = getSettings();
+  $("platform").value = s.platform;
+  $("frequencyMode").value = s.frequencyMode;
+  $("frequencyValue").value = s.frequencyValue;
+
+  const op = localStorage.getItem(K_OP) || "";
+  const jo = localStorage.getItem(K_JO) || "";
+  const gr = localStorage.getItem(K_GROUP) || "";
+  $("operatorName").value = op;
+  $("josephNumber").value = jo;
+  $("groupInvite").value = gr;
+
+  const next = calcNextSlot(s.platform);
+  $("pillPlatform").textContent = "Piattaforma: " + s.platform;
+  $("pillNextSlot").textContent = "Prossimo slot: " + fmtLocal(next);
+
+  const cap = localStorage.getItem(K_CAPTION) || "";
+  if(!$("captionBox").value) $("captionBox").value = cap;
+
+  // history
+  const h = getHistory();
+  const lines = [];
+  for(const p of ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"]){
+    lines.push(`== ${p} ==`);
+    const list = h[p] || [];
+    if(list.length === 0) lines.push("—");
+    else list.slice(0,8).forEach(x => lines.push(fmtLocal(x)));
+    lines.push("");
+  }
+  $("historyBox").textContent = lines.join("\n").trim();
+
+  // videos list
+  const vids = getVideos();
+  const container = $("videoList");
+  if(vids.length === 0){
+    container.textContent = "—";
+  }else{
+    container.innerHTML = "";
+    vids.slice().reverse().forEach(v=>{
+      const div = document.createElement("div");
+      div.className = "listItem";
+
+      const msg = buildWhatsAppText({
+        platform: v.platform,
+        scheduledAtISO: v.scheduledAtISO,
+        operator: v.operator,
+        videoId: v.videoId,
+        caption: v.caption
+      });
+
+      div.innerHTML = `
+        <div class="listTop">
+          <div class="listTitle">${v.videoId}</div>
+          <div class="pill">${v.platform} • ${fmtLocal(v.scheduledAtISO)}</div>
+        </div>
+        <div class="listMeta">Operatore: ${v.operator || "—"}\nSlot: ${fmtLocal(v.scheduledAtISO)}</div>
+
+        <div class="listBtns">
+          <button class="btn tiny gray" data-act="copymsg">📋 Copia msg</button>
+          <button class="btn tiny wa" data-act="send">📤 Invia a Joseph</button>
+          <button class="btn tiny gray" data-act="mark">✅ Segna inviato</button>
+        </div>
+      `;
+
+      div.querySelector('[data-act="copymsg"]').addEventListener("click", async ()=>{
+        await copyText(msg);
+        alert("Messaggio copiato.");
+      });
+
+      div.querySelector('[data-act="send"]').addEventListener("click", async ()=>{
+        const joseph = ($("josephNumber").value || "").trim();
+        const group = ($("groupInvite").value || "").trim();
+        const autoMark = $("chkAutoMark").checked;
+
+        if(group){
+          // group: copy + open group
+          await openWhatsAppGroup(group, msg);
+          if(autoMark){
+            markSlotUsed(v.platform, v.scheduledAtISO);
+          }
+          render();
+          return;
+        }
+
+        if(!joseph){
+          alert("Inserisci il numero WhatsApp di Joseph oppure il link invito del gruppo.");
+          return;
+        }
+
+        openWhatsAppToNumber(joseph, msg);
+        if(autoMark){
+          markSlotUsed(v.platform, v.scheduledAtISO);
+          render();
+        }
+      });
+
+      div.querySelector('[data-act="mark"]').addEventListener("click", ()=>{
+        markSlotUsed(v.platform, v.scheduledAtISO);
+        render();
+      });
+
+      container.appendChild(div);
+    });
+  }
+}
+
+/* ==========================
+   EVENTS
+========================== */
+$("btnScrollTop").addEventListener("click", ()=> window.scrollTo({ top:0, behavior:"smooth" }));
+
+$("btnCopyCaption").addEventListener("click", async ()=>{
+  const c = ($("captionBox").value || "").trim();
+  if(!c) return alert("Caption vuota.");
+  await copyText(c);
+  localStorage.setItem(K_CAPTION, c);
   alert("Caption copiata.");
 });
 
-document.getElementById("btnMeta").addEventListener("click", ()=> openWithOptionalCopy(LINKS.META));
-document.getElementById("btnTikTok").addEventListener("click", ()=> openWithOptionalCopy(LINKS.TIKTOK));
-document.getElementById("btnYT").addEventListener("click", ()=> openWithOptionalCopy(LINKS.YT));
+$("operatorName").addEventListener("input", ()=>{
+  localStorage.setItem(K_OP, $("operatorName").value || "");
+  render();
+});
+$("josephNumber").addEventListener("input", ()=>{
+  localStorage.setItem(K_JO, $("josephNumber").value || "");
+  render();
+});
+$("groupInvite").addEventListener("input", ()=>{
+  localStorage.setItem(K_GROUP, $("groupInvite").value || "");
+  render();
+});
+
+$("platform").addEventListener("change", ()=>{
+  setSettings({ platform: $("platform").value });
+  render();
+});
+$("frequencyMode").addEventListener("change", ()=>{
+  setSettings({ frequencyMode: $("frequencyMode").value });
+  render();
+});
+$("frequencyValue").addEventListener("input", ()=>{
+  setSettings({ frequencyValue: Number($("frequencyValue").value) || 1 });
+  render();
+});
+
+$("btnOpenGroup").addEventListener("click", ()=>{
+  const group = ($("groupInvite").value || "").trim();
+  if(!group) return alert("Inserisci il link invito del gruppo.");
+  window.location.href = group;
+});
+$("btnOpenJoseph").addEventListener("click", ()=>{
+  const joseph = ($("josephNumber").value || "").trim();
+  if(!joseph) return alert("Inserisci il numero WhatsApp di Joseph.");
+  window.location.href = `https://wa.me/${encodeURIComponent(joseph)}`;
+});
+
+$("btnClearHistory").addEventListener("click", ()=>{
+  if(!confirm("Cancellare lo storico slot?")) return;
+  setHistory({ TIKTOK:[], INSTAGRAM:[], SHORTS:[], FACEBOOK:[] });
+  render();
+});
+
+$("btnMockAddVideo").addEventListener("click", ()=>{
+  const s = getSettings();
+  const operator = ($("operatorName").value || "").trim();
+  const caption = ($("captionBox").value || "").trim();
+  if(!caption) return alert("Incolla la caption (anche demo) prima.");
+
+  const scheduledAtISO = calcNextSlot(s.platform);
+  const videoId = buildVideoId(s.platform);
+
+  const vids = getVideos();
+  vids.push({
+    videoId,
+    platform: s.platform,
+    scheduledAtISO,
+    operator,
+    caption
+  });
+  setVideos(vids);
+  render();
+  alert(`Creato: ${videoId}\nSlot: ${fmtLocal(scheduledAtISO)}`);
+});
+
+$("btnClearAll").addEventListener("click", ()=>{
+  if(!confirm("Reset totale (video + storico + caption)?")) return;
+  localStorage.removeItem(K_VIDEOS);
+  localStorage.removeItem(K_HISTORY);
+  localStorage.removeItem(K_CAPTION);
+  render();
+});
+
+render();
 </script>
 </body>
 </html>
+
