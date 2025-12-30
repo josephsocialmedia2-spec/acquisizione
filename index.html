@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – REC 60s + WhatsApp Joseph + Scheduling</title>
+  <title>Video Creator Pro – ChatGPT Auto + Scheduling + Multi-Platform + Approvazioni + Analytics</title>
 
   <style>
     :root{
@@ -19,6 +19,10 @@
       --stage-w: min(420px, 92vw);
       --zoom: 1;
       --wa:#25D366;
+      --success:#4a8f72;
+      --warning:#d8a23a;
+      --error:#ff2d2d;
+      --info:#5788d4;
     }
 
     *{ box-sizing:border-box; }
@@ -33,7 +37,7 @@
         var(--bg);
     }
 
-    .wrap{ max-width:1200px; margin:0 auto; padding:14px 12px 84px; }
+    .wrap{ max-width:1400px; margin:0 auto; padding:14px 12px 84px; }
 
     header{
       display:flex;
@@ -75,7 +79,6 @@
     }
     .btn:active{ transform: translateY(0px) scale(.99); filter: brightness(0.98); }
     .btn.tiny{ padding:6px 9px; font-size:10px; border-radius:11px; box-shadow:none; }
-
     .btn.primary{
       background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
       color:#111;
@@ -96,34 +99,289 @@
       color:#07120b;
       font-weight:1000;
     }
+    .btn.success{
+      background: linear-gradient(135deg, rgba(74,143,114,.95), rgba(74,143,114,.70));
+      border-color: rgba(74,143,114,.55);
+    }
 
-    .recCircle{
-      width:72px;height:72px;border-radius:999px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: radial-gradient(140px 140px at 35% 30%, rgba(255,110,110,.95), rgba(255,45,45,.82));
-      color:#120707;
-      font-weight:1000;
-      letter-spacing:.2px;
-      display:inline-flex;
+    /* Modal */
+    .modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.75);
+      z-index:1000;
       align-items:center;
       justify-content:center;
+      padding:20px;
+    }
+    .modal-content{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      max-width:900px;
+      width:100%;
+      max-height:90vh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .modal-header{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .modal-title{
+      font-weight:1000;
+      font-size:14px;
+      letter-spacing:.4px;
+    }
+    .modal-close{
+      background:none;
+      border:none;
+      color:var(--muted);
+      font-size:20px;
       cursor:pointer;
-      box-shadow: 0 18px 50px rgba(0,0,0,.35);
-      user-select:none;
+      padding:0;
+      width:28px;
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+    }
+    .modal-close:hover{ background:rgba(255,255,255,.08); }
+    .modal-body{
+      flex:1;
+      overflow:auto;
+      padding:16px;
+    }
+    .modal-footer{
+      padding:12px 16px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
       gap:8px;
-    }
-    .recCircle .dot{
-      width:10px;height:10px;border-radius:999px;background:#ff2d2d;
-      box-shadow: 0 0 0 0 rgba(255,45,45,.55);
-      animation: pulseDot 1.15s ease-in-out infinite;
-    }
-    .recCircle.running{ outline: 2px solid rgba(255,45,45,.35); filter: saturate(1.05); }
-    @keyframes pulseDot{
-      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.55); transform: scale(1); }
-      60%{ box-shadow: 0 0 0 12px rgba(255,45,45,0); transform: scale(1.06); }
-      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
+      justify-content:flex-end;
     }
 
+    /* Tabs */
+    .tabs{
+      display:flex;
+      gap:2px;
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+      padding:4px;
+      margin-bottom:16px;
+    }
+    .tab{
+      flex:1;
+      padding:10px 14px;
+      border:none;
+      background:none;
+      color:var(--muted);
+      font-weight:950;
+      font-size:11px;
+      letter-spacing:.4px;
+      text-align:center;
+      border-radius:10px;
+      cursor:pointer;
+      transition: all .14s ease;
+    }
+    .tab:hover{ color:var(--text); }
+    .tab.active{
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+    }
+
+    /* Calendar */
+    .calendar{
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:12px;
+      margin-top:12px;
+    }
+    .calendar-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .calendar-grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:6px;
+    }
+    .calendar-day{
+      padding:8px 4px;
+      text-align:center;
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      border-radius:8px;
+    }
+    .calendar-slot{
+      padding:6px 4px;
+      text-align:center;
+      font-size:10px;
+      border-radius:8px;
+      cursor:pointer;
+      background:rgba(255,255,255,.05);
+      border:1px solid transparent;
+      transition: all .14s ease;
+    }
+    .calendar-slot:hover{
+      background:rgba(255,255,255,.08);
+      border-color:rgba(216,162,58,.22);
+    }
+    .calendar-slot.occupied{
+      background:rgba(216,162,58,.15);
+      border-color:rgba(216,162,58,.35);
+    }
+    .calendar-slot.selected{
+      background:rgba(74,143,114,.25);
+      border-color:rgba(74,143,114,.45);
+    }
+
+    /* Multi-platform selector */
+    .platform-selector{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin:12px 0;
+    }
+    .platform-check{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .platform-check input{ display:none; }
+    .platform-check span{
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.4px;
+    }
+    .platform-check.active{
+      background:rgba(57,90,140,.25);
+      border-color:rgba(57,90,140,.45);
+    }
+
+    /* Approval badges */
+    .approval-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:9px;
+      font-weight:1000;
+      letter-spacing:.4px;
+      margin-left:8px;
+    }
+    .badge-pending{
+      background:rgba(216,162,58,.15);
+      color:rgba(216,162,58,.95);
+    }
+    .badge-approved{
+      background:rgba(74,143,114,.15);
+      color:rgba(74,143,114,.95);
+    }
+    .badge-revision{
+      background:rgba(255,45,45,.15);
+      color:rgba(255,45,45,.95);
+    }
+
+    /* Analytics dashboard */
+    .stats-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin:16px 0;
+    }
+    .stat-card{
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:14px;
+    }
+    .stat-value{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1;
+      margin-bottom:6px;
+    }
+    .stat-label{
+      font-size:10px;
+      color:var(--muted);
+      font-weight:950;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    .stat-trend{
+      font-size:11px;
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .trend-up{ color:var(--success); }
+    .trend-down{ color:var(--error); }
+
+    /* Notification */
+    .notification{
+      position:fixed;
+      top:20px;
+      right:20px;
+      background:rgba(0,0,0,.85);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 16px;
+      max-width:320px;
+      backdrop-filter:blur(10px);
+      z-index:10000;
+      transform:translateX(400px);
+      transition:transform .3s ease;
+      box-shadow:var(--shadow);
+    }
+    .notification.show{ transform:translateX(0); }
+    .notification-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:8px;
+    }
+    .notification-title{
+      font-weight:1000;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .notification-close{
+      background:none;
+      border:none;
+      color:var(--muted);
+      font-size:18px;
+      cursor:pointer;
+      padding:0;
+      width:24px;
+      height:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:6px;
+    }
+
+    /* Resto dello stile mantenuto dal codice originale */
     .pill{
       font-size:10px;
       color:var(--muted);
@@ -454,6 +712,33 @@
     .vTitle{ font-weight:1000; font-size:12px; }
     .vMeta{ font-size:11px; color:var(--muted); line-height:1.35; margin-top:6px; white-space:pre-wrap; }
     .vBtns{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+    .recCircle{
+      width:72px;height:72px;border-radius:999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: radial-gradient(140px 140px at 35% 30%, rgba(255,110,110,.95), rgba(255,45,45,.82));
+      color:#120707;
+      font-weight:1000;
+      letter-spacing:.2px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      user-select:none;
+      gap:8px;
+    }
+    .recCircle .dot{
+      width:10px;height:10px;border-radius:999px;background:#ff2d2d;
+      box-shadow: 0 0 0 0 rgba(255,45,45,.55);
+      animation: pulseDot 1.15s ease-in-out infinite;
+    }
+    .recCircle.running{ outline: 2px solid rgba(255,45,45,.35); filter: saturate(1.05); }
+    @keyframes pulseDot{
+      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.55); transform: scale(1); }
+      60%{ box-shadow: 0 0 0 12px rgba(255,45,45,0); transform: scale(1.06); }
+      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
+    }
   </style>
 </head>
 
@@ -463,9 +748,12 @@
   <header>
     <div class="row" style="flex:1;">
       <button class="btn primary" id="btnNext" type="button">✨ Nuova domanda</button>
-      <button class="btn blue" id="btnOpenChatGPT" type="button">🤖 Apri ChatGPT</button>
+      <button class="btn blue" id="btnOpenChatGPT" type="button">🤖 Apri ChatGPT (Auto)</button>
       <button class="btn gray" id="btnCopyQ" type="button">📋 Copia domanda</button>
       <button class="btn violet" id="btnPasteAnswer" type="button">📋 Incolla risposta</button>
+      
+      <button class="btn success" id="btnAnalytics" type="button">📊 Analytics</button>
+      <button class="btn" id="btnMultiPlatform" type="button">🔄 Multi-piattaforma</button>
 
       <span class="pill">
         <span id="videoCounter">Video: 0</span>
@@ -478,29 +766,34 @@
 
     <div class="row">
       <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
+      <button class="btn tiny" id="btnCalendar" type="button">📅 Calendario</button>
     </div>
   </header>
 
   <div class="hintTop">
-    1) Nuova domanda → 2) Apri ChatGPT (prompt copiato) → 3) incolla risposta → 4) Usa risposta → 5) REC 60s →
-    6) Scarica video → 7) Invia a Joseph (WhatsApp app) → allega video e invia.
+    <b>Novità:</b> 1) ChatGPT Auto-copiatura risposta | 2) Scheduling visivo | 3) Multi-piattaforma simultanea | 
+    4) Sistema approvazioni | 5) Dashboard analytics
   </div>
 
   <!-- BLOCCO RISPOSTA -->
   <div class="card">
     <div class="section">
-      <p class="h">Risposta (da incollare / scrivere)</p>
+      <p class="h">Risposta (ChatGPT Auto-detection attivo)</p>
       <div class="field">
-        <textarea id="answerBox" placeholder="Incolla qui la risposta…"></textarea>
+        <textarea id="answerBox" placeholder="Incolla qui la risposta… (oppure usa ChatGPT Auto)"></textarea>
       </div>
 
       <div class="bar left" style="margin-top:10px;">
         <button class="btn primary" id="btnUseAnswer" type="button">➡️ Usa risposta</button>
         <button class="btn gray" id="btnCopyCaption" type="button">📋 Copia caption</button>
+        <button class="btn" id="btnScheduleMulti" type="button">📅 Pianifica Multi</button>
       </div>
 
       <div class="subtle">
-        Teleprompter solo preview (non entra nel video). Nel video: DOMANDA → LOGO → CATEGORIA → WHATSAPP.
+        <label class="chk">
+          <input type="checkbox" id="chkAutoDetectGPT" checked /> Auto-rileva risposta ChatGPT
+        </label>
+        <span style="margin-left:12px; color:var(--success);" id="autoDetectStatus">✓ Attivo</span>
       </div>
     </div>
   </div>
@@ -523,17 +816,17 @@
 
             <div id="overlay">
               <div id="qZone">
-                <div id="questionOverlay">Premi “Nuova domanda”.</div>
+                <div id="questionOverlay">Premi "Nuova domanda".</div>
 
                 <div id="logoZone">
                   <div id="logoWrap"><img id="logoImg" alt="logo"></div>
                   <div id="categoryOverlay">ATTUALITÀ</div>
-                  <div id="waPhoneOverlay">WHATSAPP: —</div>
+                  <div id="waPhoneOverlay">WHATSAPP: +393713708294</div>
                 </div>
               </div>
 
               <div id="teleprompterPreview">
-                <div id="teleText">Incolla una risposta → “Usa risposta” → “REC”.</div>
+                <div id="teleText">Incolla una risposta → "Usa risposta" → "REC".</div>
               </div>
             </div>
           </div>
@@ -574,7 +867,7 @@
             <input id="operatorName" placeholder="Nome funzionario (es. Marco)" />
           </div>
           <div class="field" style="flex:1; min-width: 180px;">
-            <input id="josephWa" placeholder="Numero Joseph E164 senza + (es. 393331234567)" />
+            <input id="josephWa" placeholder="Numero Joseph E164 senza +" value="393713708294" />
           </div>
         </div>
 
@@ -588,23 +881,19 @@
         </div>
 
         <div class="bar left" style="margin-top:10px;">
-          <label class="chk"><input class="check" type="checkbox" id="chkAutoMark" checked /> Auto “slot usato” quando apro WhatsApp</label>
-          <label class="chk"><input class="check" type="checkbox" id="chkRequireDownloaded" checked /> Richiedi “video scaricato” prima di inviare</label>
+          <label class="chk"><input class="check" type="checkbox" id="chkAutoMark" checked /> Auto "slot usato"</label>
+          <label class="chk"><input class="check" type="checkbox" id="chkRequireDownloaded" checked /> Richiedi "video scaricato"</label>
         </div>
 
         <div class="bar left" style="margin-top:10px;">
           <button class="btn wa" id="btnOpenWhatsApp" type="button">💬 Apri WhatsApp</button>
           <button class="btn gray" id="btnWhere" type="button">📁 Dove sono i video</button>
         </div>
-
-        <div class="subtle">
-          Regola: WhatsApp non può allegare il video via link. Qui apriamo WhatsApp con messaggio pronto (oppure: apri gruppo + messaggio copiato).
-        </div>
       </div>
 
       <!-- FREQUENZA PER PIATTAFORMA -->
       <div class="section">
-        <p class="h">Frequenza pubblicazioni (per piattaforma)</p>
+        <p class="h">Frequenza pubblicazioni</p>
         <div class="bar">
           <div class="field" style="flex:1; min-width: 160px;">
             <select id="platform">
@@ -626,25 +915,16 @@
           </div>
         </div>
 
-        <div class="mini" style="margin-top:10px;">
-Slot = prossimo orario libero in base allo storico (per piattaforma).
-- post/giorno → gap ≈ 24h / N
-- ogni X ore → gap = X ore
-- minuti minimi → gap = minuti
-        </div>
-
         <div class="bar left" style="margin-top:10px;">
-          <button class="btn gray" id="btnClearHistory" type="button">🧹 Pulisci storico slot</button>
+          <button class="btn gray" id="btnClearHistory" type="button">🧹 Pulisci storico</button>
         </div>
-
-        <div class="mini" id="historyBox" style="margin-top:10px; max-height:170px; overflow:auto;">—</div>
       </div>
 
       <!-- OVERLAY -->
       <div class="section">
         <p class="h">Overlay</p>
         <div class="field">
-          <input id="phoneInput" placeholder="Numero WhatsApp in video (es. 3331234567)" />
+          <input id="phoneInput" placeholder="Numero WhatsApp in video" />
         </div>
 
         <div class="bar left" style="margin-top:10px;">
@@ -653,14 +933,16 @@ Slot = prossimo orario libero in base allo storico (per piattaforma).
         </div>
       </div>
 
-      <!-- LISTA VIDEO -->
+      <!-- LISTA VIDEO CON APPROVAZIONI -->
       <div class="section">
-        <p class="h">Video creati</p>
+        <p class="h">Video creati <span class="approval-badge badge-pending" id="pendingCount">0 in attesa</span></p>
         <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
 
         <div class="bar left" style="margin-top:10px;">
           <button class="btn" id="btnDownloadVideo" type="button">📥 Scarica video</button>
           <button class="btn tiny gray" id="btnClearList" type="button">🗑 Svuota lista</button>
+          <button class="btn tiny success" id="btnMarkApproved" type="button">✅ Approva</button>
+          <button class="btn tiny" id="btnAddComment" type="button">💬 Commenta</button>
         </div>
 
         <div class="mini" id="recList" style="margin-top:10px; max-height:340px; overflow:auto;">—</div>
@@ -670,17 +952,212 @@ Slot = prossimo orario libero in base allo storico (per piattaforma).
   </div>
 </div>
 
+<!-- MODALS -->
+<div class="modal" id="modalCalendar">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">📅 Calendario Scheduling</div>
+      <button class="modal-close" id="closeCalendar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" data-tab="week">Questa settimana</button>
+        <button class="tab" data-tab="month">Questo mese</button>
+        <button class="tab" data-tab="platform">Per piattaforma</button>
+      </div>
+      <div id="calendarWeek" class="calendar">
+        <div class="calendar-header">
+          <div><strong>Prossimi 7 giorni</strong></div>
+          <button class="btn tiny" id="btnExportSchedule">📤 Esporta CSV</button>
+        </div>
+        <div id="calendarGrid"></div>
+      </div>
+      <div id="calendarMonth" class="calendar" style="display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+      <div id="calendarPlatform" class="calendar" style="display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gray" id="btnCloseCalendar">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalMultiPlatform">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">🔄 Pianificazione Multi-piattaforma</div>
+      <button class="modal-close" id="closeMultiPlatform">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="h">Seleziona piattaforme per questo video:</p>
+      <div class="platform-selector">
+        <label class="platform-check active" data-platform="TIKTOK">
+          <input type="checkbox" checked /> <span>TikTok</span>
+        </label>
+        <label class="platform-check active" data-platform="INSTAGRAM">
+          <input type="checkbox" checked /> <span>Instagram</span>
+        </label>
+        <label class="platform-check" data-platform="SHORTS">
+          <input type="checkbox" /> <span>YouTube Shorts</span>
+        </label>
+        <label class="platform-check" data-platform="FACEBOOK">
+          <input type="checkbox" /> <span>Facebook</span>
+        </label>
+      </div>
+      
+      <p class="h" style="margin-top:20px;">Offset temporali tra piattaforme:</p>
+      <div class="mini">
+        <label class="chk"><input type="radio" name="offsetMode" value="simultaneo" checked /> Pubblicazione simultanea</label>
+        <label class="chk"><input type="radio" name="offsetMode" value="scaglionato" /> Scaglionato (30 min tra piattaforme)</label>
+        <label class="chk"><input type="radio" name="offsetMode" value="personalizzato" /> Personalizzato (specifica sotto)</label>
+      </div>
+      
+      <div id="customOffsets" style="margin-top:12px; display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+      
+      <div class="calendar" style="margin-top:20px;">
+        <div class="calendar-header">
+          <div><strong>Slot disponibili multi-piattaforma</strong></div>
+        </div>
+        <div id="multiPlatformSlots"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gray" id="btnCancelMulti">Annulla</button>
+      <button class="btn primary" id="btnConfirmMulti">Conferma pianificazione</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalAnalytics">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">📊 Dashboard Analytics</div>
+      <button class="modal-close" id="closeAnalytics">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="platforms">Per piattaforma</button>
+        <button class="tab" data-tab="operators">Per operatore</button>
+        <button class="tab" data-tab="time">Analisi temporale</button>
+      </div>
+      
+      <div id="analyticsOverview">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotalVideos">0</div>
+            <div class="stat-label">Video totali</div>
+            <div class="stat-trend trend-up" id="statTrendVideos">+0% vs settimana scorsa</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statApproved">0</div>
+            <div class="stat-label">Approvati</div>
+            <div class="stat-label" style="font-size:9px; margin-top:4px;">Tasso: <span id="statApprovalRate">0%</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statPending">0</div>
+            <div class="stat-label">In attesa</div>
+            <div class="stat-label" style="font-size:9px; margin-top:4px;">Tempo medio: <span id="statAvgPendingTime">0h</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statProductivity">0</div>
+            <div class="stat-label">Video/giorno</div>
+            <div class="stat-trend trend-up" id="statTrendProductivity">+0%</div>
+          </div>
+        </div>
+        
+        <div class="mini" style="margin-top:20px;">
+          <strong>Distribuzione per piattaforma (ultimi 30 giorni):</strong>
+          <div id="platformDistribution"></div>
+        </div>
+        
+        <div class="mini" style="margin-top:20px;">
+          <strong>Top operatori per produzione:</strong>
+          <div id="topOperators"></div>
+        </div>
+      </div>
+      
+      <div id="analyticsPlatforms" style="display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+      
+      <div id="analyticsOperators" style="display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+      
+      <div id="analyticsTime" style="display:none;">
+        <!-- Sarà popolato dinamicamente -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gray" id="btnCloseAnalytics">Chiudi</button>
+      <button class="btn" id="btnExportAnalytics">📤 Esporta Report</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalApproval">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">✅ Sistema Approvazioni</div>
+      <button class="modal-close" id="closeApproval">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="h">Video selezionato: <span id="approvalVideoTitle">—</span></p>
+      
+      <div class="bar" style="margin:16px 0;">
+        <button class="btn success" data-approval="approved">✅ Approva</button>
+        <button class="btn" data-approval="pending">⏳ Metti in attesa</button>
+        <button class="btn" style="background:rgba(255,45,45,.15);border-color:rgba(255,45,45,.35);" data-approval="revision">✏️ Richiedi revisione</button>
+      </div>
+      
+      <div class="field">
+        <textarea id="approvalComment" placeholder="Commento (opzionale)..." rows="3"></textarea>
+      </div>
+      
+      <div class="mini" style="margin-top:16px;">
+        <strong>Cronologia approvazioni:</strong>
+        <div id="approvalHistory"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gray" id="btnCloseApproval">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION SYSTEM -->
+<div class="notification" id="notification">
+  <div class="notification-header">
+    <div class="notification-title">
+      <span id="notificationIcon">💡</span>
+      <span id="notificationTitle">Notifica</span>
+    </div>
+    <button class="notification-close" id="notificationClose">&times;</button>
+  </div>
+  <div id="notificationMessage">Messaggio di notifica</div>
+</div>
+
 <div class="bottomBar">
   <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
+  <div style="flex:1; text-align:center; font-size:10px; color:var(--muted);">
+    <span id="clipboardMonitor">📋 Monitor clipboard: <span style="color:var(--success);">Attivo</span></span>
+  </div>
+  <button class="btn tiny" id="btnNotifications" type="button">🔔 Notifiche</button>
 </div>
 
 <script>
 /* ==========================
-   CONFIG
+   CONFIG ENHANCED
 ========================== */
 const GESTIONALE_URL = "https://tuo-gestionale.com";
+const JOSEPH_DEFAULT_WA = "393713708294";
 
-/* Prompt (copiato + apre ChatGPT) */
 const GPT_PROMPT_BASE = `
 Sei un assistente per creare video verticali 9:16 in italiano.
 Scrivi un testo da leggere in 60 secondi massimo, naturale, parlato, senza "ciao ragazzi".
@@ -693,14 +1170,13 @@ Struttura:
 Rispondi SOLO col testo da leggere.
 `.trim();
 
-/* Hashtag */
 const HIDDEN_HASHTAGS = [
   "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy",
   "#immobiliare","#realestateitalia","#marketingdigitale","#socialmediastrategy","#personalbranding"
 ].join(" ");
 
 /* ==========================
-   DOMANDE (300)
+   DOMANDE (300) - SAME AS BEFORE
 ========================== */
 function buildQuestions300Natural(){
   const phases = [
@@ -730,11 +1206,11 @@ function buildQuestions300Natural(){
     (t)=>`Se ${t} non sta funzionando, qual è la prima verifica che fai?`,
     (t)=>`Cosa dire (in modo semplice) per spiegare ${t} a un cliente scettico?`,
     (t)=>`Qual è il segnale più chiaro che ${t} è impostato male?`,
-    (t)=>`Se vuoi migliorare ${t} già da oggi, qual è un’azione concreta da fare subito?`,
+    (t)=>`Se vuoi migliorare ${t} già da oggi, qual è un'azione concreta da fare subito?`,
     (t)=>`Qual è la domanda giusta da fare per sbloccare ${t}?`,
     (t)=>`Perché su ${t} le persone si bloccano? E come le aiuti a decidere?`,
     (t)=>`Cosa cambia davvero i risultati su ${t}, senza spendere di più?`,
-    (t)=>`Qual è l’errore più comune su ${t}… detto in modo chiaro e pratico?`,
+    (t)=>`Qual è l'errore più comune su ${t}… detto in modo chiaro e pratico?`,
     (t)=>`Se ti capita spesso un blocco su ${t}, come lo risolvi in 2 mosse?`,
   ];
   const out = [];
@@ -757,7 +1233,77 @@ function buildQuestions300Natural(){
 const QUESTION_BANK = buildQuestions300Natural();
 
 /* ==========================
-   HELPERS
+   ENHANCED STORAGE KEYS
+========================== */
+const DB_KEY   = "vc_videos_db_v6";
+const CAP_KEY  = "vc_caption_clean_v6";
+const PHONE_KEY= "vc_phone_v6";
+const LOGO_KEY = "vc_logo_v6";
+
+const OP_KEY   = "vc_operator_v6";
+const JO_KEY   = "vc_josephwa_v6";
+const GROUP_KEY= "vc_groupinvite_v6";
+const DEST_KEY = "vc_destmode_v6";
+
+const PUBSET_KEY = "vc_pub_settings_by_platform_v6";
+const HIST_KEY = "vc_pub_history_v6";
+
+// NEW KEYS FOR ENHANCED FEATURES
+const APPROVAL_KEY = "vc_approvals_v6"; // {videoId: {status, comment, date, by}}
+const COMMENTS_KEY = "vc_comments_v6"; // {videoId: [{text, date, by}]}
+const MULTI_SCHEDULE_KEY = "vc_multi_schedule_v6"; // Multi-platform scheduling
+const ANALYTICS_KEY = "vc_analytics_v6"; // Analytics data
+const AUTO_GPT_KEY = "vc_autogpt_settings_v6"; // Auto-GPT detection settings
+
+/* ==========================
+   ENHANCED STATE
+========================== */
+let qIdx = -1;
+let currentQuestionObj = null;
+let currentQuestion = "";
+let lastCaptionClean = "";
+let totalVideos = 0;
+
+const PLATFORMS = ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"];
+let selectedPlatform = "TIKTOK";
+let multiPlatformSelection = ["TIKTOK","INSTAGRAM"]; // Default multi-platform
+
+let logoDataUrl = "";
+let logoImgObj = new Image();
+let phoneValue = "";
+let operatorName = "";
+let josephWa = JOSEPH_DEFAULT_WA;
+let groupInvite = "";
+let destMode = "joseph";
+
+let facingMode = "user";
+let torchOn = false;
+
+let recordings = [];
+let currentRecIndex = -1;
+
+let karaokeWords = [];
+let karaokeIndex = 0;
+
+let camStream = null;
+let recorder = null;
+let chunks = [];
+let rafCanvasId = null;
+let recTimerId = null;
+let remaining = 60;
+let isRecording = false;
+
+let zoomValue = 1.0;
+const camEl = $("cam");
+const canvas = $("recCanvas");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+// Auto-GPT detection
+let autoGPTObserver = null;
+let lastClipboardCheck = "";
+
+/* ==========================
+   ENHANCED HELPERS
 ========================== */
 const $ = (id) => document.getElementById(id);
 
@@ -816,72 +1362,550 @@ function captionWithHashtagsIfNeeded(clean){
 }
 
 /* ==========================
-   STORAGE KEYS
+   MODAL SYSTEM
 ========================== */
-const DB_KEY   = "vc_videos_db_v5";
-const CAP_KEY  = "vc_caption_clean_v5";
-const PHONE_KEY= "vc_phone_v5";
-const LOGO_KEY = "vc_logo_v5";
-
-const OP_KEY   = "vc_operator_v5";
-const JO_KEY   = "vc_josephwa_v5";
-const GROUP_KEY= "vc_groupinvite_v5";
-const DEST_KEY = "vc_destmode_v5"; // "group" | "joseph"
-
-const PUBSET_KEY = "vc_pub_settings_by_platform_v5"; // {TIKTOK:{mode,val}, ...}
-const HIST_KEY = "vc_pub_history_v5"; // {platform:[iso,...]}
+function showModal(id){
+  $(id).style.display = "flex";
+  setTimeout(() => $(id).style.opacity = "1", 10);
+}
+function hideModal(id){
+  $(id).style.opacity = "0";
+  setTimeout(() => $(id).style.display = "none", 300);
+}
 
 /* ==========================
-   STATE
+   NOTIFICATION SYSTEM
 ========================== */
-let qIdx = -1;
-let currentQuestionObj = null;
-let currentQuestion = "";
-let lastCaptionClean = "";
-let totalVideos = 0;
+function showNotification(title, message, icon = "💡", duration = 5000){
+  $("#notificationIcon").textContent = icon;
+  $("#notificationTitle").textContent = title;
+  $("#notificationMessage").textContent = message;
+  
+  const notif = $("#notification");
+  notif.classList.add("show");
+  
+  setTimeout(() => {
+    notif.classList.remove("show");
+  }, duration);
+}
 
-const PLATFORMS = ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"];
-let selectedPlatform = "TIKTOK";
-
-let logoDataUrl = "";
-let logoImgObj = new Image();
-let phoneValue = "";
-let operatorName = "";
-let josephWa = "";
-let groupInvite = "";
-let destMode = "joseph"; // default
-
-let facingMode = "user";
-let torchOn = false;
-
-let recordings = [];
-let currentRecIndex = -1;
-
-/* Karaoke (preview only) */
-let karaokeWords = [];
-let karaokeIndex = 0;
-
-/* Recording */
-let camStream = null;
-let recorder = null;
-let chunks = [];
-let rafCanvasId = null;
-let recTimerId = null;
-let remaining = 60;
-let isRecording = false;
-
-let zoomValue = 1.0;
-const camEl = $("cam");
-const canvas = $("recCanvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+$("#notificationClose").addEventListener("click", () => {
+  $("#notification").classList.remove("show");
+});
 
 /* ==========================
-   SETTINGS: Scheduling per piattaforma
+   FEATURE 1: AUTO-GPT DETECTION
+========================== */
+function isGPTResponse(text){
+  const gptPatterns = [
+    /^Certo!?/i,
+    /^Ecco (la risposta|un testo)/i,
+    /^Come assistente AI/i,
+    /^Sulla base della tua domanda/i,
+    /^Per creare un video efficace/i,
+    /^Testo da leggere in 60 secondi/i
+  ];
+  
+  const lines = text.split('\n');
+  if(lines.length < 2) return false;
+  
+  // Check for GPT patterns
+  for(const pattern of gptPatterns){
+    if(pattern.test(text.trim())) return true;
+  }
+  
+  // Check for structured response (hook, target, takeaway, CTA)
+  const hasStructure = 
+    (text.includes("Hook") || text.includes("hook")) ||
+    (text.includes("Target") || text.includes("target")) ||
+    (text.includes("Takeaway") || text.includes("takeaway")) ||
+    (text.includes("CTA") || text.includes("Scrivimi"));
+  
+  return hasStructure;
+}
+
+function cleanGPTResponse(text){
+  // Remove common GPT prefixes
+  let cleaned = text
+    .replace(/^Certo!?\s*/i, '')
+    .replace(/^Ecco (la risposta|un testo):?\s*/i, '')
+    .replace(/^Come assistente AI[^,]+,/i, '')
+    .replace(/^Sulla base della tua domanda[^,]+,/i, '')
+    .replace(/^Per creare un video efficace[^,]+,/i, '')
+    .trim();
+  
+  // Remove markdown formatting if present
+  cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
+  cleaned = cleaned.replace(/\*(.*?)\*/g, '$1');
+  
+  return cleaned;
+}
+
+async function monitorClipboardForGPT(){
+  if(!$("chkAutoDetectGPT").checked) return;
+  
+  try {
+    const current = await readClipboardText();
+    if(current && current !== lastClipboardCheck && current.length > 50){
+      if(isGPTResponse(current)){
+        const cleaned = cleanGPTResponse(current);
+        $("answerBox").value = cleaned;
+        lastClipboardCheck = current;
+        
+        showNotification(
+          "🤖 ChatGPT Rilevato",
+          "Risposta pulita e inserita automaticamente nel box!",
+          "✅",
+          3000
+        );
+        
+        // Auto-use answer
+        setTimeout(() => {
+          if($("answerBox").value.trim()){
+            applyAnswer($("answerBox").value);
+          }
+        }, 500);
+      }
+    }
+  } catch(e) {
+    // Clipboard access might be blocked in some contexts
+  }
+}
+
+// Start clipboard monitoring
+setInterval(monitorClipboardForGPT, 2000);
+
+/* ==========================
+   FEATURE 2: VISUAL SCHEDULING CALENDAR
+========================== */
+function generateCalendar(days = 7){
+  const now = new Date();
+  const calendar = [];
+  
+  for(let i = 0; i < days; i++){
+    const date = new Date(now);
+    date.setDate(now.getDate() + i);
+    
+    const slots = [];
+    // Generate time slots (8:00 to 20:00, every 2 hours)
+    for(let hour = 8; hour <= 20; hour += 2){
+      const slotTime = new Date(date);
+      slotTime.setHours(hour, 0, 0, 0);
+      
+      // Check if slot is occupied
+      const isOccupied = isSlotOccupied(slotTime);
+      
+      slots.push({
+        time: slotTime,
+        label: `${pad2(hour)}:00`,
+        occupied: isOccupied,
+        available: !isOccupied && slotTime > now
+      });
+    }
+    
+    calendar.push({
+      date: date,
+      dayLabel: date.toLocaleDateString('it-IT', { weekday: 'short' }),
+      dateLabel: `${pad2(date.getDate())}/${pad2(date.getMonth()+1)}`,
+      slots: slots
+    });
+  }
+  
+  return calendar;
+}
+
+function isSlotOccupied(dateTime){
+  const h = getHistory();
+  const iso = dateTime.toISOString();
+  
+  for(const platform of PLATFORMS){
+    const platformHistory = h[platform] || [];
+    if(platformHistory.some(slot => {
+      const slotTime = new Date(slot);
+      return Math.abs(slotTime - dateTime) < 60 * 60 * 1000; // Within 1 hour
+    })){
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+function renderCalendar(){
+  const calendar = generateCalendar(7);
+  const grid = $("#calendarGrid");
+  
+  // Create header (days)
+  let html = `<div class="calendar-grid" style="grid-template-columns: 80px repeat(6, 1fr); margin-bottom:12px;">`;
+  html += `<div class="calendar-day">Ora</div>`;
+  calendar.forEach(day => {
+    html += `<div class="calendar-day">${day.dayLabel}<br>${day.dateLabel}</div>`;
+  });
+  html += `</div>`;
+  
+  // Create time slots
+  for(let slotIndex = 0; slotIndex < 7; slotIndex++){ // 8:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00
+    html += `<div class="calendar-grid" style="grid-template-columns: 80px repeat(6, 1fr);">`;
+    html += `<div class="calendar-slot" style="background:transparent;border:none;font-weight:1000;">${8 + slotIndex*2}:00</div>`;
+    
+    calendar.forEach(day => {
+      const slot = day.slots[slotIndex];
+      if(slot){
+        const classes = ["calendar-slot"];
+        if(slot.occupied) classes.push("occupied");
+        if(slot.available) classes.push("available");
+        
+        html += `<div class="${classes.join(' ')}" data-time="${slot.time.toISOString()}">
+          ${slot.occupied ? '📌 Occupato' : (slot.available ? '🟢 Libero' : '⏳ Passato')}
+        </div>`;
+      } else {
+        html += `<div class="calendar-slot" style="opacity:0.3;">—</div>`;
+      }
+    });
+    
+    html += `</div>`;
+  }
+  
+  grid.innerHTML = html;
+  
+  // Add click handlers
+  grid.querySelectorAll('.calendar-slot.available').forEach(slot => {
+    slot.addEventListener('click', () => {
+      const time = slot.dataset.time;
+      showNotification(
+        "📅 Slot Selezionato",
+        `Slot selezionato per ${new Date(time).toLocaleString('it-IT')}`,
+        "✅",
+        3000
+      );
+      
+      // Update selected platform's next slot
+      markSlotUsed(selectedPlatform, time);
+      refreshPlatformUI();
+    });
+  });
+}
+
+/* ==========================
+   FEATURE 3: MULTI-PLATFORM SIMULTANEOUS
+========================== */
+function setupMultiPlatformUI(){
+  const selector = document.querySelector('.platform-selector');
+  selector.innerHTML = '';
+  
+  PLATFORMS.forEach(platform => {
+    const isActive = multiPlatformSelection.includes(platform);
+    const label = document.createElement('label');
+    label.className = `platform-check ${isActive ? 'active' : ''}`;
+    label.dataset.platform = platform;
+    label.innerHTML = `
+      <input type="checkbox" ${isActive ? 'checked' : ''} />
+      <span>${platform}</span>
+    `;
+    
+    label.addEventListener('click', (e) => {
+      e.preventDefault();
+      const checkbox = label.querySelector('input');
+      checkbox.checked = !checkbox.checked;
+      
+      if(checkbox.checked){
+        label.classList.add('active');
+        if(!multiPlatformSelection.includes(platform)){
+          multiPlatformSelection.push(platform);
+        }
+      } else {
+        label.classList.remove('active');
+        multiPlatformSelection = multiPlatformSelection.filter(p => p !== platform);
+      }
+    });
+    
+    selector.appendChild(label);
+  });
+}
+
+function scheduleMultiPlatform(videoId, baseTime){
+  const offsets = {
+    "simultaneo": [0, 0, 0, 0],
+    "scaglionato": [0, 30, 60, 90], // minutes
+    "personalizzato": [0, 60, 120, 180] // default personalizzato
+  };
+  
+  const offsetMode = document.querySelector('input[name="offsetMode"]:checked').value;
+  const offsetValues = offsets[offsetMode];
+  
+  multiPlatformSelection.forEach((platform, index) => {
+    if(index < offsetValues.length){
+      const offsetMinutes = offsetValues[index];
+      const scheduledTime = new Date(baseTime);
+      scheduledTime.setMinutes(scheduledTime.getMinutes() + offsetMinutes);
+      
+      // Mark slot for this platform
+      markSlotUsed(platform, scheduledTime.toISOString());
+      
+      // Update video metadata if this is the current video
+      if(recordings[0] && recordings[0].meta.id === videoId){
+        if(!recordings[0].meta.multiPlatform){
+          recordings[0].meta.multiPlatform = [];
+        }
+        recordings[0].meta.multiPlatform.push({
+          platform: platform,
+          scheduledAt: scheduledTime.toISOString(),
+          offsetMinutes: offsetMinutes
+        });
+        
+        // Persist updated metadata
+        persistVideoMeta(recordings[0].meta);
+      }
+    }
+  });
+  
+  showNotification(
+    "🔄 Multi-piattaforma",
+    `Video schedulato su ${multiPlatformSelection.length} piattaforme`,
+    "✅",
+    4000
+  );
+  
+  refreshPlatformUI();
+  renderRecList();
+}
+
+/* ==========================
+   FEATURE 4: APPROVAL SYSTEM
+========================== */
+function getApprovalStatus(videoId){
+  try{
+    const approvals = JSON.parse(localStorage.getItem(APPROVAL_KEY) || "{}");
+    return approvals[videoId] || { status: "pending", comment: "", date: null, by: "" };
+  }catch(e){
+    return { status: "pending", comment: "", date: null, by: "" };
+  }
+}
+
+function setApprovalStatus(videoId, status, comment = "", by = ""){
+  try{
+    const approvals = JSON.parse(localStorage.getItem(APPROVAL_KEY) || "{}");
+    approvals[videoId] = {
+      status: status,
+      comment: comment.trim(),
+      date: new Date().toISOString(),
+      by: by || operatorName || "System"
+    };
+    localStorage.setItem(APPROVAL_KEY, JSON.stringify(approvals));
+    
+    // Update video metadata
+    const videoIndex = recordings.findIndex(r => r.meta.id === videoId);
+    if(videoIndex !== -1){
+      recordings[videoIndex].meta.approval = approvals[videoId];
+      persistVideoMeta(recordings[videoIndex].meta);
+    }
+    
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function getComments(videoId){
+  try{
+    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY) || "{}");
+    return comments[videoId] || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function addComment(videoId, text, by = ""){
+  try{
+    const comments = JSON.parse(localStorage.getItem(COMMENTS_KEY) || "{}");
+    if(!comments[videoId]) comments[videoId] = [];
+    
+    comments[videoId].push({
+      text: text.trim(),
+      date: new Date().toISOString(),
+      by: by || operatorName || "Anonymous"
+    });
+    
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function updatePendingCount(){
+  const pending = recordings.filter(r => {
+    const approval = getApprovalStatus(r.meta.id);
+    return approval.status === "pending";
+  }).length;
+  
+  $("#pendingCount").textContent = `${pending} in attesa`;
+  return pending;
+}
+
+/* ==========================
+   FEATURE 5: ANALYTICS DASHBOARD
+========================== */
+function calculateAnalytics(){
+  const videos = recordings;
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  
+  // Filter videos from last 30 days
+  const recentVideos = videos.filter(v => {
+    const videoDate = new Date(v.meta.createdAt);
+    return videoDate >= thirtyDaysAgo;
+  });
+  
+  // Calculate statistics
+  const totalVideosCount = videos.length;
+  const recentCount = recentVideos.length;
+  
+  const approvedVideos = videos.filter(v => {
+    const approval = getApprovalStatus(v.meta.id);
+    return approval.status === "approved";
+  }).length;
+  
+  const pendingVideos = videos.filter(v => {
+    const approval = getApprovalStatus(v.meta.id);
+    return approval.status === "pending";
+  }).length;
+  
+  const approvalRate = totalVideosCount > 0 ? Math.round((approvedVideos / totalVideosCount) * 100) : 0;
+  
+  // Platform distribution
+  const platformDistribution = {};
+  PLATFORMS.forEach(p => platformDistribution[p] = 0);
+  
+  recentVideos.forEach(v => {
+    const platform = v.meta.platform;
+    if(platformDistribution[platform] !== undefined){
+      platformDistribution[platform]++;
+    }
+  });
+  
+  // Operator productivity
+  const operatorStats = {};
+  recentVideos.forEach(v => {
+    const operator = v.meta.operator || "Sconosciuto";
+    if(!operatorStats[operator]) operatorStats[operator] = 0;
+    operatorStats[operator]++;
+  });
+  
+  // Calculate trends (simple week-over-week)
+  const lastWeekVideos = videos.filter(v => {
+    const videoDate = new Date(v.meta.createdAt);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    return videoDate >= oneWeekAgo;
+  }).length;
+  
+  const twoWeeksVideos = videos.filter(v => {
+    const videoDate = new Date(v.meta.createdAt);
+    const twoWeeksAgo = new Date(now);
+    twoWeeksAgo.setDate(now.getDate() - 14);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    return videoDate >= oneWeekAgo && videoDate < twoWeeksAgo;
+  }).length;
+  
+  const trend = twoWeeksVideos > 0 ? 
+    Math.round(((lastWeekVideos - twoWeeksVideos) / twoWeeksVideos) * 100) : 0;
+  
+  const avgVideosPerDay = recentCount > 0 ? (recentCount / 30).toFixed(1) : "0";
+  
+  return {
+    totalVideos: totalVideosCount,
+    approved: approvedVideos,
+    pending: pendingVideos,
+    approvalRate: approvalRate,
+    platformDistribution: platformDistribution,
+    operatorStats: operatorStats,
+    trend: trend,
+    avgVideosPerDay: avgVideosPerDay,
+    recentCount: recentCount,
+    lastWeekVideos: lastWeekVideos
+  };
+}
+
+function renderAnalytics(){
+  const analytics = calculateAnalytics();
+  
+  // Update stats cards
+  $("#statTotalVideos").textContent = analytics.totalVideos;
+  $("#statApproved").textContent = analytics.approved;
+  $("#statPending").textContent = analytics.pending;
+  $("#statApprovalRate").textContent = `${analytics.approvalRate}%`;
+  $("#statProductivity").textContent = analytics.avgVideosPerDay;
+  
+  // Update trends
+  const trendElem = $("#statTrendVideos");
+  trendElem.textContent = `${analytics.trend >= 0 ? '+' : ''}${analytics.trend}% vs settimana scorsa`;
+  trendElem.className = `stat-trend ${analytics.trend >= 0 ? 'trend-up' : 'trend-down'}`;
+  
+  // Platform distribution
+  const platformDistElem = $("#platformDistribution");
+  let platformHTML = "";
+  for(const platform in analytics.platformDistribution){
+    const count = analytics.platformDistribution[platform];
+    if(count > 0){
+      const percentage = Math.round((count / analytics.recentCount) * 100) || 0;
+      platformHTML += `
+        <div style="margin:6px 0; display:flex; align-items:center;">
+          <div style="width:100px; font-weight:900; font-size:10px;">${platform}</div>
+          <div style="flex:1; background:rgba(255,255,255,.1); height:8px; border-radius:4px; overflow:hidden;">
+            <div style="width:${percentage}%; height:100%; background:var(--gold);"></div>
+          </div>
+          <div style="width:40px; text-align:right; font-size:10px; margin-left:8px;">${count} (${percentage}%)</div>
+        </div>
+      `;
+    }
+  }
+  platformDistElem.innerHTML = platformHTML || "<div style='opacity:0.7;'>Nessun dato</div>";
+  
+  // Top operators
+  const topOpsElem = $("#topOperators");
+  const sortedOperators = Object.entries(analytics.operatorStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  
+  let operatorsHTML = "";
+  sortedOperators.forEach(([operator, count]) => {
+    operatorsHTML += `
+      <div style="margin:6px 0; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-weight:900; font-size:10px;">${operator}</div>
+        <div style="font-size:10px; color:var(--gold);">${count} video</div>
+      </div>
+    `;
+  });
+  topOpsElem.innerHTML = operatorsHTML || "<div style='opacity:0.7;'>Nessun dato</div>";
+  
+  // Calculate average pending time
+  const pendingVideos = recordings.filter(r => {
+    const approval = getApprovalStatus(r.meta.id);
+    return approval.status === "pending";
+  });
+  
+  let totalPendingHours = 0;
+  pendingVideos.forEach(v => {
+    const created = new Date(v.meta.createdAt);
+    const now = new Date();
+    const hours = Math.round((now - created) / (1000 * 60 * 60));
+    totalPendingHours += hours;
+  });
+  
+  const avgPendingTime = pendingVideos.length > 0 ? 
+    Math.round(totalPendingHours / pendingVideos.length) : 0;
+  $("#statAvgPendingTime").textContent = `${avgPendingTime}h`;
+}
+
+/* ==========================
+   ENHANCED SETTINGS & HISTORY (from original)
 ========================== */
 function getPubSettings(){
   try{
     const s = JSON.parse(localStorage.getItem(PUBSET_KEY) || "{}");
-    // default for each platform
     for(const p of PLATFORMS){
       if(!s[p]) s[p] = { mode:"per_day", value:2 };
       if(!s[p].mode) s[p].mode = "per_day";
@@ -916,7 +1940,7 @@ function minGapMinutesFor(platform){
   const v = Math.max(1, Number(s.value) || 1);
   if(s.mode === "per_day") return Math.round((24*60)/v);
   if(s.mode === "every_hours") return v * 60;
-  return v; // custom_minutes
+  return v;
 }
 function calcNextSlot(platform){
   const gap = minGapMinutesFor(platform);
@@ -933,20 +1957,16 @@ function markSlotUsed(platform, iso){
   h[platform].unshift(iso);
   setHistory(h);
 }
-
-/* ==========================
-   UI refresh pills
-========================== */
 function refreshPlatformUI(){
   $("platformLabel").textContent = "Piattaforma: " + selectedPlatform;
   $("nextSlotPill").textContent = "Slot: " + fmtLocal(calcNextSlot(selectedPlatform));
 }
 
 /* ==========================
-   QUESTIONS + CATEGORY
+   ENHANCED QUESTIONS + CATEGORY
 ========================== */
 function showQuestion(q){
-  $("questionOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
+  $("questionOverlay").textContent = q ? q : "Premi 'Nuova domanda'.";
 }
 function getCategoryForQuestion(qObj){
   if(!qObj || !qObj.fase) return "ATTUALITÀ";
@@ -963,23 +1983,31 @@ function nextQuestion(){
 }
 
 /* ==========================
-   ChatGPT open + copy prompt
+   ENHANCED ChatGPT
 ========================== */
 function buildChatGPTPayload(){
-  const qText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ (scegli tu l'argomento)";
+  const qText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
   const cat = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
-  const wa = phoneValue ? `Numero WhatsApp: ${phoneValue}` : "Numero WhatsApp: (inseriscilo se vuoi CTA)";
+  const wa = phoneValue ? `Numero WhatsApp: ${phoneValue}` : "Numero WhatsApp: +393713708294";
   return `${GPT_PROMPT_BASE}\n\nCONTESTO:\nCategoria: ${cat}\n${wa}\n\nDOMANDA:\n${qText}`.trim();
 }
 async function openChatGPTAndCopy(){
   if(!currentQuestionObj) nextQuestion();
   const payload = buildChatGPTPayload();
   await copyText(payload);
+  
+  showNotification(
+    "🤖 ChatGPT Pronto",
+    "Prompt copiato negli appunti! Incolla in ChatGPT e la risposta verrà auto-rilevata.",
+    "📋",
+    4000
+  );
+  
   window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
 }
 
 /* ==========================
-   Teleprompter preview (karaoke)
+   ENHANCED Teleprompter
 ========================== */
 function buildKaraokeSpans(text){
   const container = $("teleText");
@@ -989,7 +2017,7 @@ function buildKaraokeSpans(text){
   karaokeIndex = 0;
 
   if(tokens.length === 0){
-    container.textContent = "Incolla una risposta → “Usa risposta” → “REC”.";
+    container.textContent = "Incolla una risposta → 'Usa risposta' → 'REC'.";
     karaokeWords = [];
     return;
   }
@@ -1024,20 +2052,19 @@ function applyAnswer(answer){
 
   buildKaraokeSpans(a);
 
-  // keep category synced
   $("categoryOverlay").textContent = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
 
   return true;
 }
 
 function buildFinalCaption(){
-  const phoneLine = phoneValue ? `\n\nWHATSAPP: ${phoneValue}` : "";
+  const phoneLine = phoneValue ? `\n\nWHATSAPP: ${phoneValue}` : `\n\nWHATSAPP: +393713708294`;
   const base = `[${selectedPlatform}] ${lastCaptionClean || ""}`.trim();
   return captionWithHashtagsIfNeeded((base + phoneLine).trim());
 }
 
 /* ==========================
-   Logo + Phone (persist)
+   ENHANCED Logo + Phone
 ========================== */
 function setLogoDataUrl(dataUrl){
   logoDataUrl = String(dataUrl || "");
@@ -1057,18 +2084,129 @@ function renderPhone(){
   if(phoneValue){
     $("waPhoneOverlay").textContent = `WHATSAPP: ${phoneValue}`;
   }else{
-    $("waPhoneOverlay").textContent = "WHATSAPP: —";
+    $("waPhoneOverlay").textContent = `WHATSAPP: +393713708294`;
   }
 }
 
 /* ==========================
-   Camera + Canvas recording (NO teleprompter in recording)
-   Recording overlay order: DOMANDA → LOGO → CATEGORIA → WHATSAPP
+   ENHANCED Camera & Recording (from original)
 ========================== */
 async function applyZoom(v){
   zoomValue = Number(v) || 1;
   $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
   document.documentElement.style.setProperty("--zoom", String(zoomValue));
+}
+
+function drawRecordingCanvas(){
+  const W = canvas.width, H = canvas.height;
+
+  if(camEl.readyState < 2){
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,W,H);
+    return;
+  }
+
+  const vw = camEl.videoWidth || 1280;
+  const vh = camEl.videoHeight || 720;
+
+  const z = Math.max(1, Math.min(zoomValue, 5));
+  const srcW = vw / z;
+  const srcH = vh / z;
+  const srcX = (vw - srcW)/2;
+  const srcY = (vh - srcH)/2;
+
+  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
+
+  // Overlay at 1/4 height
+  ctx.save();
+  ctx.textBaseline = "top";
+
+  const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
+  const cat = (getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ").toUpperCase();
+  const wa = phoneValue ? `WHATSAPP: ${phoneValue}` : "WHATSAPP: +393713708294";
+
+  const centerY = Math.round(H * 0.25);
+  let y = centerY - 220;
+
+  const qBoxW = W - 120;
+  const qBoxX = (W - qBoxW)/2;
+  const qBoxH = 150;
+
+  ctx.fillStyle = "rgba(0,0,0,.35)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, qBoxX, y, qBoxW, qBoxH, 26);
+  ctx.fill(); ctx.stroke();
+
+  ctx.font = "1000 36px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  const qLines = wrapText(ctx, q, qBoxW - 70);
+  for(let i=0;i<Math.min(2, qLines.length);i++){
+    const line = truncateText(ctx, qLines[i], qBoxW - 70);
+    const lw = measureTextWidth(ctx, line);
+    ctx.fillText(line, qBoxX + (qBoxW - lw)/2, y + 22 + i*48);
+  }
+
+  y += qBoxH + 22;
+
+  const logoBox = 90;
+  const logoX = (W - logoBox)/2;
+  ctx.fillStyle = "rgba(0,0,0,.30)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  roundRect(ctx, logoX, y, logoBox, logoBox, 26);
+  ctx.fill(); ctx.stroke();
+
+  if(logoDataUrl && logoImgObj && logoImgObj.complete){
+    const size = 50;
+    const cx = logoX + (logoBox - size)/2;
+    const cy = y + (logoBox - size)/2;
+
+    const iw = logoImgObj.naturalWidth || size;
+    const ih = logoImgObj.naturalHeight || size;
+    const scale = Math.min(size/iw, size/ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = cx + (size - dw)/2;
+    const dy = cy + (size - dh)/2;
+
+    ctx.drawImage(logoImgObj, dx, dy, dw, dh);
+  }
+
+  y += logoBox + 18;
+
+  ctx.font = "1000 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const catW = Math.min(W - 160, measureTextWidth(ctx, cat) + 56);
+  const catX = (W - catW)/2;
+  const catH = 62;
+
+  ctx.fillStyle = "rgba(0,0,0,.26)";
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  roundRect(ctx, catX, y, catW, catH, 22);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  const catText = truncateText(ctx, cat, catW - 40);
+  const catTw = measureTextWidth(ctx, catText);
+  ctx.fillText(catText, catX + (catW - catTw)/2, y + 16);
+
+  y += catH + 14;
+
+  ctx.font = "1100 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const waW = Math.min(W - 160, measureTextWidth(ctx, wa) + 56);
+  const waX = (W - waW)/2;
+  const waH = 62;
+
+  ctx.fillStyle = "rgba(0,0,0,.22)";
+  ctx.strokeStyle = "rgba(255,255,255,.12)";
+  roundRect(ctx, waX, y, waW, waH, 22);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = "rgba(37,211,102,.98)";
+  const waText = truncateText(ctx, wa, waW - 40);
+  const waTw = measureTextWidth(ctx, waText);
+  ctx.fillText(waText, waX + (waW - waTw)/2, y + 16);
+
+  ctx.restore();
 }
 
 function measureTextWidth(ctx, t){ return ctx.measureText(String(t||"")).width; }
@@ -1103,123 +2241,6 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.arcTo(x, y+h, x, y, rr);
   ctx.arcTo(x, y, x+w, y, rr);
   ctx.closePath();
-}
-
-function drawRecordingCanvas(){
-  const W = canvas.width, H = canvas.height;
-
-  if(camEl.readyState < 2){
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,W,H);
-    return;
-  }
-
-  const vw = camEl.videoWidth || 1280;
-  const vh = camEl.videoHeight || 720;
-
-  const z = Math.max(1, Math.min(zoomValue, 5));
-  const srcW = vw / z;
-  const srcH = vh / z;
-  const srcX = (vw - srcW)/2;
-  const srcY = (vh - srcH)/2;
-
-  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
-
-  // Overlay at 1/4 height
-  ctx.save();
-  ctx.textBaseline = "top";
-
-  const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
-  const cat = (getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ").toUpperCase();
-  const wa = phoneValue ? `WHATSAPP: ${phoneValue}` : "WHATSAPP: —";
-
-  // center block at 25% height
-  const centerY = Math.round(H * 0.25);
-  let y = centerY - 220;
-
-  // Question box
-  const qBoxW = W - 120;
-  const qBoxX = (W - qBoxW)/2;
-  const qBoxH = 150;
-
-  ctx.fillStyle = "rgba(0,0,0,.35)";
-  ctx.strokeStyle = "rgba(255,255,255,.18)";
-  ctx.lineWidth = 2;
-  roundRect(ctx, qBoxX, y, qBoxW, qBoxH, 26);
-  ctx.fill(); ctx.stroke();
-
-  ctx.font = "1000 36px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "rgba(243,244,246,.95)";
-  const qLines = wrapText(ctx, q, qBoxW - 70);
-  for(let i=0;i<Math.min(2, qLines.length);i++){
-    const line = truncateText(ctx, qLines[i], qBoxW - 70);
-    const lw = measureTextWidth(ctx, line);
-    ctx.fillText(line, qBoxX + (qBoxW - lw)/2, y + 22 + i*48);
-  }
-
-  y += qBoxH + 22;
-
-  // Logo 50x50 centered
-  const logoBox = 90;
-  const logoX = (W - logoBox)/2;
-  ctx.fillStyle = "rgba(0,0,0,.30)";
-  ctx.strokeStyle = "rgba(255,255,255,.18)";
-  roundRect(ctx, logoX, y, logoBox, logoBox, 26);
-  ctx.fill(); ctx.stroke();
-
-  if(logoDataUrl && logoImgObj && logoImgObj.complete){
-    const size = 50;
-    const cx = logoX + (logoBox - size)/2;
-    const cy = y + (logoBox - size)/2;
-
-    const iw = logoImgObj.naturalWidth || size;
-    const ih = logoImgObj.naturalHeight || size;
-    const scale = Math.min(size/iw, size/ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    const dx = cx + (size - dw)/2;
-    const dy = cy + (size - dh)/2;
-
-    ctx.drawImage(logoImgObj, dx, dy, dw, dh);
-  }
-
-  y += logoBox + 18;
-
-  // Category pill
-  ctx.font = "1000 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const catW = Math.min(W - 160, measureTextWidth(ctx, cat) + 56);
-  const catX = (W - catW)/2;
-  const catH = 62;
-
-  ctx.fillStyle = "rgba(0,0,0,.26)";
-  ctx.strokeStyle = "rgba(255,255,255,.14)";
-  roundRect(ctx, catX, y, catW, catH, 22);
-  ctx.fill(); ctx.stroke();
-
-  ctx.fillStyle = "rgba(243,244,246,.95)";
-  const catText = truncateText(ctx, cat, catW - 40);
-  const catTw = measureTextWidth(ctx, catText);
-  ctx.fillText(catText, catX + (catW - catTw)/2, y + 16);
-
-  y += catH + 14;
-
-  // WhatsApp line (GREEN)
-  ctx.font = "1100 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const waW = Math.min(W - 160, measureTextWidth(ctx, wa) + 56);
-  const waX = (W - waW)/2;
-  const waH = 62;
-
-  ctx.fillStyle = "rgba(0,0,0,.22)";
-  ctx.strokeStyle = "rgba(255,255,255,.12)";
-  roundRect(ctx, waX, y, waW, waH, 22);
-  ctx.fill(); ctx.stroke();
-
-  ctx.fillStyle = "rgba(37,211,102,.98)";
-  const waText = truncateText(ctx, wa, waW - 40);
-  const waTw = measureTextWidth(ctx, waText);
-  ctx.fillText(waText, waX + (waW - waTw)/2, y + 16);
-
-  ctx.restore();
 }
 
 function startCanvasLoop(){
@@ -1284,11 +2305,19 @@ async function flipCamera(){
 }
 
 /* ==========================
-   DB + LIST
+   ENHANCED DB + LIST with Approvals
 ========================== */
 function persistVideoMeta(meta){
   const db = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
-  db.unshift(meta);
+  
+  // Find and update existing or add new
+  const index = db.findIndex(v => v.id === meta.id);
+  if(index !== -1){
+    db[index] = meta;
+  } else {
+    db.unshift(meta);
+  }
+  
   localStorage.setItem(DB_KEY, JSON.stringify(db));
 }
 function buildVideoId(){
@@ -1303,6 +2332,7 @@ function buildVideoTitle(videoNum, platform, question){
   return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
 }
 function updateCounters(){
+  totalVideos = recordings.length;
   $("videoCounter").textContent = `Video: ${totalVideos}`;
 }
 
@@ -1318,10 +2348,9 @@ function downloadBlob(blob, filename){
 }
 
 /* ==========================
-   WhatsApp message + send
+   ENHANCED WhatsApp message
 ========================== */
 function buildWhatsAppMessage(meta){
-  // standard header: [PLATFORM] [DD/MM/YYYY HH:MM] [OP] [VIDEOID]
   const op = (meta.operator || operatorName || "—").trim() || "—";
   const whenIso = meta.scheduledAtISO || calcNextSlot(meta.platform || selectedPlatform);
   const when = fmtLocal(whenIso);
@@ -1336,26 +2365,13 @@ function openWhatsAppToNumber(numberNoPlus, text){
 }
 
 async function openWhatsAppGroup(inviteLink, text){
-  await copyText(text); // best: copy msg
+  await copyText(text);
   window.location.href = inviteLink;
 }
 
 /* ==========================
-   Render list with per-video controls
+   ENHANCED Render list with Approvals
 ========================== */
-function renderHistoryBox(){
-  const h = getHistory();
-  const lines = [];
-  for(const p of PLATFORMS){
-    lines.push(`== ${p} ==`);
-    const list = (h[p]||[]).slice(0,6);
-    if(!list.length) lines.push("—");
-    else list.forEach(x => lines.push(fmtLocal(x)));
-    lines.push("");
-  }
-  $("historyBox").textContent = lines.join("\n").trim();
-}
-
 function renderRecList(){
   const box = $("recList");
   if(!recordings.length){ box.textContent = "—"; return; }
@@ -1363,16 +2379,30 @@ function renderRecList(){
   box.innerHTML = "";
   recordings.forEach((r, i)=>{
     const meta = r.meta || {};
+    const approval = getApprovalStatus(meta.id);
+    const comments = getComments(meta.id);
+    
     const div = document.createElement("div");
     div.className = "vItem";
     const selected = i===currentRecIndex;
 
     const msg = buildWhatsAppMessage(meta);
-
+    
+    // Approval badge
+    const approvalBadge = approval.status === "approved" ? 
+      `<span class="approval-badge badge-approved">✅ Approvato</span>` :
+      approval.status === "revision" ?
+      `<span class="approval-badge badge-revision">✏️ Da revisionare</span>` :
+      `<span class="approval-badge badge-pending">⏳ In attesa</span>`;
+    
+    // Multi-platform indicator
+    const multiPlatformIndicator = meta.multiPlatform && meta.multiPlatform.length > 0 ?
+      `<span style="font-size:9px; color:var(--gold); margin-left:6px;">🔄 ${meta.multiPlatform.length} piattaforme</span>` : "";
+    
     div.innerHTML = `
       <div class="vTop">
         <div class="vTitle" style="${selected ? 'color:#d8a23a;' : ''}">
-          ${r.title}
+          ${r.title} ${approvalBadge} ${multiPlatformIndicator}
         </div>
         <div class="pill">${meta.platform} • ${fmtLocal(meta.scheduledAtISO)}</div>
       </div>
@@ -1380,7 +2410,9 @@ function renderRecList(){
 ID: ${meta.id}
 Operatore: ${meta.operator || "—"}
 Slot: ${fmtLocal(meta.scheduledAtISO)}
-Scaricato: ${meta.downloaded ? "SI" : "NO"}
+Scaricato: ${meta.downloaded ? "✅ SI" : "❌ NO"}
+${approval.comment ? `\nCommento: ${approval.comment}` : ''}
+${comments.length > 0 ? `\nCommenti: ${comments.length}` : ''}
       </div>
 
       <div class="vBtns">
@@ -1388,7 +2420,8 @@ Scaricato: ${meta.downloaded ? "SI" : "NO"}
         <button class="btn tiny gray" data-act="download">📥 Scarica</button>
         <button class="btn tiny gray" data-act="copymsg">📋 Copia msg</button>
         <button class="btn tiny wa" data-act="send">📤 Invia a Joseph</button>
-        <button class="btn tiny gray" data-act="mark">✅ Segna inviato</button>
+        <button class="btn tiny success" data-act="approve">✅ Approva</button>
+        <button class="btn tiny" data-act="comment">💬 Commenta</button>
       </div>
     `;
 
@@ -1400,22 +2433,16 @@ Scaricato: ${meta.downloaded ? "SI" : "NO"}
     });
 
     div.querySelector('[data-act="download"]').addEventListener("click", ()=>{
-      // mark downloaded
       recordings[i].meta.downloaded = true;
       downloadBlob(r.blob, r.name);
+      showNotification("📥 Download", "Video scaricato con successo", "✅", 3000);
       renderRecList();
+      updatePendingCount();
     });
 
     div.querySelector('[data-act="copymsg"]').addEventListener("click", async ()=>{
       await copyText(msg);
-      alert("Messaggio copiato.");
-    });
-
-    div.querySelector('[data-act="mark"]').addEventListener("click", ()=>{
-      markSlotUsed(meta.platform, meta.scheduledAtISO);
-      refreshPlatformUI();
-      renderHistoryBox();
-      alert("Slot segnato come usato.");
+      showNotification("📋 Copiato", "Messaggio copiato negli appunti", "✅", 2000);
     });
 
     div.querySelector('[data-act="send"]').addEventListener("click", async ()=>{
@@ -1445,16 +2472,61 @@ Scaricato: ${meta.downloaded ? "SI" : "NO"}
       if(autoMark){
         markSlotUsed(meta.platform, meta.scheduledAtISO);
         refreshPlatformUI();
-        renderHistoryBox();
+      }
+    });
+    
+    div.querySelector('[data-act="approve"]').addEventListener("click", ()=>{
+      $("#approvalVideoTitle").textContent = r.title;
+      
+      // Load approval history
+      const historyElem = $("#approvalHistory");
+      const history = getComments(meta.id).map(c => 
+        `${fmtLocal(c.date)} - ${c.by}: ${c.text}`
+      ).join('\n');
+      historyElem.textContent = history || "Nessuna cronologia";
+      
+      // Set up approval buttons
+      document.querySelectorAll('[data-approval]').forEach(btn => {
+        btn.onclick = () => {
+          const status = btn.dataset.approval;
+          const comment = $("#approvalComment").value;
+          
+          setApprovalStatus(meta.id, status, comment, operatorName);
+          
+          showNotification(
+            status === "approved" ? "✅ Approvato" : 
+            status === "revision" ? "✏️ Da revisionare" : "⏳ In attesa",
+            `Video ${status === "approved" ? "approvato" : "aggiornato"} con successo`,
+            status === "approved" ? "✅" : "ℹ️",
+            3000
+          );
+          
+          renderRecList();
+          updatePendingCount();
+          hideModal("modalApproval");
+        };
+      });
+      
+      showModal("modalApproval");
+    });
+    
+    div.querySelector('[data-act="comment"]').addEventListener("click", ()=>{
+      const comment = prompt("Aggiungi un commento al video:");
+      if(comment && comment.trim()){
+        addComment(meta.id, comment.trim(), operatorName);
+        showNotification("💬 Commento", "Commento aggiunto con successo", "✅", 2000);
+        renderRecList();
       }
     });
 
     box.appendChild(div);
   });
+  
+  updatePendingCount();
 }
 
 /* ==========================
-   REC 60s + HUD
+   ENHANCED REC 60s + HUD
 ========================== */
 function updateRecHud(){
   $("countdownHud").textContent = `REC ${remaining}s`;
@@ -1473,7 +2545,6 @@ function startRecording60(){
     return;
   }
 
-  // allow no question -> ATTUALITÀ
   if(!currentQuestionObj){
     currentQuestionObj = null;
     currentQuestion = "";
@@ -1481,10 +2552,8 @@ function startRecording60(){
     $("categoryOverlay").textContent = "ATTUALITÀ";
   }
 
-  // ensure tele/caption prepared
   applyAnswer(ans);
 
-  // HUD on
   $("recHud").style.display = "flex";
   $("btnREC").classList.add("running");
 
@@ -1524,10 +2593,9 @@ function startRecording60(){
     isRecording = false;
 
     const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-    totalVideos += 1;
 
     const url = URL.createObjectURL(blob);
-    const title = buildVideoTitle(totalVideos, selectedPlatform, questionText);
+    const title = buildVideoTitle(recordings.length + 1, selectedPlatform, questionText);
 
     const meta = {
       id: videoId,
@@ -1541,7 +2609,8 @@ function startRecording60(){
       whatsapp: phoneNow,
       captionClean: lastCaptionClean,
       captionFinal: buildFinalCaption(),
-      downloaded: false
+      downloaded: false,
+      approval: { status: "pending", comment: "", date: null, by: "" }
     };
     persistVideoMeta(meta);
 
@@ -1554,11 +2623,18 @@ function startRecording60(){
     renderRecList();
     updateCounters();
     refreshPlatformUI();
+    updatePendingCount();
+    
+    showNotification(
+      "🎥 Video Creato",
+      "Video registrato con successo! Ora puoi scaricarlo o inviarlo.",
+      "✅",
+      4000
+    );
   };
 
   recorder.start(1000);
 
-  // Karaoke stepping preview only (not recorded)
   recTimerId = setInterval(()=>{
     remaining -= 1;
     const spans = $("teleText").querySelectorAll(".w");
@@ -1585,10 +2661,10 @@ function goToGestionale(){
 }
 
 /* ==========================
-   INIT
+   ENHANCED INITIALIZATION
 ========================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
-  // Restore caption
+  // Restore enhanced settings
   try{
     const savedCap = localStorage.getItem(CAP_KEY) || "";
     if(savedCap.trim()){
@@ -1597,7 +2673,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }
   }catch(e){}
 
-  // Restore phone
   try{
     const sp = localStorage.getItem(PHONE_KEY) || "";
     if(sp.trim()){
@@ -1607,7 +2682,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }catch(e){}
   renderPhone();
 
-  // Restore logo
   try{
     const sl = localStorage.getItem(LOGO_KEY) || "";
     if(sl.trim()) setLogoDataUrl(sl.trim());
@@ -1615,7 +2689,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   // Restore operator + joseph + group + dest mode
   operatorName = (localStorage.getItem(OP_KEY) || "").trim();
-  josephWa = (localStorage.getItem(JO_KEY) || "").trim();
+  josephWa = (localStorage.getItem(JO_KEY) || JOSEPH_DEFAULT_WA).trim();
   groupInvite = (localStorage.getItem(GROUP_KEY) || "").trim();
   destMode = (localStorage.getItem(DEST_KEY) || "joseph").trim();
 
@@ -1624,13 +2698,156 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   $("groupInvite").value = groupInvite;
   if(destMode === "group") $("destGroup").checked = true; else $("destJoseph").checked = true;
 
-  // Restore per-platform settings to UI for selected platform
+  // Restore per-platform settings
   const all = getPubSettings();
   $("platform").value = selectedPlatform;
   $("frequencyMode").value = all[selectedPlatform].mode;
   $("frequencyValue").value = all[selectedPlatform].value;
 
-  // Buttons
+  // Initialize enhanced features
+  setupMultiPlatformUI();
+  updatePendingCount();
+
+  // Event Listeners for enhanced features
+  
+  // Calendar
+  $("#btnCalendar").addEventListener("click", () => {
+    renderCalendar();
+    showModal("modalCalendar");
+  });
+  
+  $("#closeCalendar").addEventListener("click", () => hideModal("modalCalendar"));
+  $("#btnCloseCalendar").addEventListener("click", () => hideModal("modalCalendar"));
+  
+  // Multi-platform
+  $("#btnMultiPlatform").addEventListener("click", () => {
+    showModal("modalMultiPlatform");
+  });
+  
+  $("#btnScheduleMulti").addEventListener("click", () => {
+    if(!recordings.length){
+      alert("Prima crea un video!");
+      return;
+    }
+    showModal("modalMultiPlatform");
+  });
+  
+  $("#closeMultiPlatform").addEventListener("click", () => hideModal("modalMultiPlatform"));
+  $("#btnCancelMulti").addEventListener("click", () => hideModal("modalMultiPlatform"));
+  
+  $("#btnConfirmMulti").addEventListener("click", () => {
+    if(!recordings.length){
+      alert("Nessun video da pianificare!");
+      return;
+    }
+    
+    const baseTime = new Date();
+    baseTime.setMinutes(baseTime.getMinutes() + 30); // Default: schedule 30 minutes from now
+    
+    scheduleMultiPlatform(recordings[0].meta.id, baseTime);
+    hideModal("modalMultiPlatform");
+  });
+  
+  // Offset mode change
+  document.querySelectorAll('input[name="offsetMode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      $("#customOffsets").style.display = 
+        radio.value === "personalizzato" ? "block" : "none";
+    });
+  });
+  
+  // Analytics
+  $("#btnAnalytics").addEventListener("click", () => {
+    renderAnalytics();
+    showModal("modalAnalytics");
+  });
+  
+  $("#closeAnalytics").addEventListener("click", () => hideModal("modalAnalytics"));
+  $("#btnCloseAnalytics").addEventListener("click", () => hideModal("modalAnalytics"));
+  
+  $("#btnExportAnalytics").addEventListener("click", () => {
+    const analytics = calculateAnalytics();
+    const csvContent = [
+      ["Metrica", "Valore"],
+      ["Video totali", analytics.totalVideos],
+      ["Video approvati", analytics.approved],
+      ["Video in attesa", analytics.pending],
+      ["Tasso approvazione", `${analytics.approvalRate}%`],
+      ["Media video/giorno", analytics.avgVideosPerDay],
+      ["Trend settimanale", `${analytics.trend}%`],
+      ["", ""],
+      ["Piattaforma", "Conteggio"],
+      ...Object.entries(analytics.platformDistribution).map(([p, c]) => [p, c])
+    ].map(row => row.join(",")).join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics_${nowStamp()}.csv`;
+    a.click();
+    
+    showNotification("📊 Esportazione", "Report analytics esportato come CSV", "✅", 3000);
+  });
+  
+  // Approval modal
+  $("#closeApproval").addEventListener("click", () => hideModal("modalApproval"));
+  $("#btnCloseApproval").addEventListener("click", () => hideModal("modalApproval"));
+  
+  $("#btnMarkApproved").addEventListener("click", () => {
+    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
+      alert("Seleziona un video dalla lista.");
+      return;
+    }
+    
+    const meta = recordings[currentRecIndex].meta;
+    $("#approvalVideoTitle").textContent = recordings[currentRecIndex].title;
+    
+    const historyElem = $("#approvalHistory");
+    const history = getComments(meta.id).map(c => 
+      `${fmtLocal(c.date)} - ${c.by}: ${c.text}`
+    ).join('\n');
+    historyElem.textContent = history || "Nessuna cronologia";
+    
+    showModal("modalApproval");
+  });
+  
+  $("#btnAddComment").addEventListener("click", () => {
+    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
+      alert("Seleziona un video dalla lista.");
+      return;
+    }
+    
+    const comment = prompt("Aggiungi un commento al video:");
+    if(comment && comment.trim()){
+      addComment(recordings[currentRecIndex].meta.id, comment.trim(), operatorName);
+      showNotification("💬 Commento", "Commento aggiunto con successo", "✅", 2000);
+      renderRecList();
+    }
+  });
+  
+  // Tabs in modals
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.dataset.tab;
+      const modal = tab.closest('.modal-content');
+      
+      // Deactivate all tabs in this modal
+      modal.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      // Show corresponding content
+      if(modal.id.includes('Calendar')){
+        modal.querySelectorAll('.calendar').forEach(c => c.style.display = 'none');
+        $(`calendar${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).style.display = 'block';
+      } else if(modal.id.includes('Analytics')){
+        modal.querySelectorAll('[id^="analytics"]').forEach(c => c.style.display = 'none');
+        $(`analytics${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).style.display = 'block';
+      }
+    });
+  });
+
+  // Original event listeners (preserved from original code)
   $("btnBackTop").addEventListener("click", goToGestionale);
   $("btnBackBottom").addEventListener("click", goToGestionale);
 
@@ -1640,6 +2857,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(!currentQuestionObj) nextQuestion();
     const payload = `DOMANDA (${currentQuestionObj.id} - ${currentQuestionObj.fase}):\n${currentQuestionObj.domanda}`.trim();
     await copyText(payload);
+    showNotification("📋 Copiato", "Domanda copiata negli appunti", "✅", 2000);
   });
 
   $("btnOpenChatGPT").addEventListener("click", openChatGPTAndCopy);
@@ -1648,6 +2866,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     try{
       const t = await readClipboardText();
       $("answerBox").value = (t || "");
+      
+      // Auto-clean if GPT detected
+      if($("chkAutoDetectGPT").checked && isGPTResponse(t)){
+        const cleaned = cleanGPTResponse(t);
+        $("answerBox").value = cleaned;
+        applyAnswer(cleaned);
+        showNotification("🤖 Auto-clean", "Risposta ChatGPT pulita automaticamente", "✅", 3000);
+      }
     }catch(e){
       alert("Clipboard bloccata: incolla manualmente nel box Risposta.");
     }
@@ -1657,17 +2883,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const ans = $("answerBox").value || "";
     const ok = applyAnswer(ans);
     if(!ok) return alert("Scrivi o incolla una risposta prima.");
+    showNotification("✅ Risposta applicata", "Testo pronto per la registrazione", "🎤", 2000);
   });
 
   $("btnCopyCaption").addEventListener("click", async ()=>{
     const out = buildFinalCaption();
     if(!out){ alert("Niente da copiare."); return; }
     await copyText(out);
+    showNotification("📋 Caption copiata", "Caption con hashtag copiata negli appunti", "✅", 2000);
   });
 
-  // WhatsApp open (generic)
+  // WhatsApp open
   $("btnOpenWhatsApp").addEventListener("click", ()=>{
-    // opens WA app home (no deep link)
     window.location.href = "whatsapp://";
   });
 
@@ -1724,7 +2951,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(!confirm("Cancellare lo storico slot (tutte le piattaforme)?")) return;
     setHistory({ TIKTOK:[], INSTAGRAM:[], SHORTS:[], FACEBOOK:[] });
     refreshPlatformUI();
-    renderHistoryBox();
   });
 
   // Phone overlay
@@ -1776,7 +3002,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const r = recordings[currentRecIndex];
     recordings[currentRecIndex].meta.downloaded = true;
     downloadBlob(r.blob, r.name);
+    showNotification("📥 Download", "Video scaricato con successo", "✅", 3000);
     renderRecList();
+    updatePendingCount();
   });
 
   // Clear list (session)
@@ -1789,20 +3017,41 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       $("playback").removeAttribute("src");
       $("playback").load();
       renderRecList();
-      totalVideos = 0;
       updateCounters();
+      updatePendingCount();
+    }
+  });
+
+  // Auto-GPT detection toggle
+  $("chkAutoDetectGPT").addEventListener("change", ()=>{
+    if($("chkAutoDetectGPT").checked){
+      $("#autoDetectStatus").textContent = "✓ Attivo";
+      $("#autoDetectStatus").style.color = "var(--success)";
+    } else {
+      $("#autoDetectStatus").textContent = "✗ Disattivo";
+      $("#autoDetectStatus").style.color = "var(--muted)";
     }
   });
 
   // Defaults
-  if(!lastCaptionClean) $("teleText").textContent = "Incolla una risposta → “Usa risposta” → “REC”.";
-  showQuestion("Premi “Nuova domanda”.");
+  if(!lastCaptionClean) $("teleText").textContent = "Incolla una risposta → 'Usa risposta' → 'REC'.";
+  showQuestion("Premi 'Nuova domanda'.");
   $("categoryOverlay").textContent = "ATTUALITÀ";
   renderPhone();
   refreshPlatformUI();
-  renderHistoryBox();
   renderRecList();
   updateCounters();
+  updatePendingCount();
+  
+  // Show welcome notification
+  setTimeout(() => {
+    showNotification(
+      "🚀 Video Creator Pro Attivo",
+      "5 nuove funzionalità attive: 1) ChatGPT Auto 2) Scheduling 3) Multi-piattaforma 4) Approvazioni 5) Analytics",
+      "🎉",
+      6000
+    );
+  }, 1000);
 });
 </script>
 </body>
