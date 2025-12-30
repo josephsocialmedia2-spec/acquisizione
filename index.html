@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – ChatGPT + REC 60s</title>
+  <title>Video Creator – Chat + REC + Karaoke</title>
 
   <style>
     :root{
@@ -18,7 +18,6 @@
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --stage-w: min(420px, 92vw);
       --zoom: 1;
-      --wa:#25D366;
     }
 
     *{ box-sizing:border-box; }
@@ -37,9 +36,9 @@
 
     header{
       display:flex;
-      gap:10px;
       align-items:center;
       justify-content:space-between;
+      gap:10px;
       flex-wrap:wrap;
       margin-bottom:10px;
     }
@@ -69,6 +68,7 @@
       gap:8px;
       user-select:none;
       position:relative;
+      transform: translateY(0) scale(1);
       transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
       overflow:hidden;
@@ -80,7 +80,14 @@
       filter: brightness(1.06);
     }
     .btn:active{ transform: translateY(0px) scale(.99); filter: brightness(0.98); }
-    .btn.tiny{ padding:6px 9px; font-size:10px; border-radius:11px; box-shadow:none; }
+
+    .btn.tiny{
+      padding:6px 9px;
+      font-size:10px;
+      border-radius:11px;
+      box-shadow:none;
+    }
+
     .btn.primary{
       background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
       color:#111;
@@ -90,38 +97,57 @@
       background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
       border-color: rgba(57,90,140,.55);
     }
+    .btn.gray{ background: rgba(255,255,255,.04); }
     .btn.violet{
       background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70));
       border-color: rgba(123,79,189,.55);
     }
-    .btn.gray{ background: rgba(255,255,255,.04); }
+    .btn.green{
+      background: linear-gradient(135deg, rgba(74,143,114,.95), rgba(74,143,114,.70));
+      border-color: rgba(74,143,114,.55);
+    }
 
     /* REC circle */
     .recCircle{
-      width:72px;height:72px;border-radius:999px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: radial-gradient(140px 140px at 35% 30%, rgba(255,110,110,.95), rgba(255,45,45,.82));
+      width:74px; height:74px;
+      border-radius:999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: radial-gradient(120px 120px at 35% 30%, rgba(255,110,110,.95), rgba(255,45,45,.85));
       color:#120707;
-      font-weight:1000;
-      letter-spacing:.2px;
+      font-weight: 1000;
+      letter-spacing:.4px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      box-shadow: 0 18px 50px rgba(0,0,0,.35);
       user-select:none;
-      gap:8px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      transform: translateY(0);
+      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+      position:relative;
+      overflow:hidden;
     }
-    .recCircle .dot{
-      width:10px;height:10px;border-radius:999px;background:#ff2d2d;
+    .recCircle:hover{
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      box-shadow: 0 22px 58px rgba(0,0,0,.45);
+    }
+    .recCircle:active{ transform: translateY(0px) scale(.99); }
+    .recCircle .innerDot{
+      width:14px; height:14px; border-radius:999px;
+      background:#ff2d2d;
       box-shadow: 0 0 0 0 rgba(255,45,45,.55);
       animation: pulseDot 1.15s ease-in-out infinite;
+      margin-right:8px;
     }
-    .recCircle.running{ outline: 2px solid rgba(255,45,45,.35); filter: saturate(1.05); }
     @keyframes pulseDot{
       0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.55); transform: scale(1); }
-      60%{ box-shadow: 0 0 0 12px rgba(255,45,45,0); transform: scale(1.06); }
+      60%{ box-shadow: 0 0 0 12px rgba(255,45,45,0); transform: scale(1.05); }
       100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
+    }
+    .recCircle.running{
+      filter: saturate(1.05);
+      outline: 2px solid rgba(255,45,45,.35);
     }
 
     .pill{
@@ -137,6 +163,13 @@
       gap:8px;
       align-items:center;
       white-space:nowrap;
+    }
+
+    .hintTop{
+      margin: 6px 0 10px;
+      font-size:11px;
+      color: var(--muted);
+      line-height: 1.35;
     }
 
     .layout{
@@ -167,55 +200,14 @@
       font-weight:950;
     }
 
-    .hintTop{
-      margin: 6px 0 10px;
-      font-size:11px;
-      color: var(--muted);
-      line-height: 1.35;
+    .stageRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      align-items:start;
     }
+    @media (max-width: 980px){ .stageRow{ grid-template-columns:1fr; } }
 
-    .field textarea, .field input{
-      width:100%;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:850;
-      resize: vertical;
-      font-size:12px;
-      line-height:1.25;
-    }
-    .field textarea{ min-height: 120px; }
-    .field textarea:focus, .field input:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
-    }
-
-    .bar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .bar.between{ justify-content:space-between; }
-    .bar.center{ justify-content:center; }
-    .bar.left{ justify-content:flex-start; }
-
-    .mini{
-      font-family:var(--mono);
-      font-size:12px;
-      color:var(--muted);
-      white-space:pre-wrap;
-      word-break:break-word;
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:10px;
-    }
-
-    /* Stage */
     .stageBlock{
       width: var(--stage-w);
       margin: 0 auto;
@@ -223,6 +215,7 @@
       flex-direction:column;
       align-items:stretch;
     }
+
     #stage916{
       width: 100%;
       aspect-ratio: 9 / 16;
@@ -233,6 +226,7 @@
       background:#000;
       box-shadow: var(--shadow);
     }
+
     #cam{
       position:absolute;
       inset:0;
@@ -243,49 +237,40 @@
       transform-origin: center;
     }
 
-    /* Overlay (preview only; recording draws its own overlay on canvas) */
     #overlay{
       position:absolute;
       inset:0;
+      padding: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
       pointer-events:none;
       z-index: 2;
     }
 
-    /* Place question + phone at 1/4 height */
-    #qZone{
-      position:absolute;
-      left:10px; right:10px;
-      top:25%;
-      transform: translateY(-50%);
+    #topBarOverlay{
       display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-    }
-    #questionOverlay{
-      width: calc(100% - 20px);
-      max-width: 92%;
-      font-size: 12px;
-      font-weight: 1000;
-      line-height: 1.18;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(0,0,0,.34);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(6px);
-      white-space: pre-wrap;
-      text-align:center;
+      justify-content:space-between;
+      gap:8px;
+      align-items:flex-start;
+      margin-top: calc(25% - 60px); /* Sposta tutto a 1/4 dell'altezza */
     }
 
-    /* Logo centered, then category, then whatsapp phone under category (GREEN) */
-    #logoZone{
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-      margin-top:6px;
+    #questionBoxOverlay{
+      flex:1;
+      font-size: 11px;
+      font-weight: 950;
+      line-height: 1.15;
+      padding: 7px 9px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(6px);
+      white-space:pre-wrap;
+      min-height: 40px;
     }
+
+    /* LOGO 50x50 – vincolo fisso */
     #logoWrap{
       width:50px;height:50px;
       border-radius:14px;
@@ -295,56 +280,64 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      flex:0 0 auto;
     }
     #logoImg{
-      width:50px;height:50px;
-      object-fit:contain;
+      width:50px; height:50px;
+      object-fit:contain; /* no deformazione */
       display:none;
       background:transparent;
     }
 
+    /* Categoria sotto al logo (centro alto) */
     #categoryOverlay{
       text-align:center;
-      font-size:11px;
+      font-size:10px;
       font-weight:1000;
       letter-spacing:.6px;
       color: rgba(243,244,246,.92);
-      padding: 8px 12px;
-      border-radius: 14px;
+      padding: 6px 10px;
+      border-radius: 12px;
       background: rgba(0,0,0,.22);
       border: 1px solid rgba(255,255,255,.12);
       backdrop-filter: blur(6px);
       width: fit-content;
-      max-width: 92%;
+      margin: 0 auto;
+      margin-top: 12px;
     }
 
-    #waPhoneOverlay{
-      text-align:center;
-      font-size:12px;
-      font-weight:1100;
+    /* Telefono WhatsApp verde sotto categoria */
+    #phoneOverlay{
+      font-size: 12px;
+      font-weight: 1000;
       letter-spacing:.2px;
-      padding: 8px 12px;
+      line-height: 1.1;
+      padding: 8px 10px;
       border-radius: 14px;
-      background: rgba(0,0,0,.26);
-      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.36);
+      border: 1px solid rgba(74,143,114,.55);
       backdrop-filter: blur(6px);
+      text-align:center;
+      color: rgba(74,143,114,.95);
       width: fit-content;
-      max-width: 92%;
-      color: var(--wa);
+      margin: 8px auto 0;
+    }
+    #phoneOverlay b{ color: rgba(74,143,114,.96); }
+
+    /* Karaoke (sottotitolo) - NASCOSTO IN REGISTRAZIONE */
+    #teleprompterOverlay{
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      display:none; /* Nascondi in preview */
+      align-items:flex-end;
+      justify-content:center;
+      padding-bottom: 10px;
     }
 
-    /* Teleprompter preview (NOT recorded) */
-    #teleprompterPreview{
-      position:absolute;
-      left:10px; right:10px;
-      bottom:12px;
-      display:flex;
-      justify-content:center;
-      z-index:3;
-    }
     #teleText{
       max-width: 100%;
-      width: calc(100% - 20px);
       white-space: pre-wrap;
       font-size: 13px;
       line-height: 1.28;
@@ -356,16 +349,17 @@
       border-radius: 14px;
       padding: 10px 10px;
       backdrop-filter: blur(6px);
-      max-height: 22%;
+      max-height: 36%;
       overflow:auto;
     }
+
     #teleText .w{ padding: 1px 2px; border-radius: 6px; }
     #teleText .w.on{
       background: rgba(216,162,58,.35);
       border: 1px solid rgba(216,162,58,.25);
     }
 
-    /* HUD REC */
+    /* REC icon + countdown */
     #recHud{
       position:absolute;
       top:12px; right:12px;
@@ -390,8 +384,84 @@
       backdrop-filter: blur(6px);
       font-weight: 1000;
       font-size: 12px;
-      min-width: 86px;
+      min-width: 72px;
       text-align:center;
+    }
+
+    .controlsRow{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:stretch;
+    }
+    .bar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+    }
+    .bar.left{ justify-content:flex-start; }
+    .bar.between{ justify-content:space-between; }
+
+    .sliderRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:950;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    input[type="range"]{ width:170px; accent-color: var(--gold); }
+
+    .chk{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      color:var(--muted);
+      font-weight:950;
+      font-size:10px;
+      white-space:nowrap;
+    }
+    .check{
+      width:16px; height:16px;
+      accent-color: var(--gold);
+      cursor:pointer;
+    }
+
+    .field textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      font-weight:850;
+      resize: vertical;
+      min-height: 120px;
+      font-size:12px;
+      line-height:1.25;
+    }
+    .field textarea:focus{
+      border-color: rgba(216,162,58,.45);
+      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    }
+
+    .mini{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px;
     }
 
     /* Chat */
@@ -434,30 +504,6 @@
       margin-top:6px;
     }
 
-    .chk{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-      color:var(--muted);
-      font-weight:950;
-      font-size:10px;
-      white-space:nowrap;
-    }
-    .check{ width:16px;height:16px; accent-color: var(--gold); cursor:pointer; }
-
-    .sliderRow{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:var(--muted);
-      font-size:10px;
-      font-weight:950;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-    input[type="range"]{ width:170px; accent-color: var(--gold); }
-
     .bottomBar{
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -478,12 +524,11 @@
 <div class="wrap">
 
   <header>
-    <!-- TUTTI I TASTI IN LINEA ORIZZONTALE -->
     <div class="row" style="flex:1;">
-      <button class="btn primary" id="btnNext" type="button">✨ Nuova domanda</button>
-      <button class="btn blue" id="btnOpenChatGPT" type="button">🤖 Apri ChatGPT</button>
-      <button class="btn gray" id="btnCopyQ" type="button">📋 Copia domanda</button>
-      <button class="btn violet" id="btnPasteAnswer" type="button">📋 Incolla risposta</button>
+      <button class="btn primary" id="btnNext" type="button"><span>✨</span> Nuova domanda</button>
+      <button class="btn blue" id="btnCopyQ" type="button" title="Copia domanda (e prompt) per incollare in chat esterna se vuoi"><span>📋</span> Copia domanda</button>
+      <button class="btn violet" id="btnPasteAnswer" type="button" title="Incolla risposta dagli appunti nel box Risposta"><span>📋</span> Incolla risposta</button>
+      <button class="btn green" id="btnOpenChatGPT" type="button"><span>🤖</span> Apri ChatGPT</button>
 
       <span class="pill">
         <span id="videoCounter">Video: 0</span>
@@ -498,8 +543,8 @@
   </header>
 
   <div class="hintTop">
-    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT</b> (prompt copiato) → 3) incolla la risposta →
-    4) <b>Usa risposta</b> → 5) <b>REC</b> (60s) → 6) <b>Copia caption</b>
+    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT</b> → 3) <b>Copia risposta</b> →
+    4) <b>Incolla risposta</b> → 5) <b>Usa risposta</b> → 6) <b>REC</b> (60s) → 7) <b>Scarica</b>
   </div>
 
   <!-- BLOCCO RISPOSTA -->
@@ -507,17 +552,16 @@
     <div class="section">
       <p class="h">Risposta (da incollare / scrivere)</p>
       <div class="field">
-        <textarea id="answerBox" placeholder="Incolla qui la risposta…"></textarea>
+        <textarea id="answerBox" placeholder="Incolla qui la risposta da ChatGPT..."></textarea>
       </div>
 
-      <!-- USA RISPOSTA + COPIA CAPTION UNO AFFIANCO ALL'ALTRO -->
       <div class="bar left" style="margin-top:10px;">
-        <button class="btn primary" id="btnUseAnswer" type="button">➡️ Usa risposta</button>
-        <button class="btn gray" id="btnCopyCaption" type="button">📋 Copia caption</button>
+        <button class="btn primary" id="btnUseAnswer" type="button"><span>➡️</span> Usa risposta</button>
+        <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption (piattaforma + telefono + hashtag)"><span>📋</span> Copia caption</button>
       </div>
 
       <div class="subtle">
-        Il teleprompter è <b>solo preview</b> (non appare nei video creati).
+        Il testo verrà nascosto durante la registrazione. La caption includerà piattaforma, risposta, telefono e hashtag.
       </div>
     </div>
   </div>
@@ -527,99 +571,111 @@
     <!-- MAIN -->
     <div class="card">
       <div class="section">
-        <p class="h">Video 9:16 + REC (60s)</p>
+        <p class="h">Video 9:16 + REC</p>
 
-        <div class="stageBlock">
-          <div id="stage916">
-            <video id="cam" autoplay playsinline muted></video>
+        <div class="stageRow">
+          <div class="stageBlock">
+            <div id="stage916">
+              <video id="cam" autoplay playsinline muted></video>
 
-            <div id="recHud">
-              <div id="recCamIcon">🎥</div>
-              <div id="countdownHud">REC 60s</div>
+              <div id="recHud">
+                <div id="recCamIcon">🎥</div>
+                <div id="countdownHud">REC 60s</div>
+              </div>
+
+              <div id="overlay">
+                <div id="topBarOverlay">
+                  <div id="questionBoxOverlay">Premi “Nuova domanda”.</div>
+                  <div id="logoWrap"><img id="logoImg" alt="logo"></div>
+                </div>
+
+                <div id="categoryOverlay">ATTUALITÀ</div>
+
+                <div id="phoneOverlay">CHIAMA AL <b>—</b></div>
+
+                <!-- Teleprompter nascosto in preview -->
+                <div id="teleprompterOverlay">
+                  <div id="teleText">Testo nascosto durante la registrazione.</div>
+                </div>
+              </div>
             </div>
 
-            <!-- PREVIEW overlay (recording is drawn on canvas without teleprompter) -->
-            <div id="overlay">
-              <div id="qZone">
-                <div id="questionOverlay">Premi “Nuova domanda”.</div>
+            <div class="controlsRow">
+              <div class="bar between" style="width:100%;">
+                <div class="bar left" style="gap:8px;">
+                  <button class="btn gray" id="btnCam" type="button"><span>📷</span> Camera</button>
+                  <button class="btn gray" id="btnFlip" type="button" title="Gira fotocamera"><span>🔄</span> Gira</button>
+                  <button class="btn gray" id="btnFlash" type="button" title="Flash on/off (se supportato)"><span>💡</span> Flash</button>
+                </div>
 
-                <div id="logoZone">
-                  <div id="logoWrap"><img id="logoImg" alt="logo"></div>
-                  <div id="categoryOverlay">ATTUALITÀ</div>
-                  <div id="waPhoneOverlay">WHATSAPP: —</div>
+                <div class="bar" style="gap:8px;">
+                  <label class="chk"><input class="check" type="checkbox" id="chkRotate" checked> Rotazione</label>
+                  <button class="btn gray" id="btnStop" type="button"><span>⏹</span> Stop</button>
+                </div>
+
+                <div class="bar" style="gap:8px;">
+                  <div class="recCircle" id="btnREC" title="Registra 60 secondi">
+                    <span class="innerDot"></span> REC
+                  </div>
                 </div>
               </div>
 
-              <div id="teleprompterPreview">
-                <div id="teleText">Incolla una risposta → “Usa risposta” → “REC”.</div>
+              <div class="sliderRow">
+                <span>Zoom</span>
+                <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
+                <span id="zoomVal">1.0x</span>
+              </div>
+
+              <div class="subtle">
+                Nota: il tasto “Dove sono i video” non può aprire una cartella reale in browser. Qui scarichi i file e li trovi nei download.
               </div>
             </div>
           </div>
 
-          <div class="bar between" style="margin-top:10px;">
-            <div class="bar left">
-              <button class="btn gray" id="btnCam" type="button">📷 Camera</button>
-              <button class="btn gray" id="btnFlip" type="button">🔄 Gira</button>
-              <button class="btn gray" id="btnFlash" type="button">💡 Flash</button>
+          <div>
+            <p class="h">Setup (persistente)</p>
+
+            <div class="mini" style="margin-bottom:10px;">
+              <b>Piattaforme rotazione:</b> TikTok → Instagram → Shorts → Facebook
+              <br><b>Durata:</b> 60s fissi
+              <br><b>Logo:</b> 50x50 (proporzione fissa)
+              <br><b>Telefono:</b> WhatsApp verde
             </div>
 
-            <div class="bar">
-              <button class="btn gray" id="btnStop" type="button">⏹ Stop</button>
-              <div class="recCircle" id="btnREC" title="Registra 60 secondi"><span class="dot"></span>REC</div>
+            <p class="h">Telefono WhatsApp</p>
+            <div class="field">
+              <textarea id="phoneInput" style="min-height:54px;" placeholder="Inserisci numero (es. 3331234567)"></textarea>
+            </div>
+
+            <div class="bar left" style="margin-top:10px;">
+              <input id="logoUpload" type="file" accept="image/*" style="display:none;" />
+              <button class="btn gray" id="btnLogo" type="button"><span>🖼</span> Carica logo</button>
+              <button class="btn gray" id="btnWhere" type="button"><span>📁</span> Dove sono i video</button>
+            </div>
+
+            <div class="subtle">
+              Il telefono e il logo vengono memorizzati e riutilizzati nei video successivi.
             </div>
           </div>
-
-          <div class="sliderRow" style="margin-top:10px;">
-            <span>Zoom</span>
-            <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
-            <span id="zoomVal">1.0x</span>
-          </div>
-
-          <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
         </div>
+
+        <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
       </div>
     </div>
 
     <!-- SIDE -->
     <div class="card">
-
-      <!-- CHAT: 3 TASTI IN LINEA ORIZZONTALE -->
       <div class="section">
-        <p class="h">Chat (come prima)</p>
+        <p class="h">Chat (manuale)</p>
         <div class="chatBox" id="chatBox"></div>
 
-        <div class="bar left" style="margin-top:10px;">
-          <button class="btn tiny blue" id="btnChatOpen" type="button">🤖 Apri ChatGPT</button>
+        <div class="bar left" style="margin-top:10px; gap:8px;">
           <button class="btn tiny gray" id="btnChatAddQ" type="button">➕ Domanda</button>
+          <button class="btn tiny gray" id="btnChatAddA" type="button">➕ Risposta</button>
           <button class="btn tiny gray" id="btnChatClear" type="button">🗑 Svuota</button>
         </div>
 
-        <div class="subtle">Scrivi/manda la domanda a ChatGPT e incolla la risposta nel box “Risposta”.</div>
-      </div>
-
-      <!-- PIATTAFORMA: CHECK MANUALI -->
-      <div class="section">
-        <p class="h">Piattaforma pubblicazione (manuale)</p>
-        <div class="bar left">
-          <label class="chk"><input class="check platformChk" type="checkbox" data-p="TIKTOK"> TikTok</label>
-          <label class="chk"><input class="check platformChk" type="checkbox" data-p="INSTAGRAM"> Instagram</label>
-          <label class="chk"><input class="check platformChk" type="checkbox" data-p="SHORTS"> Shorts</label>
-          <label class="chk"><input class="check platformChk" type="checkbox" data-p="FACEBOOK"> Facebook</label>
-        </div>
-        <div class="subtle">Seleziona <b>una sola</b> piattaforma: verrà scritta come prima parola in caption.</div>
-      </div>
-
-      <div class="section">
-        <p class="h">Overlay</p>
-        <div class="field">
-          <input id="phoneInput" placeholder="Numero WhatsApp (es. 3331234567)" />
-        </div>
-
-        <div class="bar left" style="margin-top:10px;">
-          <input id="logoUpload" type="file" accept="image/*" style="display:none;" />
-          <button class="btn gray" id="btnLogo" type="button">🖼 Carica logo (50×50)</button>
-          <button class="btn gray" id="btnWhere" type="button">📁 Dove sono i video</button>
-        </div>
+        <div class="subtle">Qui “IA” è solo un’etichetta: incolli tu la risposta.</div>
       </div>
 
       <div class="section">
@@ -628,16 +684,17 @@
           <label class="chk"><input type="checkbox" id="chkRememberCaption" class="check" checked /> Memorizza</label>
         </div>
         <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
+        <div class="subtle">La caption copiata include: piattaforma (prima parola) + testo + telefono + hashtag.</div>
       </div>
 
       <div class="section">
         <p class="h">Video creati</p>
-        <div class="subtle">Nei video creati NON appare il teleprompter. Si vedono: domanda → logo → categoria (+ WhatsApp).</div>
+        <div class="subtle">Seleziona un video per rivederlo. Poi “Scarica”.</div>
 
         <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
 
         <div class="bar left" style="margin-top:10px;">
-          <button class="btn" id="btnDownloadVideo" type="button">📥 Scarica video</button>
+          <button class="btn" id="btnDownloadVideo" type="button"><span>📥</span> Scarica video</button>
           <button class="btn tiny gray" id="btnClearList" type="button">🗑 Svuota</button>
         </div>
 
@@ -655,68 +712,63 @@
 /* ==========================
    CONFIG
 ========================== */
-const GESTIONALE_URL = "https://tuo-gestionale.com";
+const GESTIONALE_URL = "https://tuo-gestionale.com"; // cambia se vuoi
 
-/* Prompt (come prima): copiato + apre ChatGPT */
-const GPT_PROMPT_BASE = `
-Sei un assistente per creare video verticali 9:16 in italiano.
-Scrivi un testo da leggere in 60 secondi massimo, naturale, parlato, senza "ciao ragazzi".
-Struttura:
-1) Hook fortissimo (2-3 secondi)
-2) Target chiaro
-3) Una sola idea (1 takeaway)
-4) Ritmo alto (frasi brevi)
-5) Chiusura con CTA (scrivi "Scrivimi WhatsApp" + invito contatto)
-Non usare elenchi lunghi. Niente parole "robotiche".
-Rispondi SOLO col testo da leggere.
-`.trim();
-
-/* Hashtag (aggiunti solo in copia caption) */
+/* Hashtag automatici (aggiunti in copia caption) */
 const HIDDEN_HASHTAGS = [
   "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
   "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
-  "#property","#realestate","#marketingdigitale","#contentstrategy","#socialmediastrategy","#personalbranding"
+  "#property","#realestate","#digitalstrategist","#digitalstrategy","#marketingdigitale","#strategiamarketing",
+  "#brandstrategy","#contentstrategy","#socialmediastrategy","#growthmarketing","#personalbranding","#branding",
+  "#businessdigitale","#marketingonline"
 ].join(" ");
 
 /* ==========================
-   DOMANDE (300) – meno "robotiche"
-   Fasi: ACQUISIZIONE, LEAD, FOLLOW-UP, TRATTATIVA, FIDELIZZAZIONE (60 ciascuna)
+   ARCHIVIO DOMANDE (300) – MODIFICATE PER ESSERE MENO ROBOTICHE
 ========================== */
-function buildQuestions300Natural(){
+function buildQuestions300(){
   const phases = [
     { code:"A", name:"ACQUISIZIONE", topics:[
-      "valutazione casa","incarico in esclusiva","foto annuncio","prezzo di partenza","tempi di vendita",
-      "annuncio che non porta chiamate","proprietario indeciso","vendere da privato","open house","documenti","zona/mercato","strategia marketing"
+      "valutazione immobiliare","annunci online efficaci","esclusiva vs mandato semplice","home staging e fotografie",
+      "prezzo di vendita ottimale","tempi medi di mercato","documentazione necessaria","zone e richiesta di mercato",
+      "strategie di marketing digitale","errori comuni dei venditori","open house virtuali","posizionamento dell'immobile"
     ]},
     { code:"L", name:"LEAD", topics:[
-      "lead freddi","prima chiamata","messaggio WhatsApp","qualifica cliente","budget reale",
-      "motivazione e urgenza","finanziamento e mutuo","criteri di scelta","obiezioni iniziali","comparazione immobili","appuntamento visita","follow-up immediato"
+      "lead a freddo","curiosi vs acquirenti seri","qualifica del cliente","budget reale disponibile",
+      "motivazioni d'acquisto","tempistiche del cliente","opzioni di finanziamento","profilo acquirente ideale",
+      "obiezioni iniziali","criteri di scelta immobiliare","confronto tra proprietà","follow-up immediato"
     ]},
     { code:"F", name:"FOLLOW-UP", topics:[
-      "dopo la visita","cliente sparito","seconda visita","paura di sbagliare","rimandare la decisione",
-      "silenzio dopo proposta","ricontatto elegante","micro-impegno","urgenza percepita","riproporre valore","timeline decisione","riattivazione"
+      "clienti che non rispondono","seconda visita efficace","superare la paura di decidere","silenzio dopo preventivo",
+      "clienti che spariscono","creare senso di urgenza","riprendere il contatto","micro-impegni progressivi",
+      "costruire fiducia","comunicare il valore","timeline decisionale","re-engagment strategico"
     ]},
     { code:"T", name:"TRATTATIVA", topics:[
-      "offerta bassa","controproposta","negoziazione","caparra e condizioni","tempi di risposta",
-      "clausole mutuo","obiezioni sul prezzo","chiudere senza scontare troppo","gestire emozioni","win-win","firme e step","chiusura"
+      "gestire offerte basse","controproposte efficaci","gestione emozionale","tempistiche di accettazione",
+      "caparra e condizioni","clausole sospensive","negoziazione win-win","urgenze del venditore",
+      "urgenze dell'acquirente","obiezioni sul prezzo","tecniche di chiusura","firma del preliminare"
     ]},
     { code:"R", name:"FIDELIZZAZIONE", topics:[
-      "post-vendita","recensioni","passaparola","contenuti utili","aggiornamenti mercato",
-      "opportunità future","community locale","relazione continua","assistenza documenti","consigli pratici casa","referral","nuovi incarichi da clienti"
+      "servizi post-vendita","raccolta recensioni","generazione passaparola","contenuti utili per clienti",
+      "checklist nuovo proprietario","consigli fiscali base","manutenzione dell'immobile","opportunità d'investimento",
+      "nuove proposte commerciali","aggiornamenti di mercato","community locale","relazione continua"
     ]},
   ];
 
-  const templates = [
-    (t)=>`Quando parli di ${t}, qual è la cosa che quasi tutti sottovalutano?`,
-    (t)=>`Se ${t} non sta funzionando, qual è la prima verifica che fai?`,
-    (t)=>`Cosa dire (in modo semplice) per spiegare ${t} a un cliente scettico?`,
-    (t)=>`Qual è il segnale più chiaro che ${t} è impostato male?`,
-    (t)=>`Se vuoi migliorare ${t} già da oggi, qual è un’azione concreta da fare subito?`,
-    (t)=>`Qual è la domanda giusta da fare per sbloccare ${t}?`,
-    (t)=>`Perché su ${t} le persone si bloccano? E come le aiuti a decidere?`,
-    (t)=>`Cosa cambia davvero i risultati su ${t}, senza spendere di più?`,
-    (t)=>`Qual è l’errore più comune su ${t}… detto in modo chiaro e pratico?`,
-    (t)=>`Se ti capita spesso X su ${t}, cosa significa e come lo risolvi?`,
+  // Domande meno robotiche, più naturali
+  const patterns = [
+    (topic)=>`Qual è l'errore più comune che vedi su ${topic} e come evitarlo?`,
+    (topic)=>`Cosa rende davvero efficace un approccio su ${topic}?`,
+    (topic)=>`Quando un cliente ti parla di ${topic}, a cosa devi prestare attenzione?`,
+    (topic)=>`Quali sono i 3 elementi chiave per gestire bene ${topic}?`,
+    (topic)=>`Come bilanciare le diverse esigenze quando si tratta di ${topic}?`,
+    (topic)=>`Quale strategia funziona meglio per ${topic} nella tua esperienza?`,
+    (topic)=>`Cosa fai quando incontri difficoltà con ${topic}?`,
+    (topic)=>`Come comunichi il valore di ${topic} al cliente?`,
+    (topic)=>`Quali strumenti usi per ottimizzare ${topic}?`,
+    (topic)=>`Cosa cambieresti nell'approccio tradizionale a ${topic}?`,
+    (topic)=>`Come valuti il successo in ${topic}?`,
+    (topic)=>`Quale consiglio daresti a chi inizia con ${topic}?`,
   ];
 
   const out = [];
@@ -724,10 +776,15 @@ function buildQuestions300Natural(){
     let i = 0;
     while(i < 60){
       for(const topic of ph.topics){
-        for(const makeQ of templates){
+        for(const makeQ of patterns){
           if(i >= 60) break;
           const id = `${ph.code}${String(i+1).padStart(3,"0")}`;
-          out.push({ id, fase: ph.name, categoria: topic, domanda: makeQ(topic) });
+          out.push({
+            id,
+            fase: ph.name,
+            categoria: topic,
+            domanda: makeQ(topic)
+          });
           i++;
         }
         if(i >= 60) break;
@@ -736,7 +793,7 @@ function buildQuestions300Natural(){
   }
   return out.slice(0,300);
 }
-const QUESTION_BANK = buildQuestions300Natural();
+const QUESTION_BANK = buildQuestions300();
 
 /* ==========================
    HELPERS
@@ -763,6 +820,7 @@ function keywordsFromQuestion(q){
   const words = slugify(q).split("-").filter(w => w && !stop.has(w));
   return words.slice(0, 5).join("-");
 }
+
 async function copyText(text){
   const t = String(text || "");
   if(!t.trim()) return false;
@@ -782,6 +840,8 @@ async function copyText(text){
 async function readClipboardText(){
   return await navigator.clipboard.readText();
 }
+
+/* Caption builder */
 function captionWithHashtagsIfNeeded(clean){
   const c = String(clean || "").trim();
   if(!c) return "";
@@ -791,69 +851,44 @@ function captionWithHashtagsIfNeeded(clean){
   }
   return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
 }
-function escapeHtml(s){
-  return String(s || "").replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-}
-
-/* ==========================
-   STORAGE KEYS
-========================== */
-const DB_KEY   = "vc_videos_db_v3";
-const CAP_KEY  = "vc_caption_clean_v3";
-const PHONE_KEY= "vc_phone_v3";
-const LOGO_KEY = "vc_logo_v3";
-const PLAT_KEY = "vc_platform_v3";
 
 /* ==========================
    STATE
 ========================== */
 let qIdx = -1;
-let currentQuestionObj = null;
 let currentQuestion = "";
+let currentQuestionObj = null;
+
 let lastCaptionClean = "";
 let totalVideos = 0;
 
 const PLATFORMS = ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"];
-let selectedPlatform = "TIKTOK";
+let platformIndex = 0;
 
 let logoDataUrl = "";
-let logoImgObj = new Image();
 let phoneValue = "";
 
 let facingMode = "user";
 let torchOn = false;
 
+const DB_KEY = "vc_videos_db_v1";  // metadata
+const CAP_KEY = "vc_caption_clean_v1";
+const PHONE_KEY = "vc_phone_v1";
+const LOGO_KEY = "vc_logo_v1";
+
+/* Recordings in-session */
 let recordings = [];
 let currentRecIndex = -1;
 
-/* Karaoke (preview only) */
-let karaokeWords = [];
-let karaokeIndex = 0;
-
-/* Recording */
-let camStream = null;
-let recorder = null;
-let chunks = [];
-let rafCanvasId = null;
-let recTimerId = null;
-let remaining = 60;
-let isRecording = false;
-
-let zoomValue = 1.0;
-const camEl = $("cam");
-const canvas = $("recCanvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
 /* ==========================
-   QUESTIONS + CATEGORY
+   UI: Question + Category
 ========================== */
-function showQuestion(q){
-  $("questionOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
+function showQuestionInOverlay(q){
+  $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
 }
 function getCategoryForQuestion(qObj){
   if(!qObj || !qObj.fase) return "ATTUALITÀ";
+  // categoria = fase + topic
   const fase = qObj.fase || "ATTUALITÀ";
   const cat = qObj.categoria ? ` • ${qObj.categoria}` : "";
   return (fase + cat).toUpperCase();
@@ -862,15 +897,24 @@ function nextQuestion(){
   qIdx = (qIdx + 1) % QUESTION_BANK.length;
   currentQuestionObj = QUESTION_BANK[qIdx];
   currentQuestion = currentQuestionObj.domanda;
-  showQuestion(currentQuestion);
+  showQuestionInOverlay(currentQuestion);
   $("categoryOverlay").textContent = getCategoryForQuestion(currentQuestionObj);
 }
+function getActivePlatform(){
+  if(!$("chkRotate").checked) return "MANUALE";
+  const p = PLATFORMS[platformIndex % PLATFORMS.length];
+  return p;
+}
+function advancePlatform(){
+  if(!$("chkRotate").checked) return;
+  platformIndex = (platformIndex + 1) % PLATFORMS.length;
+}
 function refreshPlatformUI(){
-  $("platformLabel").textContent = "Piattaforma: " + selectedPlatform;
+  $("platformLabel").textContent = "Piattaforma: " + getActivePlatform();
 }
 
 /* ==========================
-   Chat + ChatGPT button logic
+   Chat (manuale)
 ========================== */
 function chatAdd(who, text){
   const box = $("chatBox");
@@ -885,22 +929,8 @@ function chatAdd(who, text){
   box.scrollTop = box.scrollHeight + 9999;
 }
 
-function buildChatGPTPayload(){
-  const qText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ (scegli tu l'argomento)";
-  const cat = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
-  const wa = phoneValue ? `Numero WhatsApp: ${phoneValue}` : "Numero WhatsApp: (inseriscilo se vuoi CTA)";
-  return `${GPT_PROMPT_BASE}\n\nCONTESTO:\nCategoria: ${cat}\n${wa}\n\nDOMANDA:\n${qText}`.trim();
-}
-
-async function openChatGPTAndCopy(){
-  const payload = buildChatGPTPayload();
-  await copyText(payload);
-  // Open ChatGPT (no API key needed, just web app)
-  window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
-}
-
 /* ==========================
-   Teleprompter preview (karaoke)
+   Caption + Teletext karaoke prep
 ========================== */
 function setCaptionClean(clean){
   lastCaptionClean = String(clean || "").trim();
@@ -909,6 +939,10 @@ function setCaptionClean(clean){
     try{ localStorage.setItem(CAP_KEY, lastCaptionClean); }catch(e){}
   }
 }
+
+/* Karaoke words */
+let karaokeWords = [];
+let karaokeIndex = 0;
 function buildKaraokeSpans(text){
   const container = $("teleText");
   container.innerHTML = "";
@@ -929,44 +963,49 @@ function buildKaraokeSpans(text){
     container.appendChild(span);
   }
 }
-function karaokeStep(n=1){
+function karaokeStep(){
+  if(karaokeWords.length === 0) return;
   const el = $("teleText");
   const spans = el.querySelectorAll(".w");
-  if(!spans.length) return;
-
-  for(let k=0;k<n;k++){
-    if(karaokeIndex > 0 && spans[karaokeIndex-1]) spans[karaokeIndex-1].classList.remove("on");
-    if(spans[karaokeIndex]){
-      spans[karaokeIndex].classList.add("on");
-      spans[karaokeIndex].scrollIntoView({ block:"nearest", inline:"nearest" });
-      karaokeIndex = Math.min(karaokeIndex + 1, spans.length);
-    }
+  if(karaokeIndex > 0 && spans[karaokeIndex-1]) spans[karaokeIndex-1].classList.remove("on");
+  if(spans[karaokeIndex]){
+    spans[karaokeIndex].classList.add("on");
+    // keep visible
+    spans[karaokeIndex].scrollIntoView({ block:"nearest", inline:"nearest" });
+    karaokeIndex = Math.min(karaokeIndex + 1, spans.length);
   }
 }
-function applyAnswer(answer){
-  const a = String(answer || "").trim();
-  if(!a) return false;
 
-  buildKaraokeSpans(a);
-  setCaptionClean(a);
-
-  // keep category synced
-  $("categoryOverlay").textContent = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
-
-  // chat log as IA
-  chatAdd("IA", a);
-
-  return true;
-}
+/* Build final caption (platform first word) + phone line */
 function buildFinalCaption(){
-  const phoneLine = phoneValue ? `\n\nWHATSAPP: ${phoneValue}` : "";
-  const base = `[${selectedPlatform}] ${lastCaptionClean || ""}`.trim();
+  const p = getActivePlatform();
+  const phoneLine = phoneValue ? `\n\nCHIAMA AL ${phoneValue}` : "";
+  const base = `[${p}] ${lastCaptionClean || ""}`.trim();
   return captionWithHashtagsIfNeeded((base + phoneLine).trim());
 }
 
 /* ==========================
-   Logo + Phone (persist)
+   Camera + Canvas recording (with overlays drawn)
 ========================== */
+let camStream = null;
+let recorder = null;
+let chunks = [];
+let rafCanvasId = null;
+
+const camEl = $("cam");
+const canvas = $("recCanvas");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+let zoomValue = 1.0;
+async function applyZoom(v){
+  zoomValue = Number(v) || 1;
+  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
+  document.documentElement.style.setProperty("--zoom", String(zoomValue));
+}
+
+/* load logo image for drawing */
+let logoImgObj = new Image();
+logoImgObj.onload = ()=>{};
 function setLogoDataUrl(dataUrl){
   logoDataUrl = String(dataUrl || "");
   if(logoDataUrl){
@@ -981,22 +1020,127 @@ function setLogoDataUrl(dataUrl){
     try{ localStorage.removeItem(LOGO_KEY); }catch(e){}
   }
 }
-function renderPhone(){
-  if(phoneValue){
-    $("waPhoneOverlay").textContent = `WHATSAPP: ${phoneValue}`;
-  }else{
-    $("waPhoneOverlay").textContent = "WHATSAPP: —";
-  }
-}
 
-/* ==========================
-   Camera + Canvas recording (NO teleprompter in recording)
-   Recording overlay order: DOMANDA → LOGO → CATEGORIA → WHATSAPP
-========================== */
-async function applyZoom(v){
-  zoomValue = Number(v) || 1;
-  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
-  document.documentElement.style.setProperty("--zoom", String(zoomValue));
+/* draw overlays to recording - NASCONDI TELEPROMPTER */
+function drawOverlayToCanvas(){
+  const W = canvas.width, H = canvas.height;
+
+  // camera frame
+  if(camEl.readyState < 2){
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,W,H);
+    return;
+  }
+  const vw = camEl.videoWidth || 1280;
+  const vh = camEl.videoHeight || 720;
+
+  const z = Math.max(1, Math.min(zoomValue, 5));
+  const srcW = vw / z;
+  const srcH = vh / z;
+  const srcX = (vw - srcW)/2;
+  const srcY = (vh - srcH)/2;
+
+  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
+
+  // overlays
+  // SEMI-TRASPARENTI come nel video preview
+  ctx.save();
+
+  const q = String(currentQuestion || "").trim() || "ATTUALITÀ";
+  const cat = $("categoryOverlay").textContent || "ATTUALITÀ";
+  const phone = phoneValue ? `CHIAMA AL ${phoneValue}` : "CHIAMA AL —";
+
+  const pad = 28;
+  ctx.font = "900 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textBaseline = "top";
+
+  function roundRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  // Posizione a 1/4 dell'altezza (480px su 1920)
+  const topStartY = H * 0.25; // 480px
+
+  // Question box background
+  const qBoxX = 36;
+  const qBoxY = topStartY;
+  const qBoxW = W - 36 - 36 - 120; // leave space for logo at top-right
+  const qBoxH = 132;
+
+  ctx.fillStyle = "rgba(0,0,0,.35)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  ctx.lineWidth = 2;
+  roundRect(qBoxX, qBoxY, qBoxW, qBoxH, 26);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  // wrap question
+  const qLines = wrapText(ctx, q, qBoxW - pad*2);
+  for(let i=0;i<Math.min(qLines.length,2);i++){
+    ctx.fillText(qLines[i], qBoxX + pad, qBoxY + 18 + i*44);
+  }
+
+  // Logo 50x50 (top-right, stessa altezza della domanda)
+  const logoX = W - 36 - 90;
+  const logoY = topStartY;
+  ctx.fillStyle = "rgba(0,0,0,.30)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  roundRect(logoX, logoY, 90, 90, 26);
+  ctx.fill(); ctx.stroke();
+
+  if(logoDataUrl && logoImgObj && logoImgObj.complete){
+    // contain inside 50x50 centered
+    const size = 50;
+    const cx = logoX + (90-size)/2;
+    const cy = logoY + (90-size)/2;
+
+    // contain logic
+    const iw = logoImgObj.naturalWidth || size;
+    const ih = logoImgObj.naturalHeight || size;
+    const scale = Math.min(size/iw, size/ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = cx + (size - dw)/2;
+    const dy = cy + (size - dh)/2;
+
+    ctx.drawImage(logoImgObj, dx, dy, dw, dh);
+  }
+
+  // Category pill centered under top row
+  ctx.font = "1000 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const catText = String(cat).toUpperCase();
+  const catW = Math.min(W - 72, measureTextWidth(ctx, catText) + 52);
+  const catX = (W - catW)/2;
+  const catY = topStartY + qBoxH + 20;
+  ctx.fillStyle = "rgba(0,0,0,.26)";
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  roundRect(catX, catY, catW, 58, 22);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  ctx.fillText(truncateText(ctx, catText, catW-40), catX + 20, catY + 14);
+
+  // Phone CTA verde WhatsApp sotto categoria
+  ctx.font = "1000 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const phoneH = 92;
+  const phoneY = catY + 58 + 20;
+  ctx.fillStyle = "rgba(0,0,0,.36)";
+  ctx.strokeStyle = "rgba(74,143,114,.55)";
+  ctx.lineWidth = 2;
+  roundRect(36, phoneY, W-72, phoneH, 30);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "rgba(74,143,114,.96)";
+  ctx.fillText(truncateText(ctx, phone, W-72-56), 64, phoneY + 24);
+
+  // NOTE: TELEPROMPTER NON DISEGNATO (NASCOSTO)
+
+  ctx.restore();
 }
 
 function measureTextWidth(ctx, t){ return ctx.measureText(String(t||"")).width; }
@@ -1022,138 +1166,19 @@ function wrapText(ctx, text, maxWidth){
   if(line) lines.push(line);
   return lines;
 }
-function roundRect(ctx,x,y,w,h,r){
-  const rr = Math.min(r, w/2, h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+rr, y);
-  ctx.arcTo(x+w, y, x+w, y+h, rr);
-  ctx.arcTo(x+w, y+h, x, y+h, rr);
-  ctx.arcTo(x, y+h, x, y, rr);
-  ctx.arcTo(x, y, x+w, y, rr);
-  ctx.closePath();
+
+/* Karaoke line helper for recording - NON USATO */
+function currentKaraokeLine(){
+  if(karaokeWords.length === 0) return "";
+  const start = Math.max(0, karaokeIndex - 8);
+  const end = Math.min(karaokeWords.length, karaokeIndex + 10);
+  return karaokeWords.slice(start, end).join(" ");
 }
 
-function drawRecordingCanvas(){
-  const W = canvas.width, H = canvas.height;
-
-  if(camEl.readyState < 2){
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,W,H);
-    return;
-  }
-
-  const vw = camEl.videoWidth || 1280;
-  const vh = camEl.videoHeight || 720;
-
-  const z = Math.max(1, Math.min(zoomValue, 5));
-  const srcW = vw / z;
-  const srcH = vh / z;
-  const srcX = (vw - srcW)/2;
-  const srcY = (vh - srcH)/2;
-
-  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
-
-  // Overlay at 1/4 height
-  ctx.save();
-  ctx.textBaseline = "top";
-
-  const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
-  const cat = (getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ").toUpperCase();
-  const wa = phoneValue ? `WHATSAPP: ${phoneValue}` : "WHATSAPP: —";
-
-  // center block at 25% height
-  const centerY = Math.round(H * 0.25);
-  let y = centerY - 220; // start a bit above to fit block
-
-  // Question box
-  const qBoxW = W - 120;
-  const qBoxX = (W - qBoxW)/2;
-  const qBoxH = 150;
-
-  ctx.fillStyle = "rgba(0,0,0,.35)";
-  ctx.strokeStyle = "rgba(255,255,255,.18)";
-  ctx.lineWidth = 2;
-  roundRect(ctx, qBoxX, y, qBoxW, qBoxH, 26);
-  ctx.fill(); ctx.stroke();
-
-  ctx.font = "1000 36px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "rgba(243,244,246,.95)";
-  const qLines = wrapText(ctx, q, qBoxW - 70);
-  for(let i=0;i<Math.min(2, qLines.length);i++){
-    const line = truncateText(ctx, qLines[i], qBoxW - 70);
-    const lw = measureTextWidth(ctx, line);
-    ctx.fillText(line, qBoxX + (qBoxW - lw)/2, y + 22 + i*48);
-  }
-
-  y += qBoxH + 22;
-
-  // Logo 50x50 centered
-  const logoPad = 20;
-  const logoBox = 90;
-  const logoX = (W - logoBox)/2;
-  ctx.fillStyle = "rgba(0,0,0,.30)";
-  ctx.strokeStyle = "rgba(255,255,255,.18)";
-  roundRect(ctx, logoX, y, logoBox, logoBox, 26);
-  ctx.fill(); ctx.stroke();
-
-  if(logoDataUrl && logoImgObj && logoImgObj.complete){
-    const size = 50;
-    const cx = logoX + (logoBox - size)/2;
-    const cy = y + (logoBox - size)/2;
-
-    const iw = logoImgObj.naturalWidth || size;
-    const ih = logoImgObj.naturalHeight || size;
-    const scale = Math.min(size/iw, size/ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    const dx = cx + (size - dw)/2;
-    const dy = cy + (size - dh)/2;
-
-    ctx.drawImage(logoImgObj, dx, dy, dw, dh);
-  }
-
-  y += logoBox + 18;
-
-  // Category pill
-  ctx.font = "1000 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const catW = Math.min(W - 160, measureTextWidth(ctx, cat) + 56);
-  const catX = (W - catW)/2;
-  const catH = 62;
-
-  ctx.fillStyle = "rgba(0,0,0,.26)";
-  ctx.strokeStyle = "rgba(255,255,255,.14)";
-  roundRect(ctx, catX, y, catW, catH, 22);
-  ctx.fill(); ctx.stroke();
-
-  ctx.fillStyle = "rgba(243,244,246,.95)";
-  const catText = truncateText(ctx, cat, catW - 40);
-  const catTw = measureTextWidth(ctx, catText);
-  ctx.fillText(catText, catX + (catW - catTw)/2, y + 16);
-
-  y += catH + 14;
-
-  // WhatsApp line (GREEN) under category
-  ctx.font = "1100 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const waW = Math.min(W - 160, measureTextWidth(ctx, wa) + 56);
-  const waX = (W - waW)/2;
-  const waH = 62;
-
-  ctx.fillStyle = "rgba(0,0,0,.22)";
-  ctx.strokeStyle = "rgba(255,255,255,.12)";
-  roundRect(ctx, waX, y, waW, waH, 22);
-  ctx.fill(); ctx.stroke();
-
-  ctx.fillStyle = "rgba(37,211,102,.98)";
-  const waText = truncateText(ctx, wa, waW - 40);
-  const waTw = measureTextWidth(ctx, waText);
-  ctx.fillText(waText, waX + (waW - waTw)/2, y + 16);
-
-  ctx.restore();
-}
-
+/* Canvas loop */
 function startCanvasLoop(){
   function loop(){
-    drawRecordingCanvas();
+    drawOverlayToCanvas();
     rafCanvasId = requestAnimationFrame(loop);
   }
   loop();
@@ -1187,13 +1212,15 @@ async function ensureReady(){
   if(!rafCanvasId) startCanvasLoop();
   return true;
 }
+
+/* Flash (torch) */
 async function toggleTorch(){
   if(!camStream) return;
   const track = camStream.getVideoTracks?.()[0];
   if(!track) return;
   const caps = track.getCapabilities?.() || {};
   if(!caps.torch){
-    alert("Flash (torch) non supportato su questo dispositivo/browser.");
+    alert("Torch/Flash non supportato su questo dispositivo/browser.");
     return;
   }
   torchOn = !torchOn;
@@ -1201,36 +1228,195 @@ async function toggleTorch(){
     await track.applyConstraints({ advanced: [{ torch: torchOn }] });
   }catch(e){
     torchOn = !torchOn;
-    alert("Impossibile attivare il flash.");
+    alert("Impossibile attivare il flash: " + (e?.message || e));
   }
 }
+
+/* Flip cam */
 async function flipCamera(){
   facingMode = (facingMode === "user") ? "environment" : "user";
   await startCamera();
 }
 
 /* ==========================
-   DB + LIST
+   REC + Countdown 60s + DB
 ========================== */
+let isRecording = false;
+let recTimerId = null;
+let remaining = 60;
+
+function updateRecHud(){
+  $("countdownHud").textContent = `REC ${remaining}s`;
+}
+
+function buildVideoId(){
+  const p = getActivePlatform();
+  const qkey = keywordsFromQuestion(currentQuestion || "attualita") || "video";
+  return `VID_${p}_${qkey}_${nowStamp()}`;
+}
+function buildFileName(id){
+  return `${id}.webm`;
+}
+
 function persistVideoMeta(meta){
   const db = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
   db.unshift(meta);
   localStorage.setItem(DB_KEY, JSON.stringify(db));
 }
-function buildVideoId(){
-  const p = selectedPlatform;
-  const qkey = keywordsFromQuestion(currentQuestion || "attualita") || "video";
-  return `VID_${p}_${qkey}_${nowStamp()}`;
-}
-function buildFileName(id){ return `${id}.webm`; }
+
 function buildVideoTitle(videoNum, platform, question){
   const k = keywordsFromQuestion(question) || "video";
   const p = platform || "MANUALE";
   return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
 }
+
+function startRecording60(){
+  if(!camStream){ alert("Attiva la camera."); return; }
+  if(recorder && recorder.state !== "inactive") return;
+
+  const ans = String($("answerBox").value || "").trim();
+  if(!ans){
+    alert("Scrivi o incolla una risposta prima.");
+    return;
+  }
+
+  // ensure question/category
+  if(!currentQuestion){
+    currentQuestionObj = null;
+    currentQuestion = "";
+    showQuestionInOverlay("ATTUALITÀ");
+    $("categoryOverlay").textContent = "ATTUALITÀ";
+  }
+
+  // prepare tele/caption if not done
+  applyAnswerToTeleAndCaption(ans);
+
+  const platformNow = getActivePlatform();
+
+  // HUD on
+  $("recHud").style.display = "flex";
+  $("btnREC").classList.add("running");
+
+  remaining = 60;
+  updateRecHud();
+  isRecording = true;
+
+  chunks = [];
+
+  const stream = canvas.captureStream(30);
+  const audioTrack = camStream.getAudioTracks?.()[0];
+  if(audioTrack) stream.addTrack(audioTrack);
+
+  const mimeCandidates = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm"
+  ];
+  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
+
+  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
+
+  const videoId = buildVideoId();
+  const videoName = buildFileName(videoId);
+  const questionText = String(currentQuestion || "ATTUALITÀ").trim() || "ATTUALITÀ";
+  const categoryText = $("categoryOverlay").textContent || "ATTUALITÀ";
+  const phoneNow = phoneValue || "";
+
+  recorder.onstop = ()=>{
+    if(recTimerId) clearInterval(recTimerId);
+    recTimerId = null;
+
+    $("recHud").style.display = "none";
+    $("btnREC").classList.remove("running");
+    isRecording = false;
+
+    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+    totalVideos += 1;
+
+    const url = URL.createObjectURL(blob);
+    const title = buildVideoTitle(totalVideos, platformNow, questionText);
+
+    const meta = {
+      id: videoId,
+      filename: videoName,
+      createdAt: new Date().toISOString(),
+      platform: platformNow,
+      question: questionText,
+      category: categoryText,
+      phone: phoneNow,
+      captionClean: lastCaptionClean,
+      captionFinal: buildFinalCaption()
+    };
+    persistVideoMeta(meta);
+
+    recordings.unshift({ title, name: videoName, url, blob, meta });
+    currentRecIndex = 0;
+
+    $("playback").src = url;
+    $("playback").load();
+
+    renderRecList();
+    updateCounters();
+
+    // advance platform after each recording
+    advancePlatform();
+    refreshPlatformUI();
+  };
+
+  recorder.start(1000);
+
+  recTimerId = setInterval(()=>{
+    remaining -= 1;
+    // Karaoke ancora funziona per il testo ma non visualizzato
+    const spans = $("teleText").querySelectorAll(".w");
+    const total = spans.length || 0;
+    if(total > 0){
+      const stepsPerSec = Math.max(1, Math.round(total / 60));
+      for(let s=0; s<stepsPerSec; s++) karaokeStep();
+    }
+
+    updateRecHud();
+    if(remaining <= 0){
+      stopRecording();
+    }
+  }, 1000);
+}
+
+function stopRecording(){
+  if(recorder && recorder.state !== "inactive"){
+    recorder.stop();
+  }
+}
+
+/* ==========================
+   Apply answer to tele + caption + category
+========================== */
+function applyAnswerToTeleAndCaption(answer){
+  const a = String(answer || "").trim();
+  if(!a) return false;
+
+  // Build karaoke spans (nascosto ma funziona)
+  buildKaraokeSpans(a);
+
+  // Caption clean
+  setCaptionClean(a);
+
+  // Category: from current question; if none, ATTUALITÀ
+  const cat = getCategoryForQuestion(currentQuestionObj);
+  $("categoryOverlay").textContent = cat || "ATTUALITÀ";
+
+  return true;
+}
+
+/* ==========================
+   Video list UI
+========================== */
 function updateCounters(){
   $("videoCounter").textContent = `Video: ${totalVideos}`;
 }
+
 function renderRecList(){
   const box = $("recList");
   if(!recordings.length){ box.textContent = "—"; return; }
@@ -1262,6 +1448,7 @@ function renderRecList(){
     renderRecList();
   }));
 }
+
 function downloadBlob(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1271,121 +1458,6 @@ function downloadBlob(blob, filename){
   a.click();
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
-}
-
-/* ==========================
-   REC 60s + HUD
-========================== */
-function updateRecHud(){
-  $("countdownHud").textContent = `REC ${remaining}s`;
-}
-function stopRecording(){
-  if(recorder && recorder.state !== "inactive") recorder.stop();
-}
-function startRecording60(){
-  if(!camStream){ alert("Attiva la camera."); return; }
-  if(recorder && recorder.state !== "inactive") return;
-
-  const ans = String($("answerBox").value || "").trim();
-  if(!ans){
-    alert("Scrivi o incolla una risposta prima.");
-    return;
-  }
-
-  // allow no question -> ATTUALITÀ
-  if(!currentQuestionObj){
-    currentQuestionObj = null;
-    currentQuestion = "";
-    showQuestion("ATTUALITÀ");
-    $("categoryOverlay").textContent = "ATTUALITÀ";
-  }
-
-  // ensure tele/caption prepared
-  applyAnswer(ans);
-
-  // HUD on
-  $("recHud").style.display = "flex";
-  $("btnREC").classList.add("running");
-
-  remaining = 60;
-  updateRecHud();
-  isRecording = true;
-
-  chunks = [];
-
-  const stream = canvas.captureStream(30);
-  const audioTrack = camStream.getAudioTracks?.()[0];
-  if(audioTrack) stream.addTrack(audioTrack);
-
-  const mimeCandidates = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm"
-  ];
-  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
-
-  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
-
-  const videoId = buildVideoId();
-  const videoName = buildFileName(videoId);
-  const questionText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
-  const categoryText = $("categoryOverlay").textContent || "ATTUALITÀ";
-  const phoneNow = phoneValue || "";
-
-  recorder.onstop = ()=>{
-    if(recTimerId) clearInterval(recTimerId);
-    recTimerId = null;
-
-    $("recHud").style.display = "none";
-    $("btnREC").classList.remove("running");
-    isRecording = false;
-
-    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-    totalVideos += 1;
-
-    const url = URL.createObjectURL(blob);
-    const title = buildVideoTitle(totalVideos, selectedPlatform, questionText);
-
-    const meta = {
-      id: videoId,
-      filename: videoName,
-      createdAt: new Date().toISOString(),
-      platform: selectedPlatform,
-      question: questionText,
-      category: categoryText,
-      whatsapp: phoneNow,
-      captionClean: lastCaptionClean,
-      captionFinal: buildFinalCaption()
-    };
-    persistVideoMeta(meta);
-
-    recordings.unshift({ title, name: videoName, url, blob, meta });
-    currentRecIndex = 0;
-
-    $("playback").src = url;
-    $("playback").load();
-
-    renderRecList();
-    updateCounters();
-  };
-
-  recorder.start(1000);
-
-  // Karaoke stepping preview only (not recorded)
-  recTimerId = setInterval(()=>{
-    remaining -= 1;
-    const spans = $("teleText").querySelectorAll(".w");
-    const total = spans.length || 0;
-    if(total > 0){
-      const stepsPerSec = Math.max(1, Math.round(total / 60));
-      karaokeStep(stepsPerSec);
-    }
-    updateRecHud();
-    if(remaining <= 0){
-      stopRecording();
-    }
-  }, 1000);
 }
 
 /* ==========================
@@ -1399,18 +1471,6 @@ function goToGestionale(){
 }
 
 /* ==========================
-   Platform checkbox: allow only one checked
-========================== */
-function setPlatform(p){
-  selectedPlatform = p;
-  refreshPlatformUI();
-  try{ localStorage.setItem(PLAT_KEY, selectedPlatform); }catch(e){}
-  document.querySelectorAll(".platformChk").forEach(chk=>{
-    chk.checked = (chk.dataset.p === selectedPlatform);
-  });
-}
-
-/* ==========================
    INIT
 ========================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
@@ -1418,8 +1478,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     const savedCap = localStorage.getItem(CAP_KEY) || "";
     if(savedCap.trim() && $("chkRememberCaption").checked){
-      lastCaptionClean = savedCap.trim();
-      $("captionPreview").textContent = lastCaptionClean;
+      setCaptionClean(savedCap);
     }
   }catch(e){}
 
@@ -1431,7 +1490,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       $("phoneInput").value = phoneValue;
     }
   }catch(e){}
-  renderPhone();
+  renderPhoneOverlay();
 
   // Restore logo
   try{
@@ -1439,30 +1498,26 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(sl.trim()) setLogoDataUrl(sl.trim());
   }catch(e){}
 
-  // Restore platform
-  try{
-    const pl = localStorage.getItem(PLAT_KEY) || "TIKTOK";
-    if(PLATFORMS.includes(pl)) selectedPlatform = pl;
-  }catch(e){}
-  setPlatform(selectedPlatform);
-
-  // Top bar buttons
+  // UI
   $("btnBackTop").addEventListener("click", goToGestionale);
   $("btnBackBottom").addEventListener("click", goToGestionale);
 
   $("btnNext").addEventListener("click", ()=>{
     nextQuestion();
+    refreshPlatformUI();
+  });
+
+  // Apri ChatGPT
+  $("btnOpenChatGPT").addEventListener("click", ()=>{
+    const questionText = currentQuestion || "Chiedimi qualcosa di immobiliare";
+    const prompt = `Sei un esperto di immobiliare e marketing digitale. Rispondi alla seguente domanda in modo professionale ma colloquiale, in italiano, con un tono da social media (massimo 200 parole):\n\n"${questionText}"`;
+    window.open(`https://chat.openai.com/?q=${encodeURIComponent(prompt)}`, '_blank');
   });
 
   $("btnCopyQ").addEventListener("click", async ()=>{
-    if(!currentQuestionObj) nextQuestion();
-    const payload = `DOMANDA (${currentQuestionObj.id} - ${currentQuestionObj.fase}):\n${currentQuestionObj.domanda}`.trim();
+    if(!currentQuestion) nextQuestion();
+    const payload = `DOMANDA (${currentQuestionObj?.id || "ATT"} - ${currentQuestionObj?.fase || "ATTUALITÀ"}):\n${currentQuestion}`.trim();
     await copyText(payload);
-  });
-
-  $("btnOpenChatGPT").addEventListener("click", async ()=>{
-    if(!currentQuestionObj) nextQuestion();
-    await openChatGPTAndCopy();
   });
 
   $("btnPasteAnswer").addEventListener("click", async ()=>{
@@ -1476,8 +1531,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   $("btnUseAnswer").addEventListener("click", ()=>{
     const ans = $("answerBox").value || "";
-    const ok = applyAnswer(ans);
+    const ok = applyAnswerToTeleAndCaption(ans);
     if(!ok) return alert("Scrivi o incolla una risposta prima.");
+
+    // Also add to chat as "IA"
+    chatAdd("IA", String(ans || "").trim());
+
+    // Store platform label
+    refreshPlatformUI();
   });
 
   $("btnCopyCaption").addEventListener("click", async ()=>{
@@ -1486,37 +1547,36 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     await copyText(out);
   });
 
-  // Chat buttons (3 in linea)
-  $("btnChatOpen").addEventListener("click", async ()=>{
-    if(!currentQuestionObj) nextQuestion();
-    await openChatGPTAndCopy();
-  });
+  // Chat buttons
   $("btnChatAddQ").addEventListener("click", ()=>{
-    const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
+    const q = currentQuestion || "ATTUALITÀ";
     chatAdd("TU", q);
   });
-  $("btnChatClear").addEventListener("click", ()=>{
-    if(confirm("Svuotare la chat?")) $("chatBox").innerHTML = "";
+  $("btnChatAddA").addEventListener("click", ()=>{
+    const a = String($("answerBox").value || "").trim();
+    if(!a) return alert("Incolla una risposta nel box Risposta.");
+    chatAdd("IA", a);
   });
-
-  // Platform checkboxes
-  document.querySelectorAll(".platformChk").forEach(chk=>{
-    chk.addEventListener("change", ()=>{
-      if(chk.checked){
-        setPlatform(chk.dataset.p);
-      }else{
-        // prevent "none selected": keep at least one
-        setPlatform(selectedPlatform);
-      }
-    });
+  $("btnChatClear").addEventListener("click", ()=>{
+    if(confirm("Svuotare la chat?")){
+      $("chatBox").innerHTML = "";
+    }
   });
 
   // Phone
   $("phoneInput").addEventListener("input", ()=>{
     phoneValue = String($("phoneInput").value || "").trim();
     try{ localStorage.setItem(PHONE_KEY, phoneValue); }catch(e){}
-    renderPhone();
+    renderPhoneOverlay();
   });
+
+  function renderPhoneOverlay(){
+    if(phoneValue){
+      $("phoneOverlay").innerHTML = `CHIAMA AL <b>${escapeHtml(phoneValue)}</b>`;
+    }else{
+      $("phoneOverlay").innerHTML = `CHIAMA AL <b>—</b>`;
+    }
+  }
 
   // Logo upload
   $("btnLogo").addEventListener("click", ()=> $("logoUpload").click());
@@ -1529,11 +1589,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     e.target.value = "";
   });
 
+  // Where videos
   $("btnWhere").addEventListener("click", ()=>{
     alert("In browser i video vengono scaricati: li trovi nella cartella Download del dispositivo.");
   });
 
-  // Camera controls
+  // Camera + rec
   $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
   $("btnFlip").addEventListener("click", async ()=>{ await flipCamera(); });
   $("btnFlash").addEventListener("click", async ()=>{ await toggleTorch(); });
@@ -1546,6 +1607,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       stopRecording();
       return;
     }
+
+    // If question not set, keep ATTUALITÀ
+    if(!currentQuestion && !currentQuestionObj){
+      showQuestionInOverlay("ATTUALITÀ");
+      $("categoryOverlay").textContent = "ATTUALITÀ";
+    }
+
     startRecording60();
   });
 
@@ -1553,18 +1621,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   // Zoom
   $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
-  await applyZoom(1.0);
+  applyZoom(1.0);
 
-  // Remember caption toggle
-  $("chkRememberCaption").addEventListener("change", ()=>{
-    if(!$("chkRememberCaption").checked){
-      try{ localStorage.removeItem(CAP_KEY); }catch(e){}
-    }else{
-      try{ localStorage.setItem(CAP_KEY, lastCaptionClean || ""); }catch(e){}
-    }
-  });
-
-  // Video download
+  // Download selected
   $("btnDownloadVideo").addEventListener("click", ()=>{
     if(currentRecIndex < 0 || !recordings[currentRecIndex]){
       alert("Seleziona un video dalla lista.");
@@ -1586,18 +1645,40 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       renderRecList();
       totalVideos = 0;
       updateCounters();
+      platformIndex = 0;
+      refreshPlatformUI();
+    }
+  });
+
+  // Remember caption toggle
+  $("chkRememberCaption").addEventListener("change", ()=>{
+    if(!$("chkRememberCaption").checked){
+      try{ localStorage.removeItem(CAP_KEY); }catch(e){}
+    }else{
+      try{ localStorage.setItem(CAP_KEY, lastCaptionClean || ""); }catch(e){}
     }
   });
 
   // Defaults
-  $("teleText").textContent = "Incolla una risposta → “Usa risposta” → “REC”.";
-  showQuestion("Premi “Nuova domanda”.");
+  $("teleText").textContent = "Testo nascosto durante la registrazione.";
+  showQuestionInOverlay("Premi “Nuova domanda”.");
   $("categoryOverlay").textContent = "ATTUALITÀ";
-  renderPhone();
   refreshPlatformUI();
   renderRecList();
   updateCounters();
+
+  // If phone restored, paint overlay
+  renderPhoneOverlay();
 });
+
+/* ==========================
+   Small utils
+========================== */
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
 </script>
 </body>
 </html>
