@@ -1,0 +1,1615 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Video Creator – Teleprompter</title>
+
+  <style>
+    :root{
+      --bg:#0b1120;
+      --text:#f3f4f6;
+      --muted:#a0adb8;
+      --gold:#d8a23a;
+      --border: rgba(225,225,225,0.18);
+      --shadow: 0 14px 50px rgba(0,0,0,0.45);
+      --radius: 18px;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+
+      --tele-font: 12px;
+      --tele-line: 1.22;
+      --stage-w: min(420px, 92vw);
+      --zoom: 1;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(216,162,58,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 30%, rgba(123,79,189,.14), transparent 55%),
+        radial-gradient(900px 600px at 70% 85%, rgba(74,143,114,.14), transparent 55%),
+        var(--bg);
+    }
+
+    .wrap{ max-width:1150px; margin:0 auto; padding:14px 12px 84px; }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    /* ---------- Buttons (friendly + animazioni) ---------- */
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:950;
+      letter-spacing:.2px;
+      font-size:11px;
+      line-height:1;
+      white-space:nowrap;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      position:relative;
+
+      transform: translateY(0) scale(1);
+      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .btn::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: radial-gradient(500px 140px at 20% 0%, rgba(255,255,255,.14), transparent 60%),
+                  radial-gradient(500px 140px at 80% 100%, rgba(255,255,255,.10), transparent 55%);
+      opacity:0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .btn:hover{
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(216,162,58,.22);
+      box-shadow: 0 14px 34px rgba(0,0,0,.30);
+      filter: brightness(1.06);
+    }
+    .btn:hover::after{ opacity:1; }
+    .btn:active{
+      transform: translateY(0px) scale(.99);
+      filter: brightness(0.98);
+    }
+
+    .btn.tiny{
+      padding:6px 9px;
+      font-size:10px;
+      border-radius:11px;
+      box-shadow:none;
+    }
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
+      color:#111;
+      border-color: rgba(216,162,58,.55);
+    }
+    .btn.blue{
+      background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
+      border-color: rgba(57,90,140,.55);
+    }
+    .btn.violet{
+      background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70));
+      border-color: rgba(123,79,189,.55);
+    }
+    .btn.gray{ background: rgba(255,255,255,.04); }
+
+    /* REC button (rosso, “alive”) */
+    .btn.rec{
+      background: linear-gradient(135deg, rgba(255,45,45,.95), rgba(255,45,45,.55));
+      border-color: rgba(255,45,45,.55);
+      color:#120707;
+      font-weight: 1000;
+    }
+    .btn.rec .dot{
+      width:10px; height:10px; border-radius:999px;
+      background:#ff2d2d;
+      box-shadow: 0 0 0 0 rgba(255,45,45,.45);
+      animation: pulseDot 1.15s ease-in-out infinite;
+    }
+    @keyframes pulseDot{
+      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.45); transform: scale(1); }
+      60%{ box-shadow: 0 0 0 10px rgba(255,45,45,0); transform: scale(1.06); }
+      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
+    }
+
+    .btn .ico{
+      display:inline-flex;
+      transform: translateY(0);
+      transition: transform .16s ease;
+    }
+    .btn:hover .ico{
+      transform: translateY(-1px) rotate(-2deg);
+    }
+
+    .pill{
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:rgba(0,0,0,.18);
+      font-weight:900;
+      letter-spacing:.2px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      white-space:nowrap;
+    }
+
+    .hintTop{
+      margin: 6px 0 10px;
+      font-size:11px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:12px;
+      align-items:start;
+      margin-top:12px;
+    }
+    @media (max-width: 980px){ .layout{ grid-template-columns:1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .section{ padding:12px; }
+    .section + .section{ border-top:1px solid rgba(255,255,255,.10); }
+
+    .h{
+      margin:0 0 8px;
+      font-size:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      font-weight:950;
+    }
+
+    .stageRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      align-items:start;
+    }
+    @media (max-width: 980px){ .stageRow{ grid-template-columns:1fr; } }
+
+    .stageBlock{
+      width: var(--stage-w);
+      margin: 0 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+    }
+
+    #stage916{
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      background:#000;
+      box-shadow: var(--shadow);
+    }
+
+    #cam{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      transform: scale(var(--zoom));
+      transform-origin: center;
+    }
+
+    #overlay{
+      position:absolute;
+      inset:0;
+      padding: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      pointer-events:none;
+      z-index: 2;
+    }
+
+    #questionBoxOverlay{
+      font-size: 11px;
+      font-weight: 950;
+      line-height: 1.15;
+      padding: 7px 9px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(6px);
+      white-space:pre-wrap;
+    }
+
+    #teleprompterOverlay{
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    #teleText{
+      position:absolute;
+      left:0; right:0;
+      white-space: pre-wrap;
+      font-size: var(--tele-font);
+      line-height: var(--tele-line);
+      font-weight: 800;
+      color: rgba(243,244,246,.94);
+      text-shadow: 0 2px 12px rgba(0,0,0,.75);
+      transform: translateY(20px);
+    }
+
+    .controlsRow{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:stretch;
+    }
+    .bar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+    }
+    .bar.left{ justify-content:flex-start; }
+    .bar.between{ justify-content:space-between; }
+
+    .sliderRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:950;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    input[type="range"]{ width:170px; accent-color: var(--gold); }
+
+    .chk{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      color:var(--muted);
+      font-weight:950;
+      font-size:10px;
+      white-space:nowrap;
+    }
+    .check{
+      width:16px; height:16px;
+      accent-color: var(--gold);
+      cursor:pointer;
+    }
+
+    .field textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      font-weight:850;
+      resize: vertical;
+      min-height: 120px;
+      font-size:12px;
+      line-height:1.25;
+    }
+    .field textarea:focus{
+      border-color: rgba(216,162,58,.45);
+      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    }
+
+    .mini{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    /* Profili piccoli */
+    .profiles{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:7px;
+      margin-top:8px;
+    }
+    .profileRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 8px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      background:rgba(0,0,0,.14);
+    }
+    .profileMeta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      flex:1;
+    }
+    .profileMeta b{
+      font-size:11px;
+      font-weight:950;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .nextBadge{
+      font-size:9px;
+      font-weight:1000;
+      padding:3px 7px;
+      border-radius:999px;
+      border:1px solid rgba(255,45,45,.55);
+      color: rgba(255,235,235,.95);
+      background: rgba(255,45,45,.18);
+      white-space:nowrap;
+      display:none;
+      pointer-events:none;
+      user-select:none;
+    }
+    .nextBadge.show{ display:inline-flex; }
+
+    #recLamp{
+      position:absolute; top:12px; right:12px;
+      padding:7px 9px; border-radius:12px;
+      background:rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.18);
+      font-weight:950; font-size:11px;
+      display:none; align-items:center; gap:8px;
+      backdrop-filter: blur(6px);
+      z-index: 6;
+    }
+
+    .bottomBar{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 10px 12px;
+      background: rgba(0,0,0,.35);
+      border-top: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      display:flex;
+      justify-content:flex-end;
+      z-index: 50;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    /* Prompt accordion */
+    details{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background: rgba(0,0,0,.14);
+      padding:10px;
+    }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      user-select:none;
+      font-weight:950;
+      color: var(--text);
+      font-size:11px;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    .subtle{
+      font-size:11px;
+      color: var(--muted);
+      line-height:1.35;
+      margin-top:6px;
+    }
+    .codeRow{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;
+    }
+    .codeRow input{
+      flex:1;
+      min-width: 160px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      font-weight:900;
+      font-size:12px;
+    }
+    .codeRow input:focus{
+      border-color: rgba(216,162,58,.45);
+      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    }
+
+    /* Right-align helpers for REC */
+    .ctrlLeft{ display:flex; gap:8px; align-items:center; }
+    .ctrlMid{ display:flex; gap:8px; align-items:center; justify-content:center; }
+    .ctrlRight{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
+
+    /* ==========================
+       ISTRUZIONI MODAL
+    ========================== */
+    .modalBackdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 14px;
+    }
+    .modalBackdrop.show{ display:flex; }
+
+    .modalCard{
+      width: min(920px, 96vw);
+      max-height: min(82vh, 760px);
+      overflow: auto;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+    }
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+      z-index: 2;
+    }
+    .modalHeader .title{
+      font-weight: 1000;
+      letter-spacing:.2px;
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .modalBody{
+      padding: 12px;
+      color: rgba(243,244,246,.95);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .modalBody h3{
+      margin: 12px 0 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing:.8px;
+      color: var(--muted);
+    }
+    .modalBody ol, .modalBody ul{
+      margin: 8px 0 10px 18px;
+      padding: 0;
+    }
+    .modalBody li{ margin: 6px 0; }
+    .callout{
+      border: 1px solid rgba(216,162,58,.25);
+      background: rgba(216,162,58,.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin: 10px 0;
+      color: rgba(243,244,246,.96);
+    }
+    .kbd{
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: rgba(243,244,246,.92);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- TOP ROW -->
+  <header>
+    <div class="row" style="flex:1;">
+      <button class="btn primary" id="btnNext" type="button">
+        <span class="ico">✨</span> Nuova domanda
+      </button>
+
+      <button class="btn blue" id="btnOpenChatGPTPasteQ" type="button" title="Copia PROMPT + domanda e apre ChatGPT">
+        <span class="ico">💬</span> Apri ChatGPT + copia domanda
+      </button>
+
+      <button class="btn violet" id="btnPasteTop" type="button" title="Incolla dagli appunti nel blocco risposta qui sotto">
+        <span class="ico">📋</span> Incolla risposta
+      </button>
+
+      <!-- NUOVO: ISTRUZIONI -->
+      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
+        <span class="ico">📘</span> Istruzioni
+      </button>
+
+      <span class="pill">
+        <span id="videoCounter">Video: 0</span>
+        <span>•</span>
+        <span id="activeProfileLabel">Prossimo: —</span>
+      </span>
+    </div>
+
+    <div class="row">
+      <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
+    </div>
+  </header>
+
+  <!-- Didascalia breve -->
+  <div class="hintTop">
+    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT + copia domanda</b> (incolla e invia) → 3) usa <b>copia</b> su ChatGPT →
+    4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
+  </div>
+
+  <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
+  <div class="card">
+    <div class="section">
+      <p class="h">Risposta (da ChatGPT o scritta da te)</p>
+      <div class="field">
+        <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
+      </div>
+
+      <div class="bar left" style="margin-top:10px;">
+        <button class="btn primary" id="btnSendTele" type="button"><span class="ico">➡️</span> Invia al teleprompter</button>
+        <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
+          <span class="ico">📋</span> Copia caption
+        </button>
+      </div>
+
+      <div class="subtle">
+        “Invia al teleprompter” ti permette anche di inserire messaggi scritti da te (non solo incollati da ChatGPT).
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- MAIN -->
+    <div class="card">
+      <div class="section">
+        <p class="h">Video 9:16 + teleprompter</p>
+
+        <div class="stageRow">
+          <div class="stageBlock">
+            <div id="stage916">
+              <video id="cam" autoplay playsinline muted></video>
+
+              <div id="recLamp">
+                <span style="width:10px;height:10px;border-radius:999px;background:#ff2d2d;display:inline-block;"></span>
+                <span id="recTime">REC 00:00</span>
+              </div>
+
+              <div id="overlay">
+                <div id="questionBoxOverlay">Premi “Nuova domanda”.</div>
+                <div id="teleprompterOverlay">
+                  <div id="teleText">Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="controlsRow">
+              <!-- REC più a destra: layout a 3 blocchi -->
+              <div class="bar between" style="width:100%;">
+                <div class="ctrlLeft">
+                  <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
+                </div>
+
+                <div class="ctrlMid">
+                  <button class="btn gray" id="btnStop" type="button"><span class="ico">⏹</span> Stop</button>
+                  <button class="btn gray" id="btnRestart" type="button"><span class="ico">↻</span> Riavvia</button>
+                </div>
+
+                <div class="ctrlRight">
+                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
+                    <span class="dot"></span> Teleprompter + REC
+                  </button>
+                </div>
+              </div>
+
+              <div class="bar">
+                <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
+                <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
+                <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
+                <span class="pill" id="speedLabel">Vel: 105s</span>
+              </div>
+
+              <div class="sliderRow">
+                <span>Zoom</span>
+                <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
+                <span id="zoomVal">1.0x</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="h">Rotazione profili (piccola)</p>
+            <div class="profiles">
+              <div class="profileRow">
+                <input class="check" type="checkbox" id="rot_tiktok" checked>
+                <div class="profileMeta"><b>📱 TikTok</b></div>
+                <span class="nextBadge" id="badge_tiktok">PROSSIMO</span>
+              </div>
+              <div class="profileRow">
+                <input class="check" type="checkbox" id="rot_instagram" checked>
+                <div class="profileMeta"><b>📸 Instagram</b></div>
+                <span class="nextBadge" id="badge_instagram">PROSSIMO</span>
+              </div>
+              <div class="profileRow">
+                <input class="check" type="checkbox" id="rot_shorts">
+                <div class="profileMeta"><b>🎥 Shorts</b></div>
+                <span class="nextBadge" id="badge_shorts">PROSSIMO</span>
+              </div>
+              <div class="profileRow">
+                <input class="check" type="checkbox" id="rot_facebook">
+                <div class="profileMeta"><b>💼 Facebook</b></div>
+                <span class="nextBadge" id="badge_facebook">PROSSIMO</span>
+              </div>
+            </div>
+
+            <div class="subtle">
+              Seleziona i canali da includere. “PROSSIMO” è solo un indicatore (non cliccabile).
+            </div>
+          </div>
+        </div>
+
+        <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
+      </div>
+    </div>
+
+    <!-- SIDE -->
+    <div class="card">
+      <div class="section">
+        <div class="bar between">
+          <p class="h" style="margin:0;">Caption (memorizzata)</p>
+          <label class="chk" title="Memorizza la caption (senza hashtag) per il prossimo avvio">
+            <input type="checkbox" id="chkRememberCaption" class="check" checked />
+            Memorizza
+          </label>
+        </div>
+
+        <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
+        <div class="subtle">Gli hashtag automatici vengono aggiunti solo in copia (se non già presenti).</div>
+      </div>
+
+      <div class="section">
+        <p class="h">Video creati</p>
+        <div class="subtle">Seleziona un elemento (qui sotto) per rivederlo.</div>
+
+        <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
+
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn" id="btnDownloadVideo" type="button"><span class="ico">📥</span> Scarica video</button>
+
+          <!-- NUOVO: UPLOAD VIDEO -->
+          <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
+          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
+            <span class="ico">⬆️</span> Carica video
+          </button>
+
+          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
+        </div>
+
+        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
+      </div>
+
+      <!-- PROMPT BLOCCO A FONDO PAGINA -->
+      <div class="section">
+        <details id="promptDetails">
+          <summary>
+            <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
+            <span class="pill" id="promptStatePill">Bloccato</span>
+          </summary>
+
+          <div class="subtle">
+            Questo prompt viene sempre inserito <b>prima</b> della domanda quando premi “Apri ChatGPT + copia domanda”.
+          </div>
+
+          <div class="field" style="margin-top:10px;">
+            <textarea id="promptBox" readonly></textarea>
+          </div>
+
+          <div class="codeRow">
+            <input id="unlockCode" placeholder="Codice per modificare il prompt" />
+            <button class="btn tiny primary" id="btnUnlock" type="button">Sblocca</button>
+            <button class="btn tiny" id="btnSavePrompt" type="button" disabled>Salva</button>
+            <button class="btn tiny" id="btnResetPrompt" type="button" disabled>Ripristina</button>
+          </div>
+
+          <div class="subtle">Per modificare serve il codice: <b>16091979Jm</b>.</div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottomBar">
+  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
+  <button class="btn tiny gray" id="btnInstructionsBottom" type="button"><span class="ico">📘</span> Istruzioni</button>
+</div>
+
+<!-- ==========================
+     MODAL ISTRUZIONI
+========================== -->
+<div class="modalBackdrop" id="instructionsModal" aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
+    <div class="modalHeader">
+      <div class="title" id="instrTitle">📘 Istruzioni operative – Video Creator</div>
+      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✕ Chiudi</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="callout">
+        Obiettivo: creare video verticali <b>9:16</b> in serie (TikTok/Instagram/Shorts/Facebook) con <b>domanda → risposta → teleprompter → REC → caption → download</b>.
+      </div>
+
+      <h3>Flusso standard</h3>
+      <ol>
+        <li><b>Nuova domanda</b> → clicca <span class="kbd">✨ Nuova domanda</span> e leggi la domanda che appare sul video.</li>
+        <li><b>Risposta da ChatGPT</b> → clicca <span class="kbd">💬 Apri ChatGPT + copia domanda</span>, incolla in ChatGPT e invia. Poi copia la risposta completa.</li>
+        <li><b>Incolla risposta</b> → torna qui e clicca <span class="kbd">📋 Incolla risposta</span> (finisce nel box “Risposta”).</li>
+        <li><b>Invia al teleprompter</b> → clicca <span class="kbd">➡️ Invia al teleprompter</span> (il testo va nel teleprompter e diventa anche caption base).</li>
+        <li><b>Prepara</b> → se serve clicca <span class="kbd">📷 Camera</span>, scegli velocità (90/105/120) e regola zoom.</li>
+        <li><b>Registra</b> → clicca <span class="kbd">🔴 Teleprompter + REC</span>. Quando finisci clicca <span class="kbd">⏹ Stop</span>.</li>
+        <li><b>Rivedi/Scarica</b> → seleziona il video in “Video creati” e clicca <span class="kbd">📥 Scarica video</span>.</li>
+        <li><b>Caption</b> → clicca <span class="kbd">📋 Copia caption</span> (aggiunge hashtag automatici se mancanti).</li>
+      </ol>
+
+      <h3>Produzione in serie</h3>
+      <ul>
+        <li>Ripeti sempre: <b>Nuova domanda → ChatGPT → Incolla → Invia al teleprompter → REC → Stop</b>.</li>
+        <li>La “rotazione profili” sposta automaticamente il <b>prossimo canale</b> dopo ogni registrazione.</li>
+      </ul>
+
+      <h3>Upload video</h3>
+      <ul>
+        <li>Puoi aggiungere un video manualmente con <span class="kbd">⬆️ Carica video</span>: entra in lista, si può rivedere e scaricare.</li>
+        <li>Il video caricato resta disponibile finché la pagina è aperta (workflow perfetto per test e revisione).</li>
+      </ul>
+
+      <div class="subtle">
+        Tip: premi <span class="kbd">ESC</span> per chiudere questa finestra.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================
+   CONFIG
+========================== */
+const GESTIONALE_URL = "https://tuo-gestionale.com";
+const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
+
+/* Hashtag automatici (NON mostrati in preview) */
+const HIDDEN_HASHTAGS = [
+  "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
+  "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
+  "#property","#realestate","#digitalstrategist","#digitalstrategy","#marketingdigitale","#strategiamarketing",
+  "#brandstrategy","#contentstrategy","#socialmediastrategy","#growthmarketing","#personalbranding","#branding",
+  "#businessdigitale","#marketingonline"
+].join(" ");
+
+/* Prompt base (nuovo) */
+const BASE_PROMPT = `🧩 PROMPT ADATTIVO – VERSIONE FINALE (250 PAROLE + HASHTAG)
+
+Agisci come un consulente immobiliare esperto, con uno stile friendly, chiaro e professionale, adatto anche a un ragazzo di 15 anni.
+
+Rispondi alle domande che ti fornirò con testi di massimo 250 parole, semplici, scorrevoli e concreti.
+
+Adatta progressivamente il tuo stile sulla base delle domande precedenti e delle risposte già fornite, migliorando chiarezza, precisione ed efficacia comunicativa nel tempo.
+
+Usa un linguaggio:
+
+semplice e diretto
+
+privo di tecnicismi inutili
+
+arricchito da esempi pratici della vita quotidiana
+
+Se utilizzi un termine tecnico, spiegalo immediatamente in modo semplice.
+
+Mantieni sempre un tono amichevole, rassicurante e professionale, mai infantile e mai burocratico.
+
+Struttura ogni risposta in questo modo:
+
+problema che andiamo a risolvere Breve introduzione che inquadra l’argomento
+
+Spiegazione chiara, con esempi concreti
+
+Conclusione, con un consiglio pratico
+
+Al termine di ogni risposta, aggiungi una breve lista di hashtag pertinenti al tema trattato (5), e #immobiliarelasacra #josephcretorlab #realmediapro #amamy #immobiliare #realestateitalia #mercatoimmobiliare #agenziaimmobiliare #casainvendita #venditacasa #investimentiimmobiliari #property #realestate #digitalstrategist #digitalstrategy #marketingdigitale #strategiamarketing #brandstrategy #contentstrategy #socialmediastrategy #growthmarketing #personalbranding #branding #businessdigitale #marketingonline
+
+Regole fondamentali:
+
+Lunghezza massima: 250 parole non di piu'
+
+Niente linguaggio tecnico inutile`;
+
+/* Codice sblocco prompt */
+const UNLOCK_CODE = "16091979Jm";
+
+/* Archivio domande */
+const QUESTION_BANK = [
+  { q:"Perché ricevo poche chiamate anche se l'annuncio è online da settimane?" },
+  { q:"Se arrivano solo curiosi e nessuna proposta, cosa significa?" },
+  { q:"Come capisco se il prezzo sta bloccando la vendita?" },
+  { q:"Meglio partire alto e poi scendere o partire subito con il prezzo giusto?" },
+  { q:"Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?" },
+  { q:"Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?" },
+  { q:"Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?" },
+  { q:"Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?" },
+  { q:"Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?" },
+];
+
+/* Teleprompter speed */
+const TELE_SPEEDS = { s120:120, s105:105, s90:90 };
+let teleprompterSeconds = TELE_SPEEDS.s105;
+
+/* State */
+let qIdx = -1;
+let currentQuestion = "";
+let lastCaptionClean = "";
+let totalVideos = 0;
+
+/* Rotazione profili */
+let rotationIndex = 0;
+
+/* Prompt state */
+let promptText = "";
+
+/* ==========================
+   HELPERS
+========================== */
+const $ = (id) => document.getElementById(id);
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function nowStamp(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
+}
+function slugify(it){
+  return String(it || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s-]/g,"")
+    .trim()
+    .replace(/\s+/g,"-")
+    .replace(/-+/g,"-")
+    .slice(0, 50);
+}
+function keywordsFromQuestion(q){
+  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","agli","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
+  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
+  return words.slice(0, 4).join("-");
+}
+
+async function copyText(text){
+  const t = String(text || "");
+  if(!t.trim()) return false;
+  try{
+    await navigator.clipboard.writeText(t);
+    return true;
+  }catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    return true;
+  }
+}
+async function readClipboardText(){
+  return await navigator.clipboard.readText(); // HTTPS/localhost
+}
+
+/* Caption: aggiungi hashtag solo se non già presenti */
+function captionWithHashtagsIfNeeded(clean){
+  const c = String(clean || "").trim();
+  if(!c) return "";
+
+  const lower = c.toLowerCase();
+  if (lower.includes("#immobiliarelasacra") || lower.includes("#josephcretorlab") || lower.includes("#realmediapro")){
+    return c;
+  }
+  return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
+}
+
+function setCaptionClean(clean){
+  lastCaptionClean = String(clean || "").trim();
+  $("captionPreview").textContent = lastCaptionClean || "—";
+  if ($("chkRememberCaption").checked){
+    try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
+  }
+}
+
+/* ==========================
+   PROMPT
+========================== */
+function loadPrompt(){
+  try{
+    const saved = localStorage.getItem("vc_prompt_text");
+    promptText = (saved && saved.trim()) ? saved : BASE_PROMPT;
+  }catch(e){
+    promptText = BASE_PROMPT;
+  }
+  $("promptBox").value = promptText;
+}
+function lockPromptUI(){
+  $("promptBox").readOnly = true;
+  $("btnSavePrompt").disabled = true;
+  $("btnResetPrompt").disabled = true;
+  $("promptStatePill").textContent = "Bloccato";
+}
+function unlockPromptUI(){
+  $("promptBox").readOnly = false;
+  $("btnSavePrompt").disabled = false;
+  $("btnResetPrompt").disabled = false;
+  $("promptStatePill").textContent = "Sbloccato";
+}
+function savePrompt(){
+  promptText = $("promptBox").value || BASE_PROMPT;
+  try{ localStorage.setItem("vc_prompt_text", promptText); }catch(e){}
+}
+
+/* ==========================
+   QUESTIONS
+========================== */
+function showQuestionInOverlay(q){
+  $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
+}
+function nextQuestion(){
+  qIdx = (qIdx + 1) % QUESTION_BANK.length;
+  currentQuestion = QUESTION_BANK[qIdx].q;
+  showQuestionInOverlay(currentQuestion);
+}
+function composeChatGPTInput(){
+  const q = String(currentQuestion || "").trim();
+  if(!q) return (promptText || BASE_PROMPT).trim();
+  return `${(promptText || BASE_PROMPT).trim()}\n\nInput:\n👉 ${q}`.trim();
+}
+
+/* ==========================
+   ROTAZIONE PROFILI
+========================== */
+function getRotationPlatforms(){
+  const items = [
+    { id:"rot_tiktok", platform:"tiktok" },
+    { id:"rot_instagram", platform:"instagram" },
+    { id:"rot_shorts", platform:"shorts" },
+    { id:"rot_facebook", platform:"facebook" },
+  ];
+  return items.filter(x => $(x.id).checked);
+}
+function setNextBadge(platform){
+  const map = {
+    tiktok: $("badge_tiktok"),
+    instagram: $("badge_instagram"),
+    shorts: $("badge_shorts"),
+    facebook: $("badge_facebook"),
+  };
+  Object.values(map).forEach(el => el.classList.remove("show"));
+  if(platform && map[platform]) map[platform].classList.add("show");
+}
+function getActivePlatform(){
+  const list = getRotationPlatforms();
+  if(list.length === 0) return null;
+  rotationIndex = rotationIndex % list.length;
+  return list[rotationIndex].platform;
+}
+function advancePlatform(){
+  const list = getRotationPlatforms();
+  if(list.length === 0) return;
+  rotationIndex = (rotationIndex + 1) % list.length;
+}
+function refreshProfileUI(){
+  const active = getActivePlatform();
+  setNextBadge(active);
+  $("activeProfileLabel").textContent = "Prossimo: " + (active ? active : "—");
+}
+
+/* ==========================
+   TELEPROMPTER SCROLL
+========================== */
+let startTimeSec = null;
+let isTeleprompterRunning = false;
+let teleprompterAnimationId = null;
+
+function resetTeleprompter(){
+  $("teleText").style.transform = "translateY(20px)";
+}
+function startTeleprompter(){
+  if(isTeleprompterRunning) return;
+  isTeleprompterRunning = true;
+  startTimeSec = performance.now() / 1000;
+  animateTele();
+}
+function stopTeleprompter(){
+  isTeleprompterRunning = false;
+  if(teleprompterAnimationId) cancelAnimationFrame(teleprompterAnimationId);
+  teleprompterAnimationId = null;
+}
+function restartTeleprompter(){
+  stopTeleprompter();
+  resetTeleprompter();
+  setTimeout(()=> startTeleprompter(), 120);
+}
+function animateTele(){
+  if(!isTeleprompterRunning) return;
+
+  const teleEl = $("teleText");
+  if(!teleEl){
+    teleprompterAnimationId = requestAnimationFrame(animateTele);
+    return;
+  }
+
+  const now = performance.now()/1000;
+  const elapsed = now - startTimeSec;
+  const progress = (elapsed % teleprompterSeconds) / teleprompterSeconds;
+
+  const th = teleEl.scrollHeight || 900;
+  const startY = 20;
+  const endY = -th - 20;
+
+  const y = startY + (endY - startY) * progress;
+  teleEl.style.transform = `translateY(${y}px)`;
+
+  teleprompterAnimationId = requestAnimationFrame(animateTele);
+}
+
+function applyAnswer(answer){
+  const a = String(answer || "").trim();
+  if(!a) return false;
+  $("teleText").textContent = a;
+  resetTeleprompter();
+  stopTeleprompter();
+  setCaptionClean(a);
+  return true;
+}
+
+/* ==========================
+   SPEED UI (checkbox “radio”)
+========================== */
+function setSpeed(seconds){
+  teleprompterSeconds = seconds;
+  $("speedLabel").textContent = `Vel: ${seconds}s`;
+  $("speed120").checked = seconds === 120;
+  $("speed105").checked = seconds === 105;
+  $("speed90").checked  = seconds === 90;
+}
+
+/* ==========================
+   CAMERA + REC (CANVAS CLEAN)
+========================== */
+let camStream = null;
+let chunks = [];
+let rafCanvasId = null;
+
+let zoomValue = 1.0;
+const camEl = $("cam");
+const canvas = $("recCanvas");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+async function applyZoom(v){
+  zoomValue = Number(v) || 1;
+  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
+  document.documentElement.style.setProperty("--zoom", String(zoomValue));
+}
+
+function drawFrame(){
+  const W = canvas.width, H = canvas.height;
+  if(camEl.readyState < 2){
+    ctx.fillStyle="black"; ctx.fillRect(0,0,W,H);
+    return;
+  }
+  const vw = camEl.videoWidth || 1280;
+  const vh = camEl.videoHeight || 720;
+
+  const z = Math.max(1, Math.min(zoomValue, 5));
+  const srcW = vw / z;
+  const srcH = vh / z;
+  const srcX = (vw - srcW)/2;
+  const srcY = (vh - srcH)/2;
+
+  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
+}
+function startCanvasLoop(){
+  function loop(){
+    drawFrame();
+    rafCanvasId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+async function startCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop());
+    camStream = null;
+  }
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      audio:true,
+      video:{ facingMode:"user", width:{ideal:1280}, height:{ideal:720} }
+    });
+    camEl.srcObject = camStream;
+    await new Promise(res => camEl.onloadedmetadata = () => res());
+    try{ await camEl.play(); }catch(e){}
+    if(!rafCanvasId) startCanvasLoop();
+    return true;
+  }catch(err){
+    alert("Errore camera: " + err.message);
+    return false;
+  }
+}
+async function ensureReady(){
+  if(!camStream){
+    const ok = await startCamera();
+    if(!ok) return false;
+  }
+  if(!rafCanvasId) startCanvasLoop();
+  return true;
+}
+
+/* REC lamp */
+let recStartTs = null;
+let recTimerId = null;
+let isRecording = false;
+let recorder = null;
+
+function fmtTime(ms){
+  const sec = Math.floor(ms/1000);
+  const m = String(Math.floor(sec/60)).padStart(2,"0");
+  const s = String(sec%60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+function startRecLamp(){
+  recStartTs = Date.now();
+  $("recLamp").style.display = "flex";
+  $("recTime").textContent = "REC 00:00";
+  recTimerId = setInterval(()=> {
+    $("recTime").textContent = `REC ${fmtTime(Date.now()-recStartTs)}`;
+  }, 250);
+}
+function stopRecLamp(){
+  $("recLamp").style.display = "none";
+  if(recTimerId) clearInterval(recTimerId);
+  recTimerId = null;
+  recStartTs = null;
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+/* Recordings */
+let recordings = [];
+let currentRecIndex = -1;
+
+function updateCounters(){
+  $("videoCounter").textContent = `Video: ${totalVideos}`;
+}
+
+function renderRecList(){
+  const box = $("recList");
+  if(!recordings.length){ box.textContent = "—"; return; }
+
+  box.innerHTML = recordings.map((r,i)=>{
+    const active = i===currentRecIndex ? " style='color:#d8a23a; font-weight:950;'" : "";
+    return `
+      <div ${active} style="margin-bottom:10px;">
+        <div>
+          <a href="#" data-i="${i}" style="color:inherit; text-decoration:none;">
+            ${r.title}
+          </a>
+        </div>
+        <div style="opacity:.85; margin-top:6px;">${(r.question||"").slice(0,95)}</div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("a[data-i]").forEach(a => a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    const i = +a.dataset.i;
+    currentRecIndex = i;
+    $("playback").src = recordings[i].url;
+    $("playback").play().catch(()=>{});
+    renderRecList();
+  }));
+}
+
+function buildVideoTitle(videoNum, platform, question){
+  const k = keywordsFromQuestion(question) || "video";
+  const p = platform || "noplatform";
+  return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
+}
+function buildFileName(videoNum, platform, question){
+  const k = keywordsFromQuestion(question) || "video";
+  const p = platform || "noplatform";
+  return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
+}
+
+function startRecording(){
+  if(!camStream){ alert("Attiva la camera."); return; }
+  if(recorder && recorder.state !== "inactive"){ return; }
+
+  startTeleprompter();
+  chunks = [];
+
+  const stream = canvas.captureStream(30);
+  const audioTrack = camStream.getAudioTracks?.()[0];
+  if(audioTrack) stream.addTrack(audioTrack);
+
+  const mimeCandidates = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm"
+  ];
+  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
+
+  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
+  recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
+
+  const qNow = String(currentQuestion || "").trim();
+  const capNow = String(lastCaptionClean || "").trim();
+  const platformNow = getActivePlatform();
+
+  recorder.onstop = ()=>{
+    stopRecLamp();
+    stopTeleprompter();
+    isRecording = false;
+
+    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+    totalVideos += 1;
+
+    const title = buildVideoTitle(totalVideos, platformNow, qNow);
+    const name = buildFileName(totalVideos, platformNow, qNow);
+    const url = URL.createObjectURL(blob);
+
+    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow, kind:"recorded" });
+    currentRecIndex = 0;
+
+    $("playback").src = url;
+    $("playback").load();
+    renderRecList();
+    updateCounters();
+
+    advancePlatform();
+    refreshProfileUI();
+  };
+
+  recorder.start(1000);
+}
+function stopRecording(){
+  if(recorder && recorder.state !== "inactive") recorder.stop();
+}
+
+/* ==========================
+   NAV
+========================== */
+function goToGestionale(){
+  if(confirm("Vuoi tornare al gestionale?")){
+    if(isRecording) stopRecording();
+    setTimeout(()=> window.location.href = GESTIONALE_URL, 250);
+  }
+}
+
+/* ==========================
+   ISTRUZIONI MODAL
+========================== */
+function openInstructions(){
+  const m = $("instructionsModal");
+  m.classList.add("show");
+  m.setAttribute("aria-hidden", "false");
+}
+function closeInstructions(){
+  const m = $("instructionsModal");
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden", "true");
+}
+
+/* ==========================
+   UPLOAD VIDEO
+========================== */
+function addUploadedVideo(file){
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+  totalVideos += 1;
+
+  const platformNow = getActivePlatform();
+  const qNow = String(currentQuestion || "Upload video").trim();
+  const k = keywordsFromQuestion(qNow) || "upload";
+  const p = platformNow || "upload";
+  const title = `#${String(totalVideos).padStart(3,"0")} • ${p} • ${k} • UPLOAD`;
+
+  const safeName = (file.name && file.name.trim()) ? file.name.trim() : `upload_${nowStamp()}.mp4`;
+
+  const capNow = String(lastCaptionClean || "").trim();
+
+  recordings.unshift({
+    title,
+    name: safeName,
+    url,
+    blob: file,
+    question: qNow,
+    captionClean: capNow,
+    platform: platformNow,
+    kind: "uploaded"
+  });
+
+  currentRecIndex = 0;
+  $("playback").src = url;
+  $("playback").load();
+  renderRecList();
+  updateCounters();
+}
+
+/* ==========================
+   INIT
+========================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // prompt
+  loadPrompt();
+  lockPromptUI();
+
+  // blocco risposta: vuoto di default
+  $("answerBox").value = "";
+
+  // restore caption preview only
+  try{
+    const savedCap = localStorage.getItem("vc_caption_clean") || "";
+    if(savedCap.trim() && $("chkRememberCaption").checked){
+      setCaptionClean(savedCap);
+    }
+  }catch(e){}
+
+  // init UI
+  $("btnBackTop").addEventListener("click", goToGestionale);
+  $("btnBackBottom").addEventListener("click", goToGestionale);
+
+  // Istruzioni
+  $("btnInstructions").addEventListener("click", openInstructions);
+  $("btnInstructionsBottom").addEventListener("click", openInstructions);
+  $("btnCloseInstructions").addEventListener("click", closeInstructions);
+  $("instructionsModal").addEventListener("click", (e)=>{
+    if(e.target && e.target.id === "instructionsModal") closeInstructions();
+  });
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape") closeInstructions();
+  });
+
+  $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.";
+  showQuestionInOverlay("Premi “Nuova domanda”.");
+  updateCounters();
+  refreshProfileUI();
+  renderRecList();
+  resetTeleprompter();
+  applyZoom(1.0);
+  setSpeed(105);
+
+  // speed radio-like
+  $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
+  $("speed105").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(105); });
+  $("speed90").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(90); });
+
+  // rotation change resets index
+  ["rot_tiktok","rot_instagram","rot_shorts","rot_facebook"].forEach(id=>{
+    $(id).addEventListener("change", ()=>{
+      rotationIndex = 0;
+      refreshProfileUI();
+    });
+  });
+
+  // nuova domanda
+  $("btnNext").addEventListener("click", ()=> nextQuestion());
+
+  // apri chatgpt + copia prompt+domanda
+  $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
+    if(!currentQuestion){
+      nextQuestion();
+    }
+    const payload = composeChatGPTInput();
+    await copyText(payload);
+    window.open(CHATGPT_URL, "_blank", "noopener");
+  });
+
+  // incolla risposta
+  $("btnPasteTop").addEventListener("click", async ()=>{
+    try{
+      const t = await readClipboardText();
+      $("answerBox").value = (t || "");
+    }catch(e){
+      alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
+    }
+  });
+
+  // invia al teleprompter
+  $("btnSendTele").addEventListener("click", ()=>{
+    const ok = applyAnswer($("answerBox").value || "");
+    if(!ok) alert("Scrivi o incolla una risposta prima.");
+  });
+
+  // camera
+  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+
+  // Teleprompter + REC
+  $("btnTeleRec").addEventListener("click", async ()=>{
+    const okCam = await ensureReady();
+    if(!okCam) return;
+
+    if(!currentQuestion){
+      nextQuestion();
+    }
+
+    const ans = ($("answerBox").value || "").trim();
+    if(!ans){
+      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
+      return;
+    }
+
+    applyAnswer(ans);
+    startRecording();
+  });
+
+  $("btnStop").addEventListener("click", ()=> stopRecording());
+  $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
+  $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
+
+  // remember caption toggle
+  $("chkRememberCaption").addEventListener("change", ()=>{
+    if(!$("chkRememberCaption").checked){
+      try{ localStorage.removeItem("vc_caption_clean"); }catch(e){}
+    }else{
+      try{ localStorage.setItem("vc_caption_clean", lastCaptionClean || ""); }catch(e){}
+    }
+  });
+
+  // copia caption
+  $("btnCopyCaption").addEventListener("click", async ()=>{
+    const out = captionWithHashtagsIfNeeded(lastCaptionClean);
+    if(!out){ alert("Niente da copiare."); return; }
+    await copyText(out);
+  });
+
+  // download selected video
+  $("btnDownloadVideo").addEventListener("click", ()=>{
+    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
+      alert("Seleziona un video dalla lista.");
+      return;
+    }
+    const r = recordings[currentRecIndex];
+    downloadBlob(r.blob, r.name);
+  });
+
+  // upload video (button -> hidden input)
+  $("btnUploadVideo").addEventListener("click", ()=>{
+    $("videoUpload").click();
+  });
+  $("videoUpload").addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    if(!String(file.type || "").startsWith("video/")){
+      alert("Seleziona un file video valido.");
+      e.target.value = "";
+      return;
+    }
+    addUploadedVideo(file);
+    e.target.value = "";
+  });
+
+  // clear list
+  $("btnClearList").addEventListener("click", ()=>{
+    if(!recordings.length) return;
+    if(confirm("Svuotare la lista?")){
+      recordings.forEach(r => { try{ URL.revokeObjectURL(r.url); }catch(e){} });
+      recordings = [];
+      currentRecIndex = -1;
+      $("playback").removeAttribute("src");
+      $("playback").load();
+      renderRecList();
+      totalVideos = 0;
+      updateCounters();
+      rotationIndex = 0;
+      refreshProfileUI();
+    }
+  });
+
+  // prompt unlock/save/reset
+  $("btnUnlock").addEventListener("click", ()=>{
+    const code = ($("unlockCode").value || "").trim();
+    if(code === UNLOCK_CODE){
+      unlockPromptUI();
+    }else{
+      alert("Codice errato.");
+      lockPromptUI();
+    }
+  });
+
+  $("btnSavePrompt").addEventListener("click", ()=>{
+    savePrompt();
+    lockPromptUI();
+    $("unlockCode").value = "";
+  });
+
+  $("btnResetPrompt").addEventListener("click", ()=>{
+    $("promptBox").value = BASE_PROMPT;
+    savePrompt();
+    lockPromptUI();
+    $("unlockCode").value = "";
+  });
+});
+</script>
+</body>
+</html>
+
