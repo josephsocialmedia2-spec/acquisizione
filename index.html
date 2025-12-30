@@ -1,23 +1,22 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Video Creator PRO – REC</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Video Creator – Chat + Teleprompter</title>
 
 <style>
-/* =======================
-   THEME
-======================= */
+/* ==========================
+   THEME (LAYOUT ORIGINALE)
+========================== */
 :root{
   --bg:#0b1120;
   --text:#f3f4f6;
-  --muted:#9aa4af;
+  --muted:#a0adb8;
   --gold:#d8a23a;
-  --red:#ff2d2d;
-  --border:rgba(255,255,255,.14);
-  --radius:18px;
-  --shadow:0 14px 50px rgba(0,0,0,.45);
+  --border: rgba(225,225,225,0.18);
+  --shadow: 0 14px 50px rgba(0,0,0,0.45);
+  --radius: 18px;
   --zoom:1;
 }
 *{box-sizing:border-box}
@@ -27,49 +26,54 @@ body{
   color:var(--text);
   background:var(--bg);
 }
-.wrap{max-width:1100px;margin:auto;padding:12px 12px 90px}
-
-/* =======================
-   BUTTONS
-======================= */
+.wrap{max-width:1150px;margin:0 auto;padding:14px 12px 90px}
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.section{padding:12px}
+.h{
+  margin:0 0 8px;
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  font-weight:950;
+}
 .btn{
   border:1px solid var(--border);
   background:rgba(255,255,255,.05);
   color:var(--text);
-  padding:8px 12px;
+  padding:8px 10px;
   border-radius:12px;
-  font-weight:900;
+  font-weight:950;
   cursor:pointer;
 }
-.btn.gray{background:rgba(255,255,255,.06)}
-.btn.primary{background:linear-gradient(135deg,#d8a23a,#b9892f);color:#111}
+.btn.primary{
+  background:linear-gradient(135deg,#ff2d2d,#c91f1f);
+  border:none;
+  color:#120707;
+}
 .btn.circle{
   width:72px;height:72px;border-radius:50%;
-  background:radial-gradient(circle at 30% 30%,#ff6a6a,#ff2d2d);
-  border:none;color:#120707;
-  font-size:13px;font-weight:1000;
-  box-shadow:0 0 0 0 rgba(255,45,45,.6);
+  font-weight:1000;
 }
-.btn.circle.rec-active{
-  animation:pulse 1.2s infinite;
+.layout{
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:12px;
 }
-@keyframes pulse{
-  0%{box-shadow:0 0 0 0 rgba(255,45,45,.6)}
-  70%{box-shadow:0 0 0 18px rgba(255,45,45,0)}
-  100%{box-shadow:0 0 0 0 rgba(255,45,45,0)}
-}
-
-/* =======================
-   STAGE
-======================= */
+@media(max-width:980px){.layout{grid-template-columns:1fr}}
 .stage{
-  width:min(420px,95vw);
+  width:min(420px,92vw);
   aspect-ratio:9/16;
   background:#000;
   border-radius:18px;
   overflow:hidden;
   position:relative;
-  box-shadow:var(--shadow);
   margin:auto;
 }
 video{
@@ -83,55 +87,10 @@ video{
   padding:10px;
   display:flex;
   flex-direction:column;
-  justify-content:space-between;
+  gap:8px;
   pointer-events:none;
 }
-
-/* =======================
-   OVERLAY ELEMENTS
-======================= */
-#logoOverlay{
-  margin:auto;
-  opacity:.85;
-  max-width:70%;
-}
-#categoryOverlay{
-  text-align:center;
-  font-weight:900;
-  font-size:12px;
-}
-#phoneOverlay{
-  background:rgba(0,0,0,.5);
-  border-radius:12px;
-  padding:6px 10px;
-  font-weight:1000;
-  text-align:center;
-}
-#countdown{
-  position:absolute;
-  top:12px;right:12px;
-  background:rgba(0,0,0,.5);
-  padding:6px 10px;
-  border-radius:12px;
-  font-weight:1000;
-}
-#cameraIcon{
-  position:absolute;
-  top:12px;left:12px;
-  font-size:18px;
-  display:none;
-}
-
-/* =======================
-   TELEPROMPTER KARAOKE
-======================= */
-#teleprompter{
-  flex:1;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  overflow:hidden;
-}
+#teleWrap{flex:1;overflow:hidden}
 #teleText span{
   display:inline-block;
   padding:2px 4px;
@@ -140,31 +99,63 @@ video{
   background:rgba(216,162,58,.35);
   border-radius:6px;
 }
-
-/* =======================
-   CONTROLS
-======================= */
-.controls{
-  margin-top:14px;
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  align-items:center;
-}
-input[type="file"],input[type="text"]{
-  width:100%;
-  padding:10px;
+#countdown{
+  position:absolute;
+  top:12px;right:12px;
+  background:rgba(0,0,0,.45);
+  padding:6px 10px;
   border-radius:12px;
+  font-weight:1000;
+  display:none;
+}
+#recIcon{
+  position:absolute;
+  top:12px;left:12px;
+  font-size:18px;
+  display:none;
+}
+#logoOverlay{
+  margin:auto;
+  max-width:70%;
+  opacity:.85;
+}
+#categoryOverlay{
+  text-align:center;
+  font-weight:950;
+  font-size:11px;
+}
+#phoneOverlay{
+  background:rgba(0,0,0,.45);
+  padding:6px 10px;
+  border-radius:12px;
+  font-weight:1000;
+  text-align:center;
+}
+.chatBox{
+  max-height:220px;
+  overflow:auto;
+  background:rgba(0,0,0,.2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px;
+  font-size:12px;
+}
+.msg.user{color:#d8a23a;margin-bottom:6px}
+.msg.ai{color:#f3f4f6;margin-bottom:10px}
+textarea,input[type="text"]{
+  width:100%;
+  padding:10px 12px;
+  border-radius:14px;
   border:1px solid var(--border);
   background:rgba(0,0,0,.2);
   color:var(--text);
+  font-size:12px;
 }
-.card{
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:12px;
-  margin-top:12px;
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -172,185 +163,151 @@ input[type="file"],input[type="text"]{
 <body>
 <div class="wrap">
 
-<!-- INPUTS -->
-<div class="card">
-  <input id="phoneInput" placeholder="Numero di telefono (es. 3331234567)">
-  <input id="logoInput" type="file" accept="image/*">
-  <textarea id="answer" placeholder="Testo risposta / teleprompter"></textarea>
-</div>
+<div class="layout">
 
-<!-- STAGE -->
+<!-- MAIN -->
+<div class="card">
+<div class="section">
+<p class="h">Video 9:16 + Teleprompter</p>
+
 <div class="stage">
   <video id="cam" autoplay muted playsinline></video>
   <div class="overlay">
     <img id="logoOverlay">
     <div id="categoryOverlay"></div>
-    <div id="teleprompter"><div id="teleText"></div></div>
+    <div id="teleWrap"><div id="teleText"></div></div>
     <div id="phoneOverlay"></div>
   </div>
   <div id="countdown">60</div>
-  <div id="cameraIcon">🎥</div>
+  <div id="recIcon">🎥</div>
 </div>
 
-<!-- CONTROLS -->
 <div class="controls">
-  <button class="btn gray" id="flipCam">🔄</button>
-  <button class="btn gray" id="flashBtn">💡</button>
-  <button class="btn circle" id="recBtn">REC</button>
+  <button class="btn" id="flipCam">🔄</button>
+  <button class="btn" id="flashBtn">💡</button>
+  <button class="btn primary btn.circle" id="recBtn">REC</button>
 </div>
 
+</div>
+</div>
+
+<!-- SIDE -->
+<div class="card">
+<div class="section">
+<p class="h">Chat (copia / incolla)</p>
+<div class="chatBox" id="chat"></div>
+<textarea id="chatInput" placeholder="Scrivi o incolla la domanda"></textarea>
+<button class="btn" id="sendQ">Invia</button>
+<textarea id="chatAnswer" placeholder="Incolla qui la risposta"></textarea>
+<button class="btn" id="useAnswer">Usa risposta</button>
+</div>
+
+<div class="section">
+<p class="h">Overlay</p>
+<input id="phoneInput" placeholder="Numero telefono">
+<input type="file" id="logoInput" accept="image/*">
+</div>
+</div>
+
+</div>
 </div>
 
 <script>
-/* =======================
-   STATE & DB
-======================= */
-let facing="user";
-let stream=null;
-let recorder=null;
-let chunks=[];
-let countdown=60;
-let timer=null;
-let teleIndex=0;
-let words=[];
-const DB_KEY="videoDB";
+let facing="user",stream=null,recorder=null,chunks=[];
+let words=[],teleIdx=0,timer=null,count=60;
 
-/* =======================
-   INIT CAMERA
-======================= */
+/* CAMERA */
 async function startCam(){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream=await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:facing},
-    audio:true
-  });
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true});
   cam.srcObject=stream;
 }
 startCam();
 
-/* =======================
-   LOGO & PHONE
-======================= */
-logoInput.onchange=e=>{
-  const f=e.target.files[0];
-  if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{logoOverlay.src=r.result;localStorage.setItem("logo",r.result)}
-  r.readAsDataURL(f);
-}
-const savedLogo=localStorage.getItem("logo");
-if(savedLogo) logoOverlay.src=savedLogo;
+/* CHAT */
+sendQ.onclick=()=>{
+  chat.innerHTML+=`<div class="msg user">TU: ${chatInput.value}</div>`;
+  chat.scrollTop=9999;
+};
+useAnswer.onclick=()=>{
+  chat.innerHTML+=`<div class="msg ai">IA: ${chatAnswer.value}</div>`;
+  prepareTele(chatAnswer.value);
+  chatAnswer.value="";
+};
 
-phoneInput.oninput=e=>{
-  phoneOverlay.textContent="CHIAMA AL "+e.target.value;
-  localStorage.setItem("phone",e.target.value);
-}
-const savedPhone=localStorage.getItem("phone");
-if(savedPhone){
-  phoneInput.value=savedPhone;
-  phoneOverlay.textContent="CHIAMA AL "+savedPhone;
-}
-
-/* =======================
-   TELEPROMPTER KARAOKE
-======================= */
-function prepareTele(text){
+/* TELEPROMPTER */
+function prepareTele(t){
   teleText.innerHTML="";
-  words=text.split(" ");
+  words=t.split(" ");
   words.forEach(w=>{
     const s=document.createElement("span");
     s.textContent=w+" ";
     teleText.appendChild(s);
   });
+  teleIdx=0;
 }
 function stepTele(){
-  if(teleIndex>0) teleText.children[teleIndex-1].classList.remove("active");
-  if(teleIndex<teleText.children.length){
-    teleText.children[teleIndex].classList.add("active");
-    teleIndex++;
+  if(teleIdx>0) teleText.children[teleIdx-1].classList.remove("active");
+  if(teleIdx<teleText.children.length){
+    teleText.children[teleIdx].classList.add("active");
+    teleIdx++;
   }
 }
 
-/* =======================
-   REC LOGIC
-======================= */
-recBtn.onclick=async()=>{
-  if(recorder && recorder.state==="recording"){
-    recorder.stop();return;
-  }
-  prepareTele(answer.value);
-  teleIndex=0;
-  cameraIcon.style.display="block";
-  recBtn.classList.add("rec-active");
-  countdown=60;
-  countDownTick();
+/* REC */
+recBtn.onclick=()=>{
+  if(recorder&&recorder.state==="recording"){recorder.stop();return;}
+  chunks=[];
+  recIcon.style.display="block";
+  countdown.style.display="block";
+  count=60;
+  countdown.textContent=count;
+  timer=setInterval(()=>{
+    count--;stepTele();countdown.textContent=count;
+    if(count<=0){clearInterval(timer);recorder.stop();}
+  },1000);
   const canvas=document.createElement("canvas");
   canvas.width=1080;canvas.height=1920;
   const ctx=canvas.getContext("2d");
-  const draw=()=>{
-    ctx.drawImage(cam,0,0,1080,1920);
-    requestAnimationFrame(draw);
-  }
+  const draw=()=>{ctx.drawImage(cam,0,0,1080,1920);requestAnimationFrame(draw)}
   draw();
-  const streamOut=canvas.captureStream(30);
-  stream.getAudioTracks().forEach(t=>streamOut.addTrack(t));
-  recorder=new MediaRecorder(streamOut);
+  const out=canvas.captureStream(30);
+  stream.getAudioTracks().forEach(t=>out.addTrack(t));
+  recorder=new MediaRecorder(out);
   recorder.ondataavailable=e=>chunks.push(e.data);
-  recorder.onstop=saveVideo;
-  recorder.start();
-}
-
-function countDownTick(){
-  countdownEl.textContent=countdown;
-  timer=setInterval(()=>{
-    countdown--;
-    stepTele();
-    countdownEl.textContent=countdown;
-    if(countdown<=0){
-      clearInterval(timer);
-      recorder.stop();
-    }
-  },1000);
-}
-
-/* =======================
-   SAVE VIDEO + DB
-======================= */
-function saveVideo(){
-  cameraIcon.style.display="none";
-  recBtn.classList.remove("rec-active");
-  const blob=new Blob(chunks,{type:"video/webm"});
-  chunks=[];
-  const id="VID-"+Date.now();
-  const db=JSON.parse(localStorage.getItem(DB_KEY)||"[]");
-  db.push({
-    id,
-    date:new Date().toISOString(),
-    phone:phoneInput.value,
-    caption:answer.value
-  });
-  localStorage.setItem(DB_KEY,JSON.stringify(db));
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=id+".webm";
-  a.click();
-}
-
-/* =======================
-   FLIP / FLASH
-======================= */
-flipCam.onclick=()=>{
-  facing=facing==="user"?"environment":"user";
-  startCam();
-}
-flashBtn.onclick=()=>{
-  const track=stream.getVideoTracks()[0];
-  const cap=track.getCapabilities();
-  if(cap.torch){
-    track.applyConstraints({advanced:[{torch:!track.torchOn}]});
-    track.torchOn=!track.torchOn;
+  recorder.onstop=()=>{
+    recIcon.style.display="none";
+    countdown.style.display="none";
+    const blob=new Blob(chunks,{type:"video/webm"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="video_"+Date.now()+".webm";
+    a.click();
   }
-}
+  recorder.start();
+};
+
+/* FLIP / FLASH */
+flipCam.onclick=()=>{facing=facing==="user"?"environment":"user";startCam();}
+flashBtn.onclick=()=>{
+  const t=stream.getVideoTracks()[0];
+  if(t.getCapabilities().torch) t.applyConstraints({advanced:[{torch:!t.torchOn}]});
+};
+
+/* LOGO / PHONE */
+logoInput.onchange=e=>{
+  const r=new FileReader();
+  r.onload=()=>{logoOverlay.src=r.result;localStorage.setItem("logo",r.result)}
+  r.readAsDataURL(e.target.files[0]);
+};
+const sl=localStorage.getItem("logo"); if(sl) logoOverlay.src=sl;
+
+phoneInput.oninput=e=>{
+  phoneOverlay.textContent="CHIAMA AL "+e.target.value;
+  localStorage.setItem("phone",e.target.value);
+};
+const sp=localStorage.getItem("phone");
+if(sp){phoneInput.value=sp;phoneOverlay.textContent="CHIAMA AL "+sp;}
 </script>
 </body>
 </html>
