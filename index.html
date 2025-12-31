@@ -53,6 +53,7 @@
       align-items:center;
     }
 
+    /* ---------- Buttons (friendly + animazioni) ---------- */
     .btn{
       border:1px solid var(--border);
       background:rgba(255,255,255,.04);
@@ -71,6 +72,7 @@
       gap:8px;
       user-select:none;
       position:relative;
+
       transform: translateY(0) scale(1);
       transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
@@ -120,6 +122,7 @@
     }
     .btn.gray{ background: rgba(255,255,255,.04); }
 
+    /* REC button (rosso, “alive”) */
     .btn.rec{
       background: linear-gradient(135deg, rgba(255,45,45,.95), rgba(255,45,45,.55));
       border-color: rgba(255,45,45,.55);
@@ -418,8 +421,11 @@
       display:flex;
       justify-content:flex-end;
       z-index: 50;
+      gap:8px;
+      flex-wrap:wrap;
     }
 
+    /* Prompt accordion */
     details{
       border:1px solid rgba(255,255,255,.10);
       border-radius:14px;
@@ -465,39 +471,19 @@
       box-shadow: 0 0 0 6px rgba(216,162,58,.12);
     }
 
+    /* Right-align helpers for REC */
     .ctrlLeft{ display:flex; gap:8px; align-items:center; }
     .ctrlMid{ display:flex; gap:8px; align-items:center; justify-content:center; }
     .ctrlRight{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
 
-    /* ✅ NEW: form fields */
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:8px;
-    }
-    @media (max-width: 420px){ .grid2{ grid-template-columns:1fr; } }
-    .field input, .field select{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:900;
-      font-size:12px;
-    }
-    .field input:focus, .field select:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
-    }
-
-    /* ===== ISTRUZIONI (MODAL) ===== */
+    /* ==========================
+       ISTRUZIONI MODAL
+    ========================== */
     .modalBackdrop{
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -508,46 +494,69 @@
 
     .modalCard{
       width: min(920px, 96vw);
-      max-height: min(82vh, 780px);
+      max-height: min(82vh, 760px);
       overflow: auto;
-      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border: 1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25));
-      box-shadow: 0 18px 70px rgba(0,0,0,.55);
+      border-radius: 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
     }
-
-    .modalHead{
+    .modalHeader{
       display:flex;
       align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px 10px;
       border-bottom: 1px solid rgba(255,255,255,.10);
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+      z-index: 2;
     }
-    .modalHead h3{
-      margin:0;
-      font-size: 12px;
-      letter-spacing: .7px;
-      text-transform: uppercase;
-      color: var(--muted);
+    .modalHeader .title{
       font-weight: 1000;
+      letter-spacing:.2px;
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
     .modalBody{
       padding: 12px;
+      color: rgba(243,244,246,.95);
       font-size: 12px;
       line-height: 1.35;
-      color: var(--text);
     }
-    .modalBody .k{
-      color: var(--gold);
-      font-weight: 1000;
+    .modalBody h3{
+      margin: 12px 0 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing:.8px;
+      color: var(--muted);
     }
-    .modalBody ul{ margin: 8px 0 12px 18px; }
+    .modalBody ol, .modalBody ul{
+      margin: 8px 0 10px 18px;
+      padding: 0;
+    }
     .modalBody li{ margin: 6px 0; }
-    .hr{
-      height:1px;
-      background: rgba(255,255,255,.10);
-      margin: 12px 0;
+    .callout{
+      border: 1px solid rgba(216,162,58,.25);
+      background: rgba(216,162,58,.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin: 10px 0;
+      color: rgba(243,244,246,.96);
+    }
+    .kbd{
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: rgba(243,244,246,.92);
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -555,6 +564,7 @@
 <body>
 <div class="wrap">
 
+  <!-- TOP ROW -->
   <header>
     <div class="row" style="flex:1;">
       <button class="btn primary" id="btnNext" type="button">
@@ -569,9 +579,9 @@
         <span class="ico">📋</span> Incolla risposta
       </button>
 
-      <!-- ✅ NEW: ISTRUZIONI -->
-      <button class="btn gray" id="btnInstructions" type="button" title="Apri le istruzioni operative">
-        <span class="ico">📖</span> Istruzioni
+      <!-- NUOVO: ISTRUZIONI -->
+      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
+        <span class="ico">📘</span> Istruzioni
       </button>
 
       <span class="pill">
@@ -586,106 +596,13 @@
     </div>
   </header>
 
+  <!-- Didascalia breve -->
   <div class="hintTop">
     1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT + copia domanda</b> (incolla e invia) → 3) usa <b>copia</b> su ChatGPT →
     4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
   </div>
 
-  <!-- ✅ NEW: DATI IMMOBILE -->
-  <div class="card">
-    <div class="section">
-      <p class="h">Dati immobile (inseriti dal cliente)</p>
-
-      <div class="grid2">
-        <div class="field">
-          <input id="f_displayName" placeholder="Nome visualizzato (es: Trilocale Luminoso)" />
-        </div>
-        <div class="field">
-          <input id="f_mq" type="number" min="0" step="1" placeholder="Metri Quadri (mq)" />
-        </div>
-
-        <div class="field">
-          <input id="f_piano" placeholder="Piano (es: 2° / rialzato / terra)" />
-        </div>
-        <div class="field">
-          <input id="f_locali" placeholder="Locali (es: 3 / bilocale / trilocale)" />
-        </div>
-
-        <div class="field">
-          <input id="f_bagno" placeholder="Bagno/i (es: 1 / 2 / 1 finestrato)" />
-        </div>
-        <div class="field">
-          <input id="f_riscaldamento" placeholder="Riscaldamento (es: autonomo / centralizzato)" />
-        </div>
-
-        <div class="field">
-          <select id="f_giardino">
-            <option value="">Giardino (seleziona)</option>
-            <option value="Sì">Sì</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-        <div class="field">
-          <select id="f_garage">
-            <option value="">Garage/box (seleziona)</option>
-            <option value="Sì">Sì</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <select id="f_arredamento">
-            <option value="">Arredamento (seleziona)</option>
-            <option value="Arredato">Arredato</option>
-            <option value="Parzialmente arredato">Parzialmente arredato</option>
-            <option value="Non arredato">Non arredato</option>
-          </select>
-        </div>
-        <div class="field">
-          <select id="f_ascensore">
-            <option value="">Ascensore (seleziona)</option>
-            <option value="Sì">Sì</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <select id="f_libero">
-            <option value="">Libero (seleziona)</option>
-            <option value="Subito">Subito</option>
-            <option value="Da concordare">Da concordare</option>
-            <option value="Occupato">Occupato</option>
-          </select>
-        </div>
-        <div class="field">
-          <input id="f_classeImmobile" placeholder="Classe Immobile (es: A4 / B / C ...)" />
-        </div>
-
-        <div class="field">
-          <input id="f_anno" type="number" min="0" step="1" placeholder="Anno di Costruzione (es: 1998)" />
-        </div>
-        <div class="field">
-          <select id="f_ristrutturato">
-            <option value="">Ristrutturato (seleziona)</option>
-            <option value="Sì">Sì</option>
-            <option value="No">No</option>
-            <option value="Parzialmente">Parzialmente</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="bar left" style="margin-top:10px;">
-        <button class="btn tiny gray" id="btnClearProperty" type="button">🧹 Svuota dati</button>
-        <span class="pill" id="propertyStatus">Dati: —</span>
-      </div>
-
-      <div class="subtle">
-        Questi dati vengono aggiunti automaticamente al testo che copi su ChatGPT.
-      </div>
-    </div>
-  </div>
-
-  <!-- BLOCCO RISPOSTA IN ALTO -->
+  <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
   <div class="card">
     <div class="section">
       <p class="h">Risposta (da ChatGPT o scritta da te)</p>
@@ -731,6 +648,7 @@
             </div>
 
             <div class="controlsRow">
+              <!-- REC più a destra: layout a 3 blocchi -->
               <div class="bar between" style="width:100%;">
                 <div class="ctrlLeft">
                   <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
@@ -821,21 +739,20 @@
 
         <div class="bar left" style="margin-top:10px;">
           <button class="btn" id="btnDownloadVideo" type="button"><span class="ico">📥</span> Scarica video</button>
-          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
-        </div>
 
-        <!-- ✅ NEW: UPLOAD VIDEO -->
-        <div class="bar left" style="margin-top:10px;">
-          <input id="uploadVideo" type="file" accept="video/*" style="display:none;" />
-          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video già pronto (uso futuro)">
+          <!-- NUOVO: UPLOAD VIDEO -->
+          <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
+          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
             <span class="ico">⬆️</span> Carica video
           </button>
-          <span class="pill">Upload in lista</span>
+
+          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
         </div>
 
         <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
       </div>
 
+      <!-- PROMPT BLOCCO A FONDO PAGINA -->
       <div class="section">
         <details id="promptDetails">
           <summary>
@@ -865,66 +782,56 @@
   </div>
 </div>
 
-<!-- ✅ NEW: MODAL ISTRUZIONI -->
+<!-- Bottom bar -->
+<div class="bottomBar">
+  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
+  <button class="btn tiny gray" id="btnInstructionsBottom" type="button"><span class="ico">📘</span> Istruzioni</button>
+</div>
+
+<!-- ==========================
+     MODAL ISTRUZIONI
+========================== -->
 <div class="modalBackdrop" id="instructionsModal" aria-hidden="true">
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instructionsTitle">
-    <div class="modalHead">
-      <h3 id="instructionsTitle">Istruzioni operative • Video Creator</h3>
-      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✖ Chiudi</button>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
+    <div class="modalHeader">
+      <div class="title" id="instrTitle">📘 Istruzioni operative – Video Creator</div>
+      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✕ Chiudi</button>
     </div>
 
     <div class="modalBody">
-      <div class="pill" style="display:inline-flex; margin-bottom:10px;">
-        Obiettivo: <b style="color:var(--text);">domanda → testo → teleprompter → video pronto</b>
+      <div class="callout">
+        Obiettivo: creare video verticali <b>9:16</b> in serie (TikTok/Instagram/Shorts/Facebook) con <b>domanda → risposta → teleprompter → REC → caption → download</b>.
       </div>
 
-      <p style="margin:0 0 8px;">
-        Questa dashboard serve a creare video verticali <span class="k">9:16</span> (TikTok/Instagram/Reels/Shorts) usando
-        i <span class="k">dati immobile</span> + un testo generato con <span class="k">ChatGPT</span> + un <span class="k">teleprompter</span> integrato.
-      </p>
-
-      <div class="hr"></div>
-
-      <p class="h" style="margin:0 0 8px;">Flusso in 5 passi</p>
-      <ol style="margin: 0 0 12px 18px;">
-        <li><b>Compila “Dati immobile”</b> (più dati = testo migliore).</li>
-        <li><b>Premi “Nuova domanda”</b> finché trovi la domanda giusta (tour, caption, investitori, ecc.).</li>
-        <li><b>Premi “Apri ChatGPT + copia domanda”</b> → incolla su ChatGPT → invia → copia la risposta.</li>
-        <li><b>Premi “Incolla risposta”</b> e poi <b>“Invia al teleprompter”</b>.</li>
-        <li><b>Premi “Teleprompter + REC”</b> per registrare con teleprompter e timer REC.</li>
+      <h3>Flusso standard</h3>
+      <ol>
+        <li><b>Nuova domanda</b> → clicca <span class="kbd">✨ Nuova domanda</span> e leggi la domanda che appare sul video.</li>
+        <li><b>Risposta da ChatGPT</b> → clicca <span class="kbd">💬 Apri ChatGPT + copia domanda</span>, incolla in ChatGPT e invia. Poi copia la risposta completa.</li>
+        <li><b>Incolla risposta</b> → torna qui e clicca <span class="kbd">📋 Incolla risposta</span> (finisce nel box “Risposta”).</li>
+        <li><b>Invia al teleprompter</b> → clicca <span class="kbd">➡️ Invia al teleprompter</span> (il testo va nel teleprompter e diventa anche caption base).</li>
+        <li><b>Prepara</b> → se serve clicca <span class="kbd">📷 Camera</span>, scegli velocità (90/105/120) e regola zoom.</li>
+        <li><b>Registra</b> → clicca <span class="kbd">🔴 Teleprompter + REC</span>. Quando finisci clicca <span class="kbd">⏹ Stop</span>.</li>
+        <li><b>Rivedi/Scarica</b> → seleziona il video in “Video creati” e clicca <span class="kbd">📥 Scarica video</span>.</li>
+        <li><b>Caption</b> → clicca <span class="kbd">📋 Copia caption</span> (aggiunge hashtag automatici se mancanti).</li>
       </ol>
 
-      <div class="hr"></div>
-
-      <p class="h" style="margin:0 0 8px;">Controlli principali</p>
+      <h3>Produzione in serie</h3>
       <ul>
-        <li><b>Camera</b>: accende la camera/microfono.</li>
-        <li><b>Velocità (90/105/120)</b>: regola lo scorrimento del teleprompter.</li>
-        <li><b>Zoom</b>: ingrandisce l’inquadratura (utile per non far vedere troppo sfondo).</li>
-        <li><b>Stop</b>: ferma la registrazione. <b>Riavvia</b>: ricomincia lo scorrimento del teleprompter.</li>
-        <li><b>Rotazione profili</b>: seleziona i canali; “PROSSIMO” indica dove andrà il video successivo.</li>
+        <li>Ripeti sempre: <b>Nuova domanda → ChatGPT → Incolla → Invia al teleprompter → REC → Stop</b>.</li>
+        <li>La “rotazione profili” sposta automaticamente il <b>prossimo canale</b> dopo ogni registrazione.</li>
       </ul>
 
-      <div class="hr"></div>
-
-      <p class="h" style="margin:0 0 8px;">Caption & Hashtag</p>
+      <h3>Upload video</h3>
       <ul>
-        <li>La caption viene memorizzata automaticamente.</li>
-        <li>Gli hashtag “fissi” vengono aggiunti solo quando premi <b>Copia caption</b> (se non sono già presenti).</li>
+        <li>Puoi aggiungere un video manualmente con <span class="kbd">⬆️ Carica video</span>: entra in lista, si può rivedere e scaricare.</li>
+        <li>Il video caricato resta disponibile finché la pagina è aperta (workflow perfetto per test e revisione).</li>
       </ul>
 
-      <div class="hr"></div>
-
-      <p class="h" style="margin:0 0 8px;">Upload video (già pronto per uso futuro)</p>
-      <p style="margin:0;">
-        Puoi caricare un video esterno: verrà inserito in <b>Video creati</b> e lo potrai rivedere/scaricare come gli altri.
-      </p>
+      <div class="subtle">
+        Tip: premi <span class="kbd">ESC</span> per chiudere questa finestra.
+      </div>
     </div>
   </div>
-</div>
-
-<div class="bottomBar">
-  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
 </div>
 
 <script>
@@ -932,9 +839,7 @@
    CONFIG
 ========================== */
 const GESTIONALE_URL = "https://tuo-gestionale.com";
-
-/* ✅ NEW: chat corretta (quella che mi hai indicato) */
-const CHATGPT_URL = "https://chatgpt.com/c/69528e47-0920-8331-8d43-59824e8a9c54";
+const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
 
 /* Hashtag automatici (NON mostrati in preview) */
 const HIDDEN_HASHTAGS = [
@@ -945,38 +850,57 @@ const HIDDEN_HASHTAGS = [
   "#businessdigitale","#marketingonline"
 ].join(" ");
 
-/* ✅ NEW: Prompt base orientato alla promozione immobile (stessa logica: 250 parole + hashtag) */
-const BASE_PROMPT = `🧩 PROMPT ADATTIVO – PROMO IMMOBILE (MAX 250 PAROLE + HASHTAG)
+/* Prompt base (nuovo) */
+const BASE_PROMPT = `🧩 PROMPT ADATTIVO – VERSIONE FINALE (250 PAROLE + HASHTAG)
 
-Agisci come un consulente immobiliare esperto e un copywriter per video social (TikTok/Instagram/Reels).
-Devi creare testi brevi, chiari e super scorrevoli, adatti anche a un ragazzo di 15 anni.
+Agisci come un consulente immobiliare esperto, con uno stile friendly, chiaro e professionale, adatto anche a un ragazzo di 15 anni.
 
-Obiettivo: promuovere l'immobile usando i dati forniti (mq, piano, locali, ecc.) e trasformarli in una narrazione “vendibile”.
-Evita tecnicismi: se usi un termine tecnico, spiegalo subito in modo semplice.
+Rispondi alle domande che ti fornirò con testi di massimo 250 parole, semplici, scorrevoli e concreti.
 
-Struttura di ogni risposta:
-1) Hook iniziale (1-2 frasi che catturano l’attenzione)
-2) Presentazione immobile (benefici concreti, non solo caratteristiche)
-3) 2-3 punti forti in elenco (rapidi)
-4) Chiusura con invito all’azione (scrivi “Scrivimi in DM” o “Chiamami”)
-5) Hashtag: 5 pertinenti + quelli fissi
+Adatta progressivamente il tuo stile sulla base delle domande precedenti e delle risposte già fornite, migliorando chiarezza, precisione ed efficacia comunicativa nel tempo.
+
+Usa un linguaggio:
+
+semplice e diretto
+
+privo di tecnicismi inutili
+
+arricchito da esempi pratici della vita quotidiana
+
+Se utilizzi un termine tecnico, spiegalo immediatamente in modo semplice.
+
+Mantieni sempre un tono amichevole, rassicurante e professionale, mai infantile e mai burocratico.
+
+Struttura ogni risposta in questo modo:
+
+problema che andiamo a risolvere Breve introduzione che inquadra l’argomento
+
+Spiegazione chiara, con esempi concreti
+
+Conclusione, con un consiglio pratico
+
+Al termine di ogni risposta, aggiungi una breve lista di hashtag pertinenti al tema trattato (5), e #immobiliarelasacra #josephcretorlab #realmediapro #amamy #immobiliare #realestateitalia #mercatoimmobiliare #agenziaimmobiliare #casainvendita #venditacasa #investimentiimmobiliari #property #realestate #digitalstrategist #digitalstrategy #marketingdigitale #strategiamarketing #brandstrategy #contentstrategy #socialmediastrategy #growthmarketing #personalbranding #branding #businessdigitale #marketingonline
 
 Regole fondamentali:
-- Massimo 250 parole, non di più
-- Tone: amichevole, rassicurante, professionale
-- Niente linguaggio tecnico inutile`;
+
+Lunghezza massima: 250 parole non di piu'
+
+Niente linguaggio tecnico inutile`;
 
 /* Codice sblocco prompt */
 const UNLOCK_CODE = "16091979Jm";
 
-/* ✅ NEW: Domande più coerenti con promo (logica identica al tuo Question Bank) */
+/* Archivio domande */
 const QUESTION_BANK = [
-  { q:"Scrivimi un testo per un video di 20–30 secondi che presenti questo immobile in modo super attraente." },
-  { q:"Crea una caption Instagram persuasiva per questo immobile, con call-to-action forte." },
-  { q:"Fammi una versione più emozionale e una più “dati e concretezza” per lo stesso immobile." },
-  { q:"Scrivi un testo stile “tour rapido” (come se stessi mostrando le stanze) per questo immobile." },
-  { q:"Scrivi una versione pensata per chi cerca prima casa (tono rassicurante)." },
-  { q:"Scrivi una versione pensata per investitori (tono pratico, focalizzato sul valore)." },
+  { q:"Perché ricevo poche chiamate anche se l'annuncio è online da settimane?" },
+  { q:"Se arrivano solo curiosi e nessuna proposta, cosa significa?" },
+  { q:"Come capisco se il prezzo sta bloccando la vendita?" },
+  { q:"Meglio partire alto e poi scendere o partire subito con il prezzo giusto?" },
+  { q:"Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?" },
+  { q:"Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?" },
+  { q:"Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?" },
+  { q:"Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?" },
+  { q:"Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?" },
 ];
 
 /* Teleprompter speed */
@@ -1038,9 +962,10 @@ async function copyText(text){
   }
 }
 async function readClipboardText(){
-  return await navigator.clipboard.readText();
+  return await navigator.clipboard.readText(); // HTTPS/localhost
 }
 
+/* Caption: aggiungi hashtag solo se non già presenti */
 function captionWithHashtagsIfNeeded(clean){
   const c = String(clean || "").trim();
   if(!c) return "";
@@ -1058,75 +983,6 @@ function setCaptionClean(clean){
   if ($("chkRememberCaption").checked){
     try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
   }
-}
-
-/* ==========================
-   ✅ NEW: DATI IMMOBILE (raccolta + storage)
-========================== */
-const PROPERTY_FIELDS = [
-  ["f_displayName","Nome visualizzato"],
-  ["f_mq","Metri Quadri"],
-  ["f_piano","Piano"],
-  ["f_locali","Locali"],
-  ["f_bagno","Bagno"],
-  ["f_riscaldamento","Riscaldamento"],
-  ["f_giardino","Giardino"],
-  ["f_garage","Garage/box"],
-  ["f_arredamento","Arredamento"],
-  ["f_ascensore","Ascensore"],
-  ["f_libero","Libero"],
-  ["f_classeImmobile","Classe Immobile"],
-  ["f_anno","Anno di Costruzione"],
-  ["f_ristrutturato","Ristrutturato"],
-];
-
-function getPropertyData(){
-  const data = {};
-  for(const [id,label] of PROPERTY_FIELDS){
-    const el = $(id);
-    if(!el) continue;
-    const v = String(el.value || "").trim();
-    if(v) data[label] = v;
-  }
-  return data;
-}
-
-function propertyDataToText(data){
-  const entries = Object.entries(data || {});
-  if(!entries.length) return "—";
-  return entries.map(([k,v]) => `- ${k}: ${v}`).join("\n");
-}
-
-function updatePropertyStatus(){
-  const data = getPropertyData();
-  const count = Object.keys(data).length;
-  $("propertyStatus").textContent = count ? `Dati: ${count} compilati` : "Dati: —";
-}
-
-function savePropertyToLS(){
-  try{
-    localStorage.setItem("vc_property_data", JSON.stringify(getPropertyData()));
-  }catch(e){}
-}
-
-function loadPropertyFromLS(){
-  try{
-    const raw = localStorage.getItem("vc_property_data");
-    if(!raw) return;
-    const obj = JSON.parse(raw);
-    for(const [id,label] of PROPERTY_FIELDS){
-      if(obj && obj[label] != null && $(id)) $(id).value = String(obj[label]);
-    }
-  }catch(e){}
-  updatePropertyStatus();
-}
-
-function clearProperty(){
-  for(const [id] of PROPERTY_FIELDS){
-    if($(id)) $(id).value = "";
-  }
-  try{ localStorage.removeItem("vc_property_data"); }catch(e){}
-  updatePropertyStatus();
 }
 
 /* ==========================
@@ -1169,24 +1025,10 @@ function nextQuestion(){
   currentQuestion = QUESTION_BANK[qIdx].q;
   showQuestionInOverlay(currentQuestion);
 }
-
-/* ✅ NEW: compone input includendo dati immobile */
 function composeChatGPTInput(){
   const q = String(currentQuestion || "").trim();
-
-  const data = getPropertyData();
-  const propertyBlock = propertyDataToText(data);
-
-  const base = (promptText || BASE_PROMPT).trim();
-
-  const inputParts = [];
-  inputParts.push("Dati immobile:");
-  inputParts.push(propertyBlock);
-  inputParts.push("");
-  inputParts.push("Richiesta:");
-  inputParts.push(`👉 ${q || "Crea una descrizione promozionale per questo immobile."}`);
-
-  return `${base}\n\nInput:\n${inputParts.join("\n")}`.trim();
+  if(!q) return (promptText || BASE_PROMPT).trim();
+  return `${(promptText || BASE_PROMPT).trim()}\n\nInput:\n👉 ${q}`.trim();
 }
 
 /* ==========================
@@ -1288,7 +1130,7 @@ function applyAnswer(answer){
 }
 
 /* ==========================
-   SPEED UI
+   SPEED UI (checkbox “radio”)
 ========================== */
 function setSpeed(seconds){
   teleprompterSeconds = seconds;
@@ -1494,7 +1336,7 @@ function startRecording(){
     const name = buildFileName(totalVideos, platformNow, qNow);
     const url = URL.createObjectURL(blob);
 
-    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow });
+    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow, kind:"recorded" });
     currentRecIndex = 0;
 
     $("playback").src = url;
@@ -1523,22 +1365,63 @@ function goToGestionale(){
 }
 
 /* ==========================
+   ISTRUZIONI MODAL
+========================== */
+function openInstructions(){
+  const m = $("instructionsModal");
+  m.classList.add("show");
+  m.setAttribute("aria-hidden", "false");
+}
+function closeInstructions(){
+  const m = $("instructionsModal");
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden", "true");
+}
+
+/* ==========================
+   UPLOAD VIDEO
+========================== */
+function addUploadedVideo(file){
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+  totalVideos += 1;
+
+  const platformNow = getActivePlatform();
+  const qNow = String(currentQuestion || "Upload video").trim();
+  const k = keywordsFromQuestion(qNow) || "upload";
+  const p = platformNow || "upload";
+  const title = `#${String(totalVideos).padStart(3,"0")} • ${p} • ${k} • UPLOAD`;
+
+  const safeName = (file.name && file.name.trim()) ? file.name.trim() : `upload_${nowStamp()}.mp4`;
+
+  const capNow = String(lastCaptionClean || "").trim();
+
+  recordings.unshift({
+    title,
+    name: safeName,
+    url,
+    blob: file,
+    question: qNow,
+    captionClean: capNow,
+    platform: platformNow,
+    kind: "uploaded"
+  });
+
+  currentRecIndex = 0;
+  $("playback").src = url;
+  $("playback").load();
+  renderRecList();
+  updateCounters();
+}
+
+/* ==========================
    INIT
 ========================== */
 document.addEventListener("DOMContentLoaded", ()=>{
   // prompt
   loadPrompt();
   lockPromptUI();
-
-  // ✅ NEW: load property data + listeners
-  loadPropertyFromLS();
-  PROPERTY_FIELDS.forEach(([id])=>{
-    if($(id)){
-      $(id).addEventListener("input", ()=>{ updatePropertyStatus(); savePropertyToLS(); });
-      $(id).addEventListener("change", ()=>{ updatePropertyStatus(); savePropertyToLS(); });
-    }
-  });
-  $("btnClearProperty").addEventListener("click", clearProperty);
 
   // blocco risposta: vuoto di default
   $("answerBox").value = "";
@@ -1554,6 +1437,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // init UI
   $("btnBackTop").addEventListener("click", goToGestionale);
   $("btnBackBottom").addEventListener("click", goToGestionale);
+
+  // Istruzioni
+  $("btnInstructions").addEventListener("click", openInstructions);
+  $("btnInstructionsBottom").addEventListener("click", openInstructions);
+  $("btnCloseInstructions").addEventListener("click", closeInstructions);
+  $("instructionsModal").addEventListener("click", (e)=>{
+    if(e.target && e.target.id === "instructionsModal") closeInstructions();
+  });
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape") closeInstructions();
+  });
 
   $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.";
   showQuestionInOverlay("Premi “Nuova domanda”.");
@@ -1580,7 +1474,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // nuova domanda
   $("btnNext").addEventListener("click", ()=> nextQuestion());
 
-  // apri chatgpt + copia prompt+domanda (+ dati immobile)
+  // apri chatgpt + copia prompt+domanda
   $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
     if(!currentQuestion){
       nextQuestion();
@@ -1658,6 +1552,22 @@ document.addEventListener("DOMContentLoaded", ()=>{
     downloadBlob(r.blob, r.name);
   });
 
+  // upload video (button -> hidden input)
+  $("btnUploadVideo").addEventListener("click", ()=>{
+    $("videoUpload").click();
+  });
+  $("videoUpload").addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    if(!String(file.type || "").startsWith("video/")){
+      alert("Seleziona un file video valido.");
+      e.target.value = "";
+      return;
+    }
+    addUploadedVideo(file);
+    e.target.value = "";
+  });
+
   // clear list
   $("btnClearList").addEventListener("click", ()=>{
     if(!recordings.length) return;
@@ -1697,71 +1607,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     savePrompt();
     lockPromptUI();
     $("unlockCode").value = "";
-  });
-
-  /* ==========================
-     ✅ NEW: ISTRUZIONI (MODAL)
-  ========================== */
-  const modal = $("instructionsModal");
-  function openInstructions(){
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden","false");
-  }
-  function closeInstructions(){
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden","true");
-  }
-
-  $("btnInstructions").addEventListener("click", openInstructions);
-  $("btnCloseInstructions").addEventListener("click", closeInstructions);
-
-  // Chiudi cliccando fuori dalla card
-  modal.addEventListener("click", (e)=>{
-    if(e.target === modal) closeInstructions();
-  });
-
-  // Chiudi con ESC
-  document.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape" && modal.classList.contains("show")) closeInstructions();
-  });
-
-  /* ==========================
-     ✅ NEW: UPLOAD VIDEO (FUTURO)
-  ========================== */
-  $("btnUploadVideo").addEventListener("click", ()=>{
-    $("uploadVideo").click();
-  });
-
-  $("uploadVideo").addEventListener("change", ()=>{
-    const file = $("uploadVideo").files && $("uploadVideo").files[0];
-    if(!file) return;
-
-    const url = URL.createObjectURL(file);
-
-    totalVideos += 1;
-
-    const platformNow = "upload";
-    const qNow = String(currentQuestion || "").trim();
-    const title = `#${String(totalVideos).padStart(3,"0")} • ${platformNow} • file`;
-
-    recordings.unshift({
-      title,
-      name: file.name || `upload_${nowStamp()}.webm`,
-      url,
-      blob: file, // File è un Blob: scaricabile
-      question: qNow,
-      captionClean: lastCaptionClean || "",
-      platform: platformNow
-    });
-
-    currentRecIndex = 0;
-    $("playback").src = url;
-    $("playback").load();
-    renderRecList();
-    updateCounters();
-
-    // reset per permettere ricarica stesso file
-    $("uploadVideo").value = "";
   });
 });
 </script>
