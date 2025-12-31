@@ -1,29 +1,55 @@
- <!doctype html>
+<!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – WhatsApp App + Scheduling</title>
+  <title>Video Creator – ChatGPT + REC 60s</title>
 
   <style>
     :root{
-      --bg:#0b1120; --text:#f3f4f6; --muted:#a0adb8; --gold:#d8a23a; --border: rgba(225,225,225,0.18);
-      --shadow: 0 14px 50px rgba(0,0,0,0.45); --radius: 18px; --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --bg:#0b1120;
+      --text:#f3f4f6;
+      --muted:#a0adb8;
+      --gold:#d8a23a;
+      --border: rgba(225,225,225,0.18);
+      --shadow: 0 14px 50px rgba(0,0,0,0.45);
+      --radius: 18px;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      --stage-w: min(420px, 92vw); --zoom: 1; --wa:#25D366;
+      --stage-w: min(420px, 92vw);
+      --zoom: 1;
+      --wa:#25D366;
     }
+
     *{ box-sizing:border-box; }
     body{
-      margin:0; font-family:var(--sans); color:var(--text);
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
       background:
         radial-gradient(900px 500px at 15% 10%, rgba(216,162,58,.18), transparent 60%),
         radial-gradient(900px 600px at 85% 30%, rgba(123,79,189,.14), transparent 55%),
         radial-gradient(900px 600px at 70% 85%, rgba(74,143,114,.14), transparent 55%),
         var(--bg);
     }
-    .wrap{ max-width:1200px; margin:0 auto; padding:14px 12px 84px; }
-    header{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:10px; }
-    .row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+    .wrap{ max-width:1150px; margin:0 auto; padding:14px 12px 84px; }
+
+    header{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
 
     .btn{
       border:1px solid var(--border);
@@ -37,49 +63,145 @@
       font-size:11px;
       line-height:1;
       white-space:nowrap;
+      text-decoration:none;
       display:inline-flex;
       align-items:center;
       gap:8px;
       user-select:none;
+      position:relative;
       transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
       overflow:hidden;
-      text-decoration:none;
     }
-    .btn:hover{ transform: translateY(-2px) scale(1.01); border-color: rgba(216,162,58,.22); box-shadow: 0 14px 34px rgba(0,0,0,.30); filter: brightness(1.06); }
+    .btn:hover{
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(216,162,58,.22);
+      box-shadow: 0 14px 34px rgba(0,0,0,.30);
+      filter: brightness(1.06);
+    }
     .btn:active{ transform: translateY(0px) scale(.99); filter: brightness(0.98); }
-    .btn.primary{ background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72)); color:#111; border-color: rgba(216,162,58,.55); }
+    .btn.tiny{ padding:6px 9px; font-size:10px; border-radius:11px; box-shadow:none; }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
+      color:#111;
+      border-color: rgba(216,162,58,.55);
+    }
+    .btn.blue{
+      background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
+      border-color: rgba(57,90,140,.55);
+    }
+    .btn.violet{
+      background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70));
+      border-color: rgba(123,79,189,.55);
+    }
     .btn.gray{ background: rgba(255,255,255,.04); }
-    .btn.wa{
-      background: linear-gradient(135deg, rgba(37,211,102,.95), rgba(37,211,102,.70));
-      border-color: rgba(37,211,102,.55);
-      color:#07120b;
+
+    /* REC circle */
+    .recCircle{
+      width:72px;height:72px;border-radius:999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: radial-gradient(140px 140px at 35% 30%, rgba(255,110,110,.95), rgba(255,45,45,.82));
+      color:#120707;
       font-weight:1000;
+      letter-spacing:.2px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+      user-select:none;
+      gap:8px;
+    }
+    .recCircle .dot{
+      width:10px;height:10px;border-radius:999px;background:#ff2d2d;
+      box-shadow: 0 0 0 0 rgba(255,45,45,.55);
+      animation: pulseDot 1.15s ease-in-out infinite;
+    }
+    .recCircle.running{ outline: 2px solid rgba(255,45,45,.35); filter: saturate(1.05); }
+    @keyframes pulseDot{
+      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.55); transform: scale(1); }
+      60%{ box-shadow: 0 0 0 12px rgba(255,45,45,0); transform: scale(1.06); }
+      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
     }
 
     .pill{
-      font-size:10px; color:var(--muted); padding:6px 10px; border:1px solid var(--border); border-radius:999px;
-      background:rgba(0,0,0,.18); font-weight:900; letter-spacing:.2px; display:inline-flex; gap:8px; align-items:center; white-space:nowrap;
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:rgba(0,0,0,.18);
+      font-weight:900;
+      letter-spacing:.2px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      white-space:nowrap;
     }
 
-    .layout{ display:grid; grid-template-columns: 1fr 440px; gap:12px; align-items:start; margin-top:12px; }
-    @media (max-width: 1020px){ .layout{ grid-template-columns:1fr; } }
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:12px;
+      align-items:start;
+      margin-top:12px;
+    }
+    @media (max-width: 980px){ .layout{ grid-template-columns:1fr; } }
 
-    .card{ background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
     .section{ padding:12px; }
     .section + .section{ border-top:1px solid rgba(255,255,255,.10); }
-    .h{ margin:0 0 8px; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:950; }
-    .subtle{ font-size:11px; color: var(--muted); line-height:1.35; margin-top:6px; }
 
-    .bar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .bar.between{ justify-content:space-between; }
-    .bar.left{ justify-content:flex-start; }
-
-    .field input, .field select, .field textarea{
-      width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18); color:var(--text); outline:none; font-weight:850; font-size:12px; line-height:1.25;
+    .h{
+      margin:0 0 8px;
+      font-size:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      font-weight:950;
     }
-    .field textarea{ min-height: 120px; resize: vertical; }
+
+    .hintTop{
+      margin: 6px 0 10px;
+      font-size:11px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .field textarea, .field input{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      font-weight:850;
+      resize: vertical;
+      font-size:12px;
+      line-height:1.25;
+    }
+    .field textarea{ min-height: 120px; }
+    .field textarea:focus, .field input:focus{
+      border-color: rgba(216,162,58,.45);
+      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    }
+
+    .bar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .bar.between{ justify-content:space-between; }
+    .bar.center{ justify-content:center; }
+    .bar.left{ justify-content:flex-start; }
 
     .mini{
       font-family:var(--mono);
@@ -93,28 +215,252 @@
       padding:10px;
     }
 
-    /* List */
-    .listItem{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      padding:10px;
-      margin-bottom:10px;
-      background: rgba(0,0,0,.12);
-    }
-    .listTop{
+    /* Stage */
+    .stageBlock{
+      width: var(--stage-w);
+      margin: 0 auto;
       display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
+      flex-direction:column;
+      align-items:stretch;
     }
-    .listTitle{ font-weight:1000; font-size:12px; }
-    .listMeta{ font-size:11px; color:var(--muted); line-height:1.35; margin-top:6px; white-space:pre-wrap; }
-    .listBtns{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .tiny{ font-size:10px; padding:6px 9px; border-radius:11px; box-shadow:none; }
+    #stage916{
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      background:#000;
+      box-shadow: var(--shadow);
+    }
+    #cam{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      transform: scale(var(--zoom));
+      transform-origin: center;
+    }
+
+    /* Overlay (preview only; recording draws its own overlay on canvas) */
+    #overlay{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index: 2;
+    }
+
+    /* Place question + phone at 1/4 height */
+    #qZone{
+      position:absolute;
+      left:10px; right:10px;
+      top:25%;
+      transform: translateY(-50%);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+    }
+    #questionOverlay{
+      width: calc(100% - 20px);
+      max-width: 92%;
+      font-size: 12px;
+      font-weight: 1000;
+      line-height: 1.18;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.34);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(6px);
+      white-space: pre-wrap;
+      text-align:center;
+    }
+
+    /* Logo centered, then category, then whatsapp phone under category (GREEN) */
+    #logoZone{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+    }
+    #logoWrap{
+      width:50px;height:50px;
+      border-radius:14px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    #logoImg{
+      width:50px;height:50px;
+      object-fit:contain;
+      display:none;
+      background:transparent;
+    }
+
+    #categoryOverlay{
+      text-align:center;
+      font-size:11px;
+      font-weight:1000;
+      letter-spacing:.6px;
+      color: rgba(243,244,246,.92);
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(6px);
+      width: fit-content;
+      max-width: 92%;
+    }
+
+    #waPhoneOverlay{
+      text-align:center;
+      font-size:12px;
+      font-weight:1100;
+      letter-spacing:.2px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.26);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(6px);
+      width: fit-content;
+      max-width: 92%;
+      color: var(--wa);
+    }
+
+    /* Teleprompter preview (NOT recorded) */
+    #teleprompterPreview{
+      position:absolute;
+      left:10px; right:10px;
+      bottom:12px;
+      display:flex;
+      justify-content:center;
+      z-index:3;
+    }
+    #teleText{
+      max-width: 100%;
+      width: calc(100% - 20px);
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.28;
+      font-weight: 900;
+      color: rgba(243,244,246,.95);
+      text-shadow: 0 2px 12px rgba(0,0,0,.75);
+      background: rgba(0,0,0,.26);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px 10px;
+      backdrop-filter: blur(6px);
+      max-height: 22%;
+      overflow:auto;
+    }
+    #teleText .w{ padding: 1px 2px; border-radius: 6px; }
+    #teleText .w.on{
+      background: rgba(216,162,58,.35);
+      border: 1px solid rgba(216,162,58,.25);
+    }
+
+    /* HUD REC */
+    #recHud{
+      position:absolute;
+      top:12px; right:12px;
+      display:none;
+      align-items:center;
+      gap:10px;
+      z-index: 10;
+    }
+    #recCamIcon{
+      width:34px;height:34px;border-radius:12px;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(6px);
+      font-size: 16px;
+    }
+    #countdownHud{
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(6px);
+      font-weight: 1000;
+      font-size: 12px;
+      min-width: 86px;
+      text-align:center;
+    }
+
+    /* Chat */
+    .chatBox{
+      background: rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 10px;
+      max-height: 220px;
+      overflow:auto;
+      font-size:12px;
+      line-height: 1.3;
+    }
+    .msg{ margin: 0 0 10px; }
+    .msg .who{
+      font-weight:1000;
+      font-size:10px;
+      letter-spacing:.6px;
+      color: rgba(243,244,246,.75);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .msg .bubble{
+      display:inline-block;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      max-width: 100%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user .bubble{ border-color: rgba(216,162,58,.22); }
+    .msg.ai .bubble{ border-color: rgba(255,255,255,.12); }
+
+    .subtle{
+      font-size:11px;
+      color: var(--muted);
+      line-height:1.35;
+      margin-top:6px;
+    }
+
+    .chk{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      color:var(--muted);
+      font-weight:950;
+      font-size:10px;
+      white-space:nowrap;
+    }
+    .check{ width:16px;height:16px; accent-color: var(--gold); cursor:pointer; }
+
+    .sliderRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:950;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    input[type="range"]{ width:170px; accent-color: var(--gold); }
 
     .bottomBar{
-      position: fixed; left: 0; right: 0; bottom: 0;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
       padding: 10px 12px;
       background: rgba(0,0,0,.35);
       border-top: 1px solid rgba(255,255,255,.12);
@@ -132,438 +478,1126 @@
 <div class="wrap">
 
   <header>
+    <!-- TUTTI I TASTI IN LINEA ORIZZONTALE -->
     <div class="row" style="flex:1;">
-      <button class="btn primary" id="btnMockAddVideo" type="button">➕ Aggiungi video (demo)</button>
-      <button class="btn gray" id="btnClearAll" type="button">🧹 Reset dati</button>
+      <button class="btn primary" id="btnNext" type="button">✨ Nuova domanda</button>
+      <button class="btn blue" id="btnOpenChatGPT" type="button">🤖 Apri ChatGPT</button>
+      <button class="btn gray" id="btnCopyQ" type="button">📋 Copia domanda</button>
+      <button class="btn violet" id="btnPasteAnswer" type="button">📋 Incolla risposta</button>
 
       <span class="pill">
-        <span id="pillPlatform">Piattaforma: —</span>
+        <span id="videoCounter">Video: 0</span>
         <span>•</span>
-        <span id="pillNextSlot">Prossimo slot: —</span>
+        <span id="platformLabel">Piattaforma: —</span>
       </span>
+    </div>
+
+    <div class="row">
+      <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
     </div>
   </header>
 
+  <div class="hintTop">
+    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT</b> (prompt copiato) → 3) incolla la risposta →
+    4) <b>Usa risposta</b> → 5) <b>REC</b> (60s) → 6) <b>Copia caption</b>
+  </div>
+
+  <!-- BLOCCO RISPOSTA -->
+  <div class="card">
+    <div class="section">
+      <p class="h">Risposta (da incollare / scrivere)</p>
+      <div class="field">
+        <textarea id="answerBox" placeholder="Incolla qui la risposta…"></textarea>
+      </div>
+
+      <!-- USA RISPOSTA + COPIA CAPTION UNO AFFIANCO ALL'ALTRO -->
+      <div class="bar left" style="margin-top:10px;">
+        <button class="btn primary" id="btnUseAnswer" type="button">➡️ Usa risposta</button>
+        <button class="btn gray" id="btnCopyCaption" type="button">📋 Copia caption</button>
+      </div>
+
+      <div class="subtle">
+        Il teleprompter è <b>solo preview</b> (non appare nei video creati).
+      </div>
+    </div>
+  </div>
+
   <div class="layout">
 
+    <!-- MAIN -->
     <div class="card">
       <div class="section">
-        <p class="h">Caption (testo)</p>
+        <p class="h">Video 9:16 + REC (60s)</p>
+
+        <div class="stageBlock">
+          <div id="stage916">
+            <video id="cam" autoplay playsinline muted></video>
+
+            <div id="recHud">
+              <div id="recCamIcon">🎥</div>
+              <div id="countdownHud">REC 60s</div>
+            </div>
+
+            <!-- PREVIEW overlay (recording is drawn on canvas without teleprompter) -->
+            <div id="overlay">
+              <div id="qZone">
+                <div id="questionOverlay">Premi “Nuova domanda”.</div>
+
+                <div id="logoZone">
+                  <div id="logoWrap"><img id="logoImg" alt="logo"></div>
+                  <div id="categoryOverlay">ATTUALITÀ</div>
+                  <div id="waPhoneOverlay">WHATSAPP: —</div>
+                </div>
+              </div>
+
+              <div id="teleprompterPreview">
+                <div id="teleText">Incolla una risposta → “Usa risposta” → “REC”.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bar between" style="margin-top:10px;">
+            <div class="bar left">
+              <button class="btn gray" id="btnCam" type="button">📷 Camera</button>
+              <button class="btn gray" id="btnFlip" type="button">🔄 Gira</button>
+              <button class="btn gray" id="btnFlash" type="button">💡 Flash</button>
+            </div>
+
+            <div class="bar">
+              <button class="btn gray" id="btnStop" type="button">⏹ Stop</button>
+              <div class="recCircle" id="btnREC" title="Registra 60 secondi"><span class="dot"></span>REC</div>
+            </div>
+          </div>
+
+          <div class="sliderRow" style="margin-top:10px;">
+            <span>Zoom</span>
+            <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
+            <span id="zoomVal">1.0x</span>
+          </div>
+
+          <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE -->
+    <div class="card">
+
+      <!-- CHAT: 3 TASTI IN LINEA ORIZZONTALE -->
+      <div class="section">
+        <p class="h">Chat (come prima)</p>
+        <div class="chatBox" id="chatBox"></div>
+
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn tiny blue" id="btnChatOpen" type="button">🤖 Apri ChatGPT</button>
+          <button class="btn tiny gray" id="btnChatAddQ" type="button">➕ Domanda</button>
+          <button class="btn tiny gray" id="btnChatClear" type="button">🗑 Svuota</button>
+        </div>
+
+        <div class="subtle">Scrivi/manda la domanda a ChatGPT e incolla la risposta nel box “Risposta”.</div>
+      </div>
+
+      <!-- PIATTAFORMA: CHECK MANUALI -->
+      <div class="section">
+        <p class="h">Piattaforma pubblicazione (manuale)</p>
+        <div class="bar left">
+          <label class="chk"><input class="check platformChk" type="checkbox" data-p="TIKTOK"> TikTok</label>
+          <label class="chk"><input class="check platformChk" type="checkbox" data-p="INSTAGRAM"> Instagram</label>
+          <label class="chk"><input class="check platformChk" type="checkbox" data-p="SHORTS"> Shorts</label>
+          <label class="chk"><input class="check platformChk" type="checkbox" data-p="FACEBOOK"> Facebook</label>
+        </div>
+        <div class="subtle">Seleziona <b>una sola</b> piattaforma: verrà scritta come prima parola in caption.</div>
+      </div>
+
+      <div class="section">
+        <p class="h">Overlay</p>
         <div class="field">
-          <textarea id="captionBox" placeholder="Qui metti la caption del video…"></textarea>
+          <input id="phoneInput" placeholder="Numero WhatsApp (es. 3331234567)" />
         </div>
+
         <div class="bar left" style="margin-top:10px;">
-          <button class="btn gray" id="btnCopyCaption" type="button">📋 Copia caption</button>
+          <input id="logoUpload" type="file" accept="image/*" style="display:none;" />
+          <button class="btn gray" id="btnLogo" type="button">🖼 Carica logo (50×50)</button>
+          <button class="btn gray" id="btnWhere" type="button">📁 Dove sono i video</button>
         </div>
       </div>
 
       <div class="section">
-        <p class="h">Video creati (con invio WhatsApp)</p>
-        <div class="subtle">
-          Il video lo scarichi e lo alleghi su WhatsApp. Il messaggio lo preparo io con: piattaforma + giorno/ora + funzionario + ID.
+        <div class="bar between">
+          <p class="h" style="margin:0;">Caption (preview)</p>
+          <label class="chk"><input type="checkbox" id="chkRememberCaption" class="check" checked /> Memorizza</label>
         </div>
-        <div id="videoList" style="margin-top:10px;">—</div>
+        <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
+      </div>
+
+      <div class="section">
+        <p class="h">Video creati</p>
+        <div class="subtle">Nei video creati NON appare il teleprompter. Si vedono: domanda → logo → categoria (+ WhatsApp).</div>
+
+        <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
+
+        <div class="bar left" style="margin-top:10px;">
+          <button class="btn" id="btnDownloadVideo" type="button">📥 Scarica video</button>
+          <button class="btn tiny gray" id="btnClearList" type="button">🗑 Svuota</button>
+        </div>
+
+        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
       </div>
     </div>
-
-    <div class="card">
-      <div class="section">
-        <p class="h">Impostazioni invio</p>
-        <div class="bar">
-          <div class="field" style="flex:1; min-width:180px;">
-            <input id="operatorName" placeholder="Nome funzionario (es. Marco)" />
-          </div>
-          <div class="field" style="flex:1; min-width:180px;">
-            <input id="josephNumber" placeholder="Numero Joseph (es. 393331234567)" />
-          </div>
-        </div>
-
-        <div class="field" style="margin-top:10px;">
-          <input id="groupInvite" placeholder="(Opz.) Link invito gruppo WhatsApp PUBBLICAZIONI" />
-        </div>
-
-        <div class="subtle">
-          Consiglio: usa il <b>gruppo</b>. Se metti solo il numero Joseph, posso aprire chat con testo già pronto.
-          Con il gruppo: apro il gruppo e copio il messaggio.
-        </div>
-
-        <div class="bar left" style="margin-top:10px;">
-          <button class="btn wa" id="btnOpenGroup" type="button">💬 Apri gruppo</button>
-          <button class="btn wa" id="btnOpenJoseph" type="button">💬 Apri chat Joseph</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <p class="h">Piattaforma + frequenza</p>
-        <div class="bar">
-          <div class="field" style="flex:1; min-width: 170px;">
-            <select id="platform">
-              <option value="TIKTOK">TikTok</option>
-              <option value="INSTAGRAM">Instagram</option>
-              <option value="SHORTS">YouTube Shorts</option>
-              <option value="FACEBOOK">Facebook</option>
-            </select>
-          </div>
-          <div class="field" style="flex:1; min-width: 170px;">
-            <select id="frequencyMode">
-              <option value="per_day">Tot post al giorno</option>
-              <option value="every_hours">Ogni X ore</option>
-              <option value="custom_minutes">Minuti minimi tra post</option>
-            </select>
-          </div>
-          <div class="field" style="flex:1; min-width: 120px;">
-            <input id="frequencyValue" type="number" min="1" step="1" value="2" />
-          </div>
-        </div>
-
-        <div class="mini" style="margin-top:10px;">
-Regole slot:
-- post/giorno → gap ≈ 24h / N
-- ogni X ore → gap = X ore
-- minuti minimi → gap = minuti
-        </div>
-
-        <div class="bar left" style="margin-top:10px;">
-          <label style="display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:950; font-size:10px;">
-            <input id="chkAutoMark" type="checkbox" checked style="width:16px;height:16px; accent-color: var(--gold);" />
-            Quando apro WhatsApp, segna slot come “usato”
-          </label>
-        </div>
-
-        <div class="bar left" style="margin-top:10px;">
-          <button class="btn gray" id="btnClearHistory" type="button">🧹 Pulisci storico slot</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <p class="h">Storico slot</p>
-        <div class="mini" id="historyBox">—</div>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <div class="bottomBar">
-  <button class="btn tiny gray" id="btnScrollTop" type="button">↑ Su</button>
+  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
 </div>
 
 <script>
 /* ==========================
-   STORAGE
+   CONFIG
 ========================== */
-const K_SETTINGS = "wa_pub_settings_v1";
-const K_HISTORY  = "wa_pub_history_v1";  // {platform:[iso,...]}
-const K_VIDEOS   = "wa_videos_v1";
-const K_CAPTION  = "wa_caption_v1";
-const K_OP       = "wa_operator_v1";
-const K_JO       = "wa_joseph_v1";
-const K_GROUP    = "wa_group_v1";
+const GESTIONALE_URL = "https://tuo-gestionale.com";
+
+/* Prompt (come prima): copiato + apre ChatGPT */
+const GPT_PROMPT_BASE = `
+Sei un assistente per creare video verticali 9:16 in italiano.
+Scrivi un testo da leggere in 60 secondi massimo, naturale, parlato, senza "ciao ragazzi".
+Struttura:
+1) Hook fortissimo (2-3 secondi)
+2) Target chiaro
+3) Una sola idea (1 takeaway)
+4) Ritmo alto (frasi brevi)
+5) Chiusura con CTA (scrivi "Scrivimi WhatsApp" + invito contatto)
+Non usare elenchi lunghi. Niente parole "robotiche".
+Rispondi SOLO col testo da leggere.
+`.trim();
+
+/* Hashtag (aggiunti solo in copia caption) */
+const HIDDEN_HASHTAGS = [
+  "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
+  "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
+  "#property","#realestate","#marketingdigitale","#contentstrategy","#socialmediastrategy","#personalbranding"
+].join(" ");
+
+/* ==========================
+   DOMANDE (300) – meno "robotiche"
+   Fasi: ACQUISIZIONE, LEAD, FOLLOW-UP, TRATTATIVA, FIDELIZZAZIONE (60 ciascuna)
+========================== */
+function buildQuestions300Natural(){
+  const phases = [
+    { code:"A", name:"ACQUISIZIONE", topics:[
+      "valutazione casa","incarico in esclusiva","foto annuncio","prezzo di partenza","tempi di vendita",
+      "annuncio che non porta chiamate","proprietario indeciso","vendere da privato","open house","documenti","zona/mercato","strategia marketing"
+    ]},
+    { code:"L", name:"LEAD", topics:[
+      "lead freddi","prima chiamata","messaggio WhatsApp","qualifica cliente","budget reale",
+      "motivazione e urgenza","finanziamento e mutuo","criteri di scelta","obiezioni iniziali","comparazione immobili","appuntamento visita","follow-up immediato"
+    ]},
+    { code:"F", name:"FOLLOW-UP", topics:[
+      "dopo la visita","cliente sparito","seconda visita","paura di sbagliare","rimandare la decisione",
+      "silenzio dopo proposta","ricontatto elegante","micro-impegno","urgenza percepita","riproporre valore","timeline decisione","riattivazione"
+    ]},
+    { code:"T", name:"TRATTATIVA", topics:[
+      "offerta bassa","controproposta","negoziazione","caparra e condizioni","tempi di risposta",
+      "clausole mutuo","obiezioni sul prezzo","chiudere senza scontare troppo","gestire emozioni","win-win","firme e step","chiusura"
+    ]},
+    { code:"R", name:"FIDELIZZAZIONE", topics:[
+      "post-vendita","recensioni","passaparola","contenuti utili","aggiornamenti mercato",
+      "opportunità future","community locale","relazione continua","assistenza documenti","consigli pratici casa","referral","nuovi incarichi da clienti"
+    ]},
+  ];
+
+  const templates = [
+    (t)=>`Quando parli di ${t}, qual è la cosa che quasi tutti sottovalutano?`,
+    (t)=>`Se ${t} non sta funzionando, qual è la prima verifica che fai?`,
+    (t)=>`Cosa dire (in modo semplice) per spiegare ${t} a un cliente scettico?`,
+    (t)=>`Qual è il segnale più chiaro che ${t} è impostato male?`,
+    (t)=>`Se vuoi migliorare ${t} già da oggi, qual è un’azione concreta da fare subito?`,
+    (t)=>`Qual è la domanda giusta da fare per sbloccare ${t}?`,
+    (t)=>`Perché su ${t} le persone si bloccano? E come le aiuti a decidere?`,
+    (t)=>`Cosa cambia davvero i risultati su ${t}, senza spendere di più?`,
+    (t)=>`Qual è l’errore più comune su ${t}… detto in modo chiaro e pratico?`,
+    (t)=>`Se ti capita spesso X su ${t}, cosa significa e come lo risolvi?`,
+  ];
+
+  const out = [];
+  for(const ph of phases){
+    let i = 0;
+    while(i < 60){
+      for(const topic of ph.topics){
+        for(const makeQ of templates){
+          if(i >= 60) break;
+          const id = `${ph.code}${String(i+1).padStart(3,"0")}`;
+          out.push({ id, fase: ph.name, categoria: topic, domanda: makeQ(topic) });
+          i++;
+        }
+        if(i >= 60) break;
+      }
+    }
+  }
+  return out.slice(0,300);
+}
+const QUESTION_BANK = buildQuestions300Natural();
 
 /* ==========================
    HELPERS
 ========================== */
-const $ = (id)=>document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
-function loadJSON(key, fallback){
-  try{ return JSON.parse(localStorage.getItem(key) || ""); }catch(e){ return fallback; }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function nowStamp(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
 }
-function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
-
+function slugify(it){
+  return String(it || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s-]/g,"")
+    .trim()
+    .replace(/\s+/g,"-")
+    .replace(/-+/g,"-")
+    .slice(0, 60);
+}
+function keywordsFromQuestion(q){
+  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","agli","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
+  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
+  return words.slice(0, 5).join("-");
+}
 async function copyText(text){
   const t = String(text || "");
   if(!t.trim()) return false;
-  try{ await navigator.clipboard.writeText(t); return true; }
-  catch(e){
+  try{
+    await navigator.clipboard.writeText(t);
+    return true;
+  }catch(e){
     const ta = document.createElement("textarea");
-    ta.value = t; document.body.appendChild(ta);
-    ta.select(); document.execCommand("copy"); ta.remove();
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
     return true;
   }
 }
-
-function pad2(n){ return String(n).padStart(2,"0"); }
-function fmtLocal(iso){
-  const d = new Date(iso);
-  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+async function readClipboardText(){
+  return await navigator.clipboard.readText();
 }
-function toISO(ms){ return new Date(ms).toISOString(); }
-
-function minGapMinutes(s){
-  const v = Math.max(1, Number(s.frequencyValue) || 1);
-  if(s.frequencyMode === "per_day") return Math.round((24*60)/v);
-  if(s.frequencyMode === "every_hours") return v*60;
-  return v;
-}
-
-/* ==========================
-   SETTINGS / STATE
-========================== */
-function getSettings(){
-  const s = loadJSON(K_SETTINGS, null) || {};
-  return {
-    platform: s.platform || "TIKTOK",
-    frequencyMode: s.frequencyMode || "per_day",
-    frequencyValue: Number(s.frequencyValue || 2)
-  };
-}
-function setSettings(partial){
-  const prev = getSettings();
-  const next = { ...prev, ...partial };
-  saveJSON(K_SETTINGS, next);
-  return next;
-}
-function getHistory(){
-  return loadJSON(K_HISTORY, { TIKTOK:[], INSTAGRAM:[], SHORTS:[], FACEBOOK:[] });
-}
-function setHistory(h){ saveJSON(K_HISTORY, h); }
-
-function calcNextSlot(platform){
-  const s = getSettings();
-  const gap = minGapMinutes(s);
-  const h = getHistory();
-  const list = (h[platform] || []).slice().sort((a,b)=> new Date(b) - new Date(a));
-  const now = Date.now();
-  if(list.length === 0) return toISO(now);
-  const last = new Date(list[0]).getTime();
-  return toISO(Math.max(now, last + gap*60*1000));
-}
-function markSlotUsed(platform, iso){
-  const h = getHistory();
-  h[platform] = h[platform] || [];
-  h[platform].unshift(iso);
-  setHistory(h);
-}
-
-/* ==========================
-   VIDEOS (metadata)
-========================== */
-function getVideos(){ return loadJSON(K_VIDEOS, []); }
-function setVideos(v){ saveJSON(K_VIDEOS, v); }
-
-function buildVideoId(platform){
-  const d = new Date();
-  const stamp = `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
-  const idx = String(getVideos().length + 1).padStart(3,"0");
-  return `VID_${platform}_${stamp}_${idx}`;
-}
-
-function buildWhatsAppText({ platform, scheduledAtISO, operator, videoId, caption }){
-  const when = fmtLocal(scheduledAtISO);
-  const head = `[${platform}] [${when}] [${operator || "—"}] [${videoId}]`;
-  const body = (caption || "").trim();
-  return `${head}\n\n${body}`.trim();
-}
-
-/* Open WhatsApp app with prefilled text to number (best case) */
-function openWhatsAppToNumber(numberE164NoPlus, text){
-  const url = `https://wa.me/${encodeURIComponent(numberE164NoPlus)}?text=${encodeURIComponent(text)}`;
-  window.location.href = url;
-}
-
-/* Group invite link: can't prefill text reliably -> we copy text, open group link */
-async function openWhatsAppGroup(inviteLink, text){
-  await copyText(text);
-  window.location.href = inviteLink;
-}
-
-/* ==========================
-   UI RENDER
-========================== */
-function render(){
-  const s = getSettings();
-  $("platform").value = s.platform;
-  $("frequencyMode").value = s.frequencyMode;
-  $("frequencyValue").value = s.frequencyValue;
-
-  const op = localStorage.getItem(K_OP) || "";
-  const jo = localStorage.getItem(K_JO) || "";
-  const gr = localStorage.getItem(K_GROUP) || "";
-  $("operatorName").value = op;
-  $("josephNumber").value = jo;
-  $("groupInvite").value = gr;
-
-  const next = calcNextSlot(s.platform);
-  $("pillPlatform").textContent = "Piattaforma: " + s.platform;
-  $("pillNextSlot").textContent = "Prossimo slot: " + fmtLocal(next);
-
-  const cap = localStorage.getItem(K_CAPTION) || "";
-  if(!$("captionBox").value) $("captionBox").value = cap;
-
-  // history
-  const h = getHistory();
-  const lines = [];
-  for(const p of ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"]){
-    lines.push(`== ${p} ==`);
-    const list = h[p] || [];
-    if(list.length === 0) lines.push("—");
-    else list.slice(0,8).forEach(x => lines.push(fmtLocal(x)));
-    lines.push("");
+function captionWithHashtagsIfNeeded(clean){
+  const c = String(clean || "").trim();
+  if(!c) return "";
+  const lower = c.toLowerCase();
+  if (lower.includes("#immobiliarelasacra") || lower.includes("#josephcretorlab") || lower.includes("#realmediapro")){
+    return c;
   }
-  $("historyBox").textContent = lines.join("\n").trim();
+  return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
+}
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
 
-  // videos list
-  const vids = getVideos();
-  const container = $("videoList");
-  if(vids.length === 0){
-    container.textContent = "—";
+/* ==========================
+   STORAGE KEYS
+========================== */
+const DB_KEY   = "vc_videos_db_v3";
+const CAP_KEY  = "vc_caption_clean_v3";
+const PHONE_KEY= "vc_phone_v3";
+const LOGO_KEY = "vc_logo_v3";
+const PLAT_KEY = "vc_platform_v3";
+
+/* ==========================
+   STATE
+========================== */
+let qIdx = -1;
+let currentQuestionObj = null;
+let currentQuestion = "";
+let lastCaptionClean = "";
+let totalVideos = 0;
+
+const PLATFORMS = ["TIKTOK","INSTAGRAM","SHORTS","FACEBOOK"];
+let selectedPlatform = "TIKTOK";
+
+let logoDataUrl = "";
+let logoImgObj = new Image();
+let phoneValue = "";
+
+let facingMode = "user";
+let torchOn = false;
+
+let recordings = [];
+let currentRecIndex = -1;
+
+/* Karaoke (preview only) */
+let karaokeWords = [];
+let karaokeIndex = 0;
+
+/* Recording */
+let camStream = null;
+let recorder = null;
+let chunks = [];
+let rafCanvasId = null;
+let recTimerId = null;
+let remaining = 60;
+let isRecording = false;
+
+let zoomValue = 1.0;
+const camEl = $("cam");
+const canvas = $("recCanvas");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+/* ==========================
+   QUESTIONS + CATEGORY
+========================== */
+function showQuestion(q){
+  $("questionOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
+}
+function getCategoryForQuestion(qObj){
+  if(!qObj || !qObj.fase) return "ATTUALITÀ";
+  const fase = qObj.fase || "ATTUALITÀ";
+  const cat = qObj.categoria ? ` • ${qObj.categoria}` : "";
+  return (fase + cat).toUpperCase();
+}
+function nextQuestion(){
+  qIdx = (qIdx + 1) % QUESTION_BANK.length;
+  currentQuestionObj = QUESTION_BANK[qIdx];
+  currentQuestion = currentQuestionObj.domanda;
+  showQuestion(currentQuestion);
+  $("categoryOverlay").textContent = getCategoryForQuestion(currentQuestionObj);
+}
+function refreshPlatformUI(){
+  $("platformLabel").textContent = "Piattaforma: " + selectedPlatform;
+}
+
+/* ==========================
+   Chat + ChatGPT button logic
+========================== */
+function chatAdd(who, text){
+  const box = $("chatBox");
+  const div = document.createElement("div");
+  div.className = "msg " + (who === "TU" ? "user" : "ai");
+  div.innerHTML = `
+    <div class="who">${who}</div>
+    <div class="bubble"></div>
+  `;
+  div.querySelector(".bubble").textContent = String(text || "");
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight + 9999;
+}
+
+function buildChatGPTPayload(){
+  const qText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ (scegli tu l'argomento)";
+  const cat = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
+  const wa = phoneValue ? `Numero WhatsApp: ${phoneValue}` : "Numero WhatsApp: (inseriscilo se vuoi CTA)";
+  return `${GPT_PROMPT_BASE}\n\nCONTESTO:\nCategoria: ${cat}\n${wa}\n\nDOMANDA:\n${qText}`.trim();
+}
+
+async function openChatGPTAndCopy(){
+  const payload = buildChatGPTPayload();
+  await copyText(payload);
+  // Open ChatGPT (no API key needed, just web app)
+  window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
+}
+
+/* ==========================
+   Teleprompter preview (karaoke)
+========================== */
+function setCaptionClean(clean){
+  lastCaptionClean = String(clean || "").trim();
+  $("captionPreview").textContent = lastCaptionClean || "—";
+  if ($("chkRememberCaption").checked){
+    try{ localStorage.setItem(CAP_KEY, lastCaptionClean); }catch(e){}
+  }
+}
+function buildKaraokeSpans(text){
+  const container = $("teleText");
+  container.innerHTML = "";
+  const tokens = String(text || "").replace(/\s+/g," ").trim().split(" ").filter(Boolean);
+  karaokeWords = tokens;
+  karaokeIndex = 0;
+
+  if(tokens.length === 0){
+    container.textContent = "Incolla una risposta → “Usa risposta” → “REC”.";
+    karaokeWords = [];
+    return;
+  }
+
+  for(const w of tokens){
+    const span = document.createElement("span");
+    span.className = "w";
+    span.textContent = w + " ";
+    container.appendChild(span);
+  }
+}
+function karaokeStep(n=1){
+  const el = $("teleText");
+  const spans = el.querySelectorAll(".w");
+  if(!spans.length) return;
+
+  for(let k=0;k<n;k++){
+    if(karaokeIndex > 0 && spans[karaokeIndex-1]) spans[karaokeIndex-1].classList.remove("on");
+    if(spans[karaokeIndex]){
+      spans[karaokeIndex].classList.add("on");
+      spans[karaokeIndex].scrollIntoView({ block:"nearest", inline:"nearest" });
+      karaokeIndex = Math.min(karaokeIndex + 1, spans.length);
+    }
+  }
+}
+function applyAnswer(answer){
+  const a = String(answer || "").trim();
+  if(!a) return false;
+
+  buildKaraokeSpans(a);
+  setCaptionClean(a);
+
+  // keep category synced
+  $("categoryOverlay").textContent = getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ";
+
+  // chat log as IA
+  chatAdd("IA", a);
+
+  return true;
+}
+function buildFinalCaption(){
+  const phoneLine = phoneValue ? `\n\nWHATSAPP: ${phoneValue}` : "";
+  const base = `[${selectedPlatform}] ${lastCaptionClean || ""}`.trim();
+  return captionWithHashtagsIfNeeded((base + phoneLine).trim());
+}
+
+/* ==========================
+   Logo + Phone (persist)
+========================== */
+function setLogoDataUrl(dataUrl){
+  logoDataUrl = String(dataUrl || "");
+  if(logoDataUrl){
+    $("logoImg").src = logoDataUrl;
+    $("logoImg").style.display = "block";
+    logoImgObj = new Image();
+    logoImgObj.crossOrigin = "anonymous";
+    logoImgObj.src = logoDataUrl;
+    try{ localStorage.setItem(LOGO_KEY, logoDataUrl); }catch(e){}
   }else{
-    container.innerHTML = "";
-    vids.slice().reverse().forEach(v=>{
-      const div = document.createElement("div");
-      div.className = "listItem";
-
-      const msg = buildWhatsAppText({
-        platform: v.platform,
-        scheduledAtISO: v.scheduledAtISO,
-        operator: v.operator,
-        videoId: v.videoId,
-        caption: v.caption
-      });
-
-      div.innerHTML = `
-        <div class="listTop">
-          <div class="listTitle">${v.videoId}</div>
-          <div class="pill">${v.platform} • ${fmtLocal(v.scheduledAtISO)}</div>
-        </div>
-        <div class="listMeta">Operatore: ${v.operator || "—"}\nSlot: ${fmtLocal(v.scheduledAtISO)}</div>
-
-        <div class="listBtns">
-          <button class="btn tiny gray" data-act="copymsg">📋 Copia msg</button>
-          <button class="btn tiny wa" data-act="send">📤 Invia a Joseph</button>
-          <button class="btn tiny gray" data-act="mark">✅ Segna inviato</button>
-        </div>
-      `;
-
-      div.querySelector('[data-act="copymsg"]').addEventListener("click", async ()=>{
-        await copyText(msg);
-        alert("Messaggio copiato.");
-      });
-
-      div.querySelector('[data-act="send"]').addEventListener("click", async ()=>{
-        const joseph = ($("josephNumber").value || "").trim();
-        const group = ($("groupInvite").value || "").trim();
-        const autoMark = $("chkAutoMark").checked;
-
-        if(group){
-          // group: copy + open group
-          await openWhatsAppGroup(group, msg);
-          if(autoMark){
-            markSlotUsed(v.platform, v.scheduledAtISO);
-          }
-          render();
-          return;
-        }
-
-        if(!joseph){
-          alert("Inserisci il numero WhatsApp di Joseph oppure il link invito del gruppo.");
-          return;
-        }
-
-        openWhatsAppToNumber(joseph, msg);
-        if(autoMark){
-          markSlotUsed(v.platform, v.scheduledAtISO);
-          render();
-        }
-      });
-
-      div.querySelector('[data-act="mark"]').addEventListener("click", ()=>{
-        markSlotUsed(v.platform, v.scheduledAtISO);
-        render();
-      });
-
-      container.appendChild(div);
-    });
+    $("logoImg").style.display = "none";
+    try{ localStorage.removeItem(LOGO_KEY); }catch(e){}
+  }
+}
+function renderPhone(){
+  if(phoneValue){
+    $("waPhoneOverlay").textContent = `WHATSAPP: ${phoneValue}`;
+  }else{
+    $("waPhoneOverlay").textContent = "WHATSAPP: —";
   }
 }
 
 /* ==========================
-   EVENTS
+   Camera + Canvas recording (NO teleprompter in recording)
+   Recording overlay order: DOMANDA → LOGO → CATEGORIA → WHATSAPP
 ========================== */
-$("btnScrollTop").addEventListener("click", ()=> window.scrollTo({ top:0, behavior:"smooth" }));
+async function applyZoom(v){
+  zoomValue = Number(v) || 1;
+  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
+  document.documentElement.style.setProperty("--zoom", String(zoomValue));
+}
 
-$("btnCopyCaption").addEventListener("click", async ()=>{
-  const c = ($("captionBox").value || "").trim();
-  if(!c) return alert("Caption vuota.");
-  await copyText(c);
-  localStorage.setItem(K_CAPTION, c);
-  alert("Caption copiata.");
-});
+function measureTextWidth(ctx, t){ return ctx.measureText(String(t||"")).width; }
+function truncateText(ctx, t, maxW){
+  let s = String(t||"");
+  if(measureTextWidth(ctx, s) <= maxW) return s;
+  while(s.length > 0 && measureTextWidth(ctx, s + "…") > maxW) s = s.slice(0,-1);
+  return s + "…";
+}
+function wrapText(ctx, text, maxWidth){
+  const words = String(text||"").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = "";
+  for(const w of words){
+    const test = line ? (line + " " + w) : w;
+    if(ctx.measureText(test).width <= maxWidth){
+      line = test;
+    }else{
+      if(line) lines.push(line);
+      line = w;
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+function roundRect(ctx,x,y,w,h,r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
 
-$("operatorName").addEventListener("input", ()=>{
-  localStorage.setItem(K_OP, $("operatorName").value || "");
-  render();
-});
-$("josephNumber").addEventListener("input", ()=>{
-  localStorage.setItem(K_JO, $("josephNumber").value || "");
-  render();
-});
-$("groupInvite").addEventListener("input", ()=>{
-  localStorage.setItem(K_GROUP, $("groupInvite").value || "");
-  render();
-});
+function drawRecordingCanvas(){
+  const W = canvas.width, H = canvas.height;
 
-$("platform").addEventListener("change", ()=>{
-  setSettings({ platform: $("platform").value });
-  render();
-});
-$("frequencyMode").addEventListener("change", ()=>{
-  setSettings({ frequencyMode: $("frequencyMode").value });
-  render();
-});
-$("frequencyValue").addEventListener("input", ()=>{
-  setSettings({ frequencyValue: Number($("frequencyValue").value) || 1 });
-  render();
-});
+  if(camEl.readyState < 2){
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,W,H);
+    return;
+  }
 
-$("btnOpenGroup").addEventListener("click", ()=>{
-  const group = ($("groupInvite").value || "").trim();
-  if(!group) return alert("Inserisci il link invito del gruppo.");
-  window.location.href = group;
-});
-$("btnOpenJoseph").addEventListener("click", ()=>{
-  const joseph = ($("josephNumber").value || "").trim();
-  if(!joseph) return alert("Inserisci il numero WhatsApp di Joseph.");
-  window.location.href = `https://wa.me/${encodeURIComponent(joseph)}`;
-});
+  const vw = camEl.videoWidth || 1280;
+  const vh = camEl.videoHeight || 720;
 
-$("btnClearHistory").addEventListener("click", ()=>{
-  if(!confirm("Cancellare lo storico slot?")) return;
-  setHistory({ TIKTOK:[], INSTAGRAM:[], SHORTS:[], FACEBOOK:[] });
-  render();
-});
+  const z = Math.max(1, Math.min(zoomValue, 5));
+  const srcW = vw / z;
+  const srcH = vh / z;
+  const srcX = (vw - srcW)/2;
+  const srcY = (vh - srcH)/2;
 
-$("btnMockAddVideo").addEventListener("click", ()=>{
-  const s = getSettings();
-  const operator = ($("operatorName").value || "").trim();
-  const caption = ($("captionBox").value || "").trim();
-  if(!caption) return alert("Incolla la caption (anche demo) prima.");
+  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
 
-  const scheduledAtISO = calcNextSlot(s.platform);
-  const videoId = buildVideoId(s.platform);
+  // Overlay at 1/4 height
+  ctx.save();
+  ctx.textBaseline = "top";
 
-  const vids = getVideos();
-  vids.push({
-    videoId,
-    platform: s.platform,
-    scheduledAtISO,
-    operator,
-    caption
+  const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
+  const cat = (getCategoryForQuestion(currentQuestionObj) || "ATTUALITÀ").toUpperCase();
+  const wa = phoneValue ? `WHATSAPP: ${phoneValue}` : "WHATSAPP: —";
+
+  // center block at 25% height
+  const centerY = Math.round(H * 0.25);
+  let y = centerY - 220; // start a bit above to fit block
+
+  // Question box
+  const qBoxW = W - 120;
+  const qBoxX = (W - qBoxW)/2;
+  const qBoxH = 150;
+
+  ctx.fillStyle = "rgba(0,0,0,.35)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, qBoxX, y, qBoxW, qBoxH, 26);
+  ctx.fill(); ctx.stroke();
+
+  ctx.font = "1000 36px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  const qLines = wrapText(ctx, q, qBoxW - 70);
+  for(let i=0;i<Math.min(2, qLines.length);i++){
+    const line = truncateText(ctx, qLines[i], qBoxW - 70);
+    const lw = measureTextWidth(ctx, line);
+    ctx.fillText(line, qBoxX + (qBoxW - lw)/2, y + 22 + i*48);
+  }
+
+  y += qBoxH + 22;
+
+  // Logo 50x50 centered
+  const logoPad = 20;
+  const logoBox = 90;
+  const logoX = (W - logoBox)/2;
+  ctx.fillStyle = "rgba(0,0,0,.30)";
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  roundRect(ctx, logoX, y, logoBox, logoBox, 26);
+  ctx.fill(); ctx.stroke();
+
+  if(logoDataUrl && logoImgObj && logoImgObj.complete){
+    const size = 50;
+    const cx = logoX + (logoBox - size)/2;
+    const cy = y + (logoBox - size)/2;
+
+    const iw = logoImgObj.naturalWidth || size;
+    const ih = logoImgObj.naturalHeight || size;
+    const scale = Math.min(size/iw, size/ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = cx + (size - dw)/2;
+    const dy = cy + (size - dh)/2;
+
+    ctx.drawImage(logoImgObj, dx, dy, dw, dh);
+  }
+
+  y += logoBox + 18;
+
+  // Category pill
+  ctx.font = "1000 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const catW = Math.min(W - 160, measureTextWidth(ctx, cat) + 56);
+  const catX = (W - catW)/2;
+  const catH = 62;
+
+  ctx.fillStyle = "rgba(0,0,0,.26)";
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  roundRect(ctx, catX, y, catW, catH, 22);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = "rgba(243,244,246,.95)";
+  const catText = truncateText(ctx, cat, catW - 40);
+  const catTw = measureTextWidth(ctx, catText);
+  ctx.fillText(catText, catX + (catW - catTw)/2, y + 16);
+
+  y += catH + 14;
+
+  // WhatsApp line (GREEN) under category
+  ctx.font = "1100 30px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const waW = Math.min(W - 160, measureTextWidth(ctx, wa) + 56);
+  const waX = (W - waW)/2;
+  const waH = 62;
+
+  ctx.fillStyle = "rgba(0,0,0,.22)";
+  ctx.strokeStyle = "rgba(255,255,255,.12)";
+  roundRect(ctx, waX, y, waW, waH, 22);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = "rgba(37,211,102,.98)";
+  const waText = truncateText(ctx, wa, waW - 40);
+  const waTw = measureTextWidth(ctx, waText);
+  ctx.fillText(waText, waX + (waW - waTw)/2, y + 16);
+
+  ctx.restore();
+}
+
+function startCanvasLoop(){
+  function loop(){
+    drawRecordingCanvas();
+    rafCanvasId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+async function startCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop());
+    camStream = null;
+  }
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      audio:true,
+      video:{ facingMode: facingMode, width:{ideal:1280}, height:{ideal:720} }
+    });
+    camEl.srcObject = camStream;
+    await new Promise(res => camEl.onloadedmetadata = () => res());
+    try{ await camEl.play(); }catch(e){}
+    if(!rafCanvasId) startCanvasLoop();
+    return true;
+  }catch(err){
+    alert("Errore camera: " + err.message);
+    return false;
+  }
+}
+async function ensureReady(){
+  if(!camStream){
+    const ok = await startCamera();
+    if(!ok) return false;
+  }
+  if(!rafCanvasId) startCanvasLoop();
+  return true;
+}
+async function toggleTorch(){
+  if(!camStream) return;
+  const track = camStream.getVideoTracks?.()[0];
+  if(!track) return;
+  const caps = track.getCapabilities?.() || {};
+  if(!caps.torch){
+    alert("Flash (torch) non supportato su questo dispositivo/browser.");
+    return;
+  }
+  torchOn = !torchOn;
+  try{
+    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+  }catch(e){
+    torchOn = !torchOn;
+    alert("Impossibile attivare il flash.");
+  }
+}
+async function flipCamera(){
+  facingMode = (facingMode === "user") ? "environment" : "user";
+  await startCamera();
+}
+
+/* ==========================
+   DB + LIST
+========================== */
+function persistVideoMeta(meta){
+  const db = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
+  db.unshift(meta);
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+function buildVideoId(){
+  const p = selectedPlatform;
+  const qkey = keywordsFromQuestion(currentQuestion || "attualita") || "video";
+  return `VID_${p}_${qkey}_${nowStamp()}`;
+}
+function buildFileName(id){ return `${id}.webm`; }
+function buildVideoTitle(videoNum, platform, question){
+  const k = keywordsFromQuestion(question) || "video";
+  const p = platform || "MANUALE";
+  return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
+}
+function updateCounters(){
+  $("videoCounter").textContent = `Video: ${totalVideos}`;
+}
+function renderRecList(){
+  const box = $("recList");
+  if(!recordings.length){ box.textContent = "—"; return; }
+
+  box.innerHTML = recordings.map((r,i)=>{
+    const active = i===currentRecIndex ? " style='color:#d8a23a; font-weight:950;'" : "";
+    const meta = r.meta || {};
+    const line2 = `${meta.platform || ""} • ${String(meta.category || "").slice(0,50)}`;
+    const line3 = `${String(meta.question || "").slice(0,90)}`;
+    return `
+      <div ${active} style="margin-bottom:12px;">
+        <div>
+          <a href="#" data-i="${i}" style="color:inherit; text-decoration:none;">
+            ${r.title}
+          </a>
+        </div>
+        <div style="opacity:.85; margin-top:6px;">${line2}</div>
+        <div style="opacity:.85; margin-top:6px;">${line3}</div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("a[data-i]").forEach(a => a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    const i = +a.dataset.i;
+    currentRecIndex = i;
+    $("playback").src = recordings[i].url;
+    $("playback").play().catch(()=>{});
+    renderRecList();
+  }));
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+/* ==========================
+   REC 60s + HUD
+========================== */
+function updateRecHud(){
+  $("countdownHud").textContent = `REC ${remaining}s`;
+}
+function stopRecording(){
+  if(recorder && recorder.state !== "inactive") recorder.stop();
+}
+function startRecording60(){
+  if(!camStream){ alert("Attiva la camera."); return; }
+  if(recorder && recorder.state !== "inactive") return;
+
+  const ans = String($("answerBox").value || "").trim();
+  if(!ans){
+    alert("Scrivi o incolla una risposta prima.");
+    return;
+  }
+
+  // allow no question -> ATTUALITÀ
+  if(!currentQuestionObj){
+    currentQuestionObj = null;
+    currentQuestion = "";
+    showQuestion("ATTUALITÀ");
+    $("categoryOverlay").textContent = "ATTUALITÀ";
+  }
+
+  // ensure tele/caption prepared
+  applyAnswer(ans);
+
+  // HUD on
+  $("recHud").style.display = "flex";
+  $("btnREC").classList.add("running");
+
+  remaining = 60;
+  updateRecHud();
+  isRecording = true;
+
+  chunks = [];
+
+  const stream = canvas.captureStream(30);
+  const audioTrack = camStream.getAudioTracks?.()[0];
+  if(audioTrack) stream.addTrack(audioTrack);
+
+  const mimeCandidates = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm"
+  ];
+  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
+
+  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
+
+  const videoId = buildVideoId();
+  const videoName = buildFileName(videoId);
+  const questionText = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
+  const categoryText = $("categoryOverlay").textContent || "ATTUALITÀ";
+  const phoneNow = phoneValue || "";
+
+  recorder.onstop = ()=>{
+    if(recTimerId) clearInterval(recTimerId);
+    recTimerId = null;
+
+    $("recHud").style.display = "none";
+    $("btnREC").classList.remove("running");
+    isRecording = false;
+
+    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+    totalVideos += 1;
+
+    const url = URL.createObjectURL(blob);
+    const title = buildVideoTitle(totalVideos, selectedPlatform, questionText);
+
+    const meta = {
+      id: videoId,
+      filename: videoName,
+      createdAt: new Date().toISOString(),
+      platform: selectedPlatform,
+      question: questionText,
+      category: categoryText,
+      whatsapp: phoneNow,
+      captionClean: lastCaptionClean,
+      captionFinal: buildFinalCaption()
+    };
+    persistVideoMeta(meta);
+
+    recordings.unshift({ title, name: videoName, url, blob, meta });
+    currentRecIndex = 0;
+
+    $("playback").src = url;
+    $("playback").load();
+
+    renderRecList();
+    updateCounters();
+  };
+
+  recorder.start(1000);
+
+  // Karaoke stepping preview only (not recorded)
+  recTimerId = setInterval(()=>{
+    remaining -= 1;
+    const spans = $("teleText").querySelectorAll(".w");
+    const total = spans.length || 0;
+    if(total > 0){
+      const stepsPerSec = Math.max(1, Math.round(total / 60));
+      karaokeStep(stepsPerSec);
+    }
+    updateRecHud();
+    if(remaining <= 0){
+      stopRecording();
+    }
+  }, 1000);
+}
+
+/* ==========================
+   NAV
+========================== */
+function goToGestionale(){
+  if(confirm("Vuoi tornare al gestionale?")){
+    if(isRecording) stopRecording();
+    setTimeout(()=> window.location.href = GESTIONALE_URL, 250);
+  }
+}
+
+/* ==========================
+   Platform checkbox: allow only one checked
+========================== */
+function setPlatform(p){
+  selectedPlatform = p;
+  refreshPlatformUI();
+  try{ localStorage.setItem(PLAT_KEY, selectedPlatform); }catch(e){}
+  document.querySelectorAll(".platformChk").forEach(chk=>{
+    chk.checked = (chk.dataset.p === selectedPlatform);
   });
-  setVideos(vids);
-  render();
-  alert(`Creato: ${videoId}\nSlot: ${fmtLocal(scheduledAtISO)}`);
-});
+}
 
-$("btnClearAll").addEventListener("click", ()=>{
-  if(!confirm("Reset totale (video + storico + caption)?")) return;
-  localStorage.removeItem(K_VIDEOS);
-  localStorage.removeItem(K_HISTORY);
-  localStorage.removeItem(K_CAPTION);
-  render();
-});
+/* ==========================
+   INIT
+========================== */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  // Restore caption
+  try{
+    const savedCap = localStorage.getItem(CAP_KEY) || "";
+    if(savedCap.trim() && $("chkRememberCaption").checked){
+      lastCaptionClean = savedCap.trim();
+      $("captionPreview").textContent = lastCaptionClean;
+    }
+  }catch(e){}
 
-render();
+  // Restore phone
+  try{
+    const sp = localStorage.getItem(PHONE_KEY) || "";
+    if(sp.trim()){
+      phoneValue = sp.trim();
+      $("phoneInput").value = phoneValue;
+    }
+  }catch(e){}
+  renderPhone();
+
+  // Restore logo
+  try{
+    const sl = localStorage.getItem(LOGO_KEY) || "";
+    if(sl.trim()) setLogoDataUrl(sl.trim());
+  }catch(e){}
+
+  // Restore platform
+  try{
+    const pl = localStorage.getItem(PLAT_KEY) || "TIKTOK";
+    if(PLATFORMS.includes(pl)) selectedPlatform = pl;
+  }catch(e){}
+  setPlatform(selectedPlatform);
+
+  // Top bar buttons
+  $("btnBackTop").addEventListener("click", goToGestionale);
+  $("btnBackBottom").addEventListener("click", goToGestionale);
+
+  $("btnNext").addEventListener("click", ()=>{
+    nextQuestion();
+  });
+
+  $("btnCopyQ").addEventListener("click", async ()=>{
+    if(!currentQuestionObj) nextQuestion();
+    const payload = `DOMANDA (${currentQuestionObj.id} - ${currentQuestionObj.fase}):\n${currentQuestionObj.domanda}`.trim();
+    await copyText(payload);
+  });
+
+  $("btnOpenChatGPT").addEventListener("click", async ()=>{
+    if(!currentQuestionObj) nextQuestion();
+    await openChatGPTAndCopy();
+  });
+
+  $("btnPasteAnswer").addEventListener("click", async ()=>{
+    try{
+      const t = await readClipboardText();
+      $("answerBox").value = (t || "");
+    }catch(e){
+      alert("Clipboard bloccata: incolla manualmente nel box Risposta.");
+    }
+  });
+
+  $("btnUseAnswer").addEventListener("click", ()=>{
+    const ans = $("answerBox").value || "";
+    const ok = applyAnswer(ans);
+    if(!ok) return alert("Scrivi o incolla una risposta prima.");
+  });
+
+  $("btnCopyCaption").addEventListener("click", async ()=>{
+    const out = buildFinalCaption();
+    if(!out){ alert("Niente da copiare."); return; }
+    await copyText(out);
+  });
+
+  // Chat buttons (3 in linea)
+  $("btnChatOpen").addEventListener("click", async ()=>{
+    if(!currentQuestionObj) nextQuestion();
+    await openChatGPTAndCopy();
+  });
+  $("btnChatAddQ").addEventListener("click", ()=>{
+    const q = (currentQuestionObj && currentQuestionObj.domanda) ? currentQuestionObj.domanda : "ATTUALITÀ";
+    chatAdd("TU", q);
+  });
+  $("btnChatClear").addEventListener("click", ()=>{
+    if(confirm("Svuotare la chat?")) $("chatBox").innerHTML = "";
+  });
+
+  // Platform checkboxes
+  document.querySelectorAll(".platformChk").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      if(chk.checked){
+        setPlatform(chk.dataset.p);
+      }else{
+        // prevent "none selected": keep at least one
+        setPlatform(selectedPlatform);
+      }
+    });
+  });
+
+  // Phone
+  $("phoneInput").addEventListener("input", ()=>{
+    phoneValue = String($("phoneInput").value || "").trim();
+    try{ localStorage.setItem(PHONE_KEY, phoneValue); }catch(e){}
+    renderPhone();
+  });
+
+  // Logo upload
+  $("btnLogo").addEventListener("click", ()=> $("logoUpload").click());
+  $("logoUpload").addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const fr = new FileReader();
+    fr.onload = ()=> setLogoDataUrl(fr.result);
+    fr.readAsDataURL(file);
+    e.target.value = "";
+  });
+
+  $("btnWhere").addEventListener("click", ()=>{
+    alert("In browser i video vengono scaricati: li trovi nella cartella Download del dispositivo.");
+  });
+
+  // Camera controls
+  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+  $("btnFlip").addEventListener("click", async ()=>{ await flipCamera(); });
+  $("btnFlash").addEventListener("click", async ()=>{ await toggleTorch(); });
+
+  $("btnREC").addEventListener("click", async ()=>{
+    const okCam = await ensureReady();
+    if(!okCam) return;
+
+    if(recorder && recorder.state !== "inactive"){
+      stopRecording();
+      return;
+    }
+    startRecording60();
+  });
+
+  $("btnStop").addEventListener("click", ()=> stopRecording());
+
+  // Zoom
+  $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
+  await applyZoom(1.0);
+
+  // Remember caption toggle
+  $("chkRememberCaption").addEventListener("change", ()=>{
+    if(!$("chkRememberCaption").checked){
+      try{ localStorage.removeItem(CAP_KEY); }catch(e){}
+    }else{
+      try{ localStorage.setItem(CAP_KEY, lastCaptionClean || ""); }catch(e){}
+    }
+  });
+
+  // Video download
+  $("btnDownloadVideo").addEventListener("click", ()=>{
+    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
+      alert("Seleziona un video dalla lista.");
+      return;
+    }
+    const r = recordings[currentRecIndex];
+    downloadBlob(r.blob, r.name);
+  });
+
+  // Clear list (session)
+  $("btnClearList").addEventListener("click", ()=>{
+    if(!recordings.length) return;
+    if(confirm("Svuotare la lista (sessione)?")){
+      recordings.forEach(r => { try{ URL.revokeObjectURL(r.url); }catch(e){} });
+      recordings = [];
+      currentRecIndex = -1;
+      $("playback").removeAttribute("src");
+      $("playback").load();
+      renderRecList();
+      totalVideos = 0;
+      updateCounters();
+    }
+  });
+
+  // Defaults
+  $("teleText").textContent = "Incolla una risposta → “Usa risposta” → “REC”.";
+  showQuestion("Premi “Nuova domanda”.");
+  $("categoryOverlay").textContent = "ATTUALITÀ";
+  renderPhone();
+  refreshPlatformUI();
+  renderRecList();
+  updateCounters();
+});
 </script>
 </body>
 </html>
