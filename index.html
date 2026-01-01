@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -121,6 +122,13 @@
       border-color: rgba(123,79,189,.55);
     }
     .btn.gray{ background: rgba(255,255,255,.04); }
+
+    .btn.green{
+      background: linear-gradient(135deg, rgba(37,211,102,.95), rgba(37,211,102,.70));
+      border-color: rgba(37,211,102,.55);
+      color:#08140c;
+      font-weight: 1000;
+    }
 
     /* REC button (rosso, “alive”) */
     .btn.rec{
@@ -615,6 +623,9 @@
         <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
           <span class="ico">📋</span> Copia caption
         </button>
+        <button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
+          <span class="ico">🟢</span> Invia WhatsApp
+        </button>
       </div>
 
       <div class="subtle">
@@ -651,6 +662,9 @@
               <!-- REC più a destra: layout a 3 blocchi -->
               <div class="bar between" style="width:100%;">
                 <div class="ctrlLeft">
+                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
+                    <span class="dot"></span> Teleprompter + REC
+                  </button>
                   <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
                 </div>
 
@@ -660,9 +674,7 @@
                 </div>
 
                 <div class="ctrlRight">
-                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
-                    <span class="dot"></span> Teleprompter + REC
-                  </button>
+                  <!-- REC spostato a sinistra -->
                 </div>
               </div>
 
@@ -983,6 +995,16 @@ function setCaptionClean(clean){
   if ($("chkRememberCaption").checked){
     try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
   }
+
+  function buildWhatsAppMessage(){
+    const q = String(currentQuestion || "").trim();
+    const a = String(($("answerBox") && $("answerBox").value) || lastCaptionClean || "").trim();
+    const parts = [];
+    if(q) parts.push("Domanda: " + q);
+    if(a) parts.push("\nRisposta:\n" + a);
+    return parts.join("\n\n").trim();
+  }
+
 }
 
 /* ==========================
@@ -1540,6 +1562,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const out = captionWithHashtagsIfNeeded(lastCaptionClean);
     if(!out){ alert("Niente da copiare."); return; }
     await copyText(out);
+  });
+
+
+  // invia whatsapp (domanda + risposta)
+  $("btnWhatsApp").addEventListener("click", async ()=>{
+    const phone = "393713708294";
+    const msg = buildWhatsAppMessage();
+    if(!msg){ alert("Niente da inviare."); return; }
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank", "noopener");
   });
 
   // download selected video
