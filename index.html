@@ -627,11 +627,93 @@
       text-align:center;
     }
 
+
+    /* ==========================
+       MINIMAL SIMPLE UI (rigida)
+    ========================== */
+    body.modeSimple header{ display:none !important; }
+    body.modeSimple #promptDetails{ display:none !important; }
+    body.modeSimple .hintTop{ display:none !important; }
+    body.modeSimple .card.simpleOnly{ display:none !important; }
+    body.modeSimple .proOnly{ display:none !important; }
+    body.modeSimple #recList{ max-height:200px; }
+    /* Hide unused buttons/sections in simple */
+    body.modeSimple #btnOpenChatGPTPasteQ,
+    body.modeSimple #btnPasteTop,
+    body.modeSimple #btnSendTele,
+    body.modeSimple #btnCopyCaption{ display:none !important; }
+    /* Make main actions bigger */
+    body.modeSimple .btn{ font-size:14px; padding:12px 14px; }
+    body.modeSimple textarea{ font-size:14px; }
+
+
+    /* Minimal UI: nasconde spiegazioni e blocchi non più usati */
+    .hintTop, .wizard, #wizardHint, #promptDetails, #instructionsModal { display:none !important; }
+    #btnOpenChatGPTPasteQ, #btnPasteTop, #btnSendTele, #btnCopyCaption { display:none !important; }
+    /* nasconde il box risposta (usato solo come storage) */
+    #answerBox{ display:none !important; }
+
+
+/* === TELEPROMPTER UPGRADE === */
+#teleWrap{
+  height: 70vh !important;
+}
+#teleText{
+  font-size: 26px !important;
+  line-height: 1.45 !important;
+  padding: 24px !important;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* keyword emphasis */
+.tele-strong{
+  color: #ffd166;
+  font-weight: 900;
+}
+
+
+/* Countdown pill */
+#countdownPill{
+  border-color: rgba(255,255,255,.18);
+  background: rgba(0,0,0,.24);
+  font-weight: 1000;
+}
+body.isRecording #countdownPill{
+  border-color: rgba(255,59,48,.55);
+  background: rgba(255,59,48,.12);
+}
+
 </style>
 </head>
 
 <body>
 <div class="wrap">
+  <!-- ARCHIVIO (CSV) + SELEZIONE DOMANDA -->
+  <div class="card" id="archiveCard" style="margin-top:14px;">
+    <div class="section">
+      <div class="bar between" style="width:100%; gap:10px; flex-wrap:wrap;">
+        <div class="bar left" style="gap:10px; flex-wrap:wrap;">
+          <label class="btn gray" style="cursor:pointer;">
+            <span class="ico">📁</span> Carica archivio CSV
+            <input id="csvFile" type="file" accept=".csv,text/csv" style="display:none">
+          </label>
+
+          <button class="btn blue" id="btnGenerateQuestion" type="button">
+            <span class="ico">🎲</span> Genera domanda
+          </button>
+        </div>
+
+        <div class="bar left" style="gap:10px; flex:1; min-width:260px; flex-wrap:wrap;">
+          <select id="questionSelect" class="sel" style="min-width:260px; flex:1;">
+            <option value="">Seleziona una domanda…</option>
+          </select>
+          <span class="pill" id="archiveCountPill">Archivio: 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- TOP ROW -->
   <header>
@@ -639,7 +721,15 @@
       <button class="btn primary" id="btnNext" type="button">
         <span class="ico">✨</span> Nuova domanda
       </button>
-      
+
+      <button class="btn blue" id="btnOpenChatGPTPasteQ" type="button" title="Copia PROMPT + domanda e apre ChatGPT">
+        <span class="ico">💬</span> Apri ChatGPT + copia domanda
+      </button>
+
+      <button class="btn violet" id="btnPasteTop" type="button" title="Incolla dagli appunti nel blocco risposta qui sotto">
+        <span class="ico">📋</span> Incolla risposta
+      </button>
+
       <!-- NUOVO: ISTRUZIONI -->
       <button class="btn gray proOnly" id="btnInstructions" type="button" title="Apri guida operativa">
         <span class="ico">📘</span> Istruzioni
@@ -684,6 +774,7 @@
         <div class="wizStep" data-step="5">5) REC</div>
         <div class="wizStep" data-step="6">6) Scarica / WhatsApp</div>
       </div>
+      <div class="subtle" id="wizardHint" style="margin-top:8px;">Premi <b>Nuova domanda</b> per iniziare.</div>
     </div>
   </div>
 
@@ -701,13 +792,11 @@
         <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
           <span class="ico">📋</span> Copia caption
         </button>
-        <button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
+<button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
           <span class="ico">🟢</span> Invia WhatsApp
         </button>
 
-        <button class="btn rec simpleOnly" id="btnStartVideo" type="button" title="Fa tutto: camera + domanda + teleprompter + REC">
-          <span class="dot"></span> START VIDEO
-        </button>
+        
 
       </div>
 
@@ -748,6 +837,8 @@
                   <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
                     <span class="dot"></span> Teleprompter + REC
                   </button>
+      <span class="pill" id="countdownPill" style="min-width:120px; text-align:center;">⏱️ 120</span>
+
                   <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
                 </div>
 
@@ -1019,6 +1110,145 @@ let promptText = "";
 ========================== */
 const $ = (id) => document.getElementById(id);
 
+function highlightKeywords(text){
+  const keywords = [
+    "io", "decido", "responsabilità", "prezzo", "trattativa",
+    "mercato", "scelte", "intervengo", "gestisco", "proteggo"
+  ];
+  let out = text;
+  keywords.forEach(k=>{
+    const re = new RegExp("\\b("+k+")\\b","gi");
+    out = out.replace(re, '<span class="tele-strong">$1</span>');
+  });
+  return out;
+}
+
+
+/* ==========================
+   ARCHIVIO CSV (domanda+risposta)
+========================== */
+let ARCHIVIO = [];        // [{id, area, domanda, risposta}]
+let currentItem = null;   // item selezionato
+
+function normalizeHeader(h){
+  return String(h||"").trim().toLowerCase();
+}
+
+function detectDelimiter(text){
+  const firstLine = (text.split(/
+?
+/)[0] || "");
+  const commas = (firstLine.match(/,/g) || []).length;
+  const semis  = (firstLine.match(/;/g) || []).length;
+  return semis > commas ? ";" : ",";
+}
+
+// Simple CSV parser supporting quoted fields + delimiter autodetect
+function parseCSV(text){
+  const delim = detectDelimiter(text);
+  const rows = [];
+  let row = [], cell = "", inQuotes = false;
+
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const next = text[i+1];
+
+    if(ch === '"'){
+      if(inQuotes && next === '"'){ cell += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if(ch === delim && !inQuotes){
+      row.push(cell); cell="";
+    } else if((ch === '
+' || ch === '
+') && !inQuotes){
+      if(ch === '
+' && next === '
+') i++;
+      row.push(cell); cell="";
+      if(row.some(v => String(v).trim().length)) rows.push(row);
+      row = [];
+    } else {
+      cell += ch;
+    }
+  }
+
+  if(cell.length || row.length){
+    row.push(cell);
+    if(row.some(v => String(v).trim().length)) rows.push(row);
+  }
+  return rows;
+}
+
+
+function loadArchiveFromCSV(csvText){
+  const rows = parseCSV(csvText);
+  if(!rows.length) return { ok:false, err:"CSV vuoto" };
+
+  const headers = rows[0].map(normalizeHeader);
+  const idxDom = headers.findIndex(h => ["domanda","question","q"].includes(h));
+  const idxRis = headers.findIndex(h => ["risposta","answer","a"].includes(h));
+  const idxArea = headers.findIndex(h => ["area","categoria","category"].includes(h));
+
+  if(idxDom === -1) return { ok:false, err:"Manca la colonna 'domanda' (o 'question')" };
+  if(idxRis === -1) return { ok:false, err:"Manca la colonna 'risposta' (o 'answer')" };
+
+  const out = [];
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    const domanda = (r[idxDom]||"").trim();
+    const risposta = (r[idxRis]||"").trim();
+    const area = idxArea>-1 ? (r[idxArea]||"").trim() : "";
+    if(!domanda || !risposta) continue;
+    out.push({ id: out.length+1, area, domanda, risposta });
+  }
+  ARCHIVIO = out;
+  refreshArchiveUI();
+  return { ok:true, count: ARCHIVIO.length };
+}
+
+function refreshArchiveUI(){
+  const sel = $("questionSelect");
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Seleziona una domanda…</option>';
+  ARCHIVIO.forEach((it, i)=>{
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = it.area ? `[${it.area}] ${it.domanda}` : it.domanda;
+    sel.appendChild(opt);
+  });
+  const pill = $("archiveCountPill");
+  if(pill) pill.textContent = `Archivio: ${ARCHIVIO.length}`;
+}
+
+function setCurrentItem(it){
+  currentItem = it;
+  if(!it) return;
+
+  currentQuestion = it.domanda;
+  showQuestionInOverlay(currentQuestion);
+
+  // risposta nel teleprompter
+  if($("answerBox")) $("answerBox").value = it.risposta;
+  applyAnswer(it.risposta);
+
+  if(document.body.classList.contains("modeSimple")){
+    window.__step = 5; // pronto per REC
+  }
+  updateWizard();
+  showToast("Domanda pronta ✅", 1200);
+  try{   return ARCHIVIO[idx];
+}
+
+function buildCaptionQA(){
+  const q = String(currentItem?.domanda || currentQuestion || "").trim();
+  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
+  const parts = [];
+  if(q) parts.push("Domanda: " + q);
+  if(a) parts.push("Risposta: " + a);
+  return parts.join("\n");
+}
+
+
 function showToast(msg, ms=1600){
   const el = $("toast");
   if(!el) return;
@@ -1026,6 +1256,36 @@ function showToast(msg, ms=1600){
   el.style.display = "block";
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=>{ el.style.display="none"; }, ms);
+}
+
+function renderCountdown(){
+  const pill = $("countdownPill");
+  if(!pill) return;
+  pill.textContent = `⏱️ ${String(countdownRemaining).padStart(3,"0")}`;
+}
+function stopCountdown(){
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+  countdownRemaining = 120;
+  renderCountdown();
+}
+function startCountdown(){
+  stopCountdown();
+  document.body.classList.add("isRecording");
+  countdownRemaining = 120;
+  renderCountdown();
+  countdownTimer = setInterval(()=>{
+    countdownRemaining -= 1;
+    if(countdownRemaining <= 0){
+      countdownRemaining = 0;
+      renderCountdown();
+      // auto stop
+      try{ stopRecording(); }catch(e){}
+      stopCountdown();
+      document.body.classList.remove("isRecording");
+      return;
+    }
+    renderCountdown();
+  }, 1000);
 }
 
 function setMode(mode){
@@ -1036,43 +1296,32 @@ function setMode(mode){
   $("btnModePro").classList.toggle("primary", !isSimple);
   $("btnModePro").classList.toggle("gray", isSimple);
   try{ localStorage.setItem("vc_mode", isSimple ? "simple" : "pro"); }catch(e){}
-  if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
+  if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
     updateWizard();
 }
 
 
-function updateWizard(){
-  // In PRO mode we keep it permissive; in SIMPLE mode we enforce rigid steps.
-  const isSimple = document.body.classList.contains("modeSimple");
 
+function updateWizard(){
+  const isSimple = document.body.classList.contains("modeSimple");
   const hasQ = !!String(currentQuestion||"").trim();
   const hasA = !!String(($("answerBox") && $("answerBox").value) || "").trim();
   const hasRec = (typeof recordings !== "undefined") && recordings && recordings.length > 0;
   const camOk = !!camStream;
 
-  // step model (1..6) used only in SIMPLE
   if(typeof window.__step === "undefined") window.__step = 1;
-  const setStep = (n)=>{ window.__step = Math.max(1, Math.min(6, n)); };
+  const setStep = (n)=>{ window.__step = Math.max(1, Math.min(5, n)); };
 
-  // Auto-correct step based on reality (useful on refresh)
   if(isSimple){
     if(!hasQ) setStep(1);
-    else if(hasQ && !hasA) setStep(3);
-    else if(hasQ && hasA && !hasRec) setStep(4);
-    if(hasRec) setStep(6);
+    else if(hasQ && !hasA) setStep(2);
+    else if(hasQ && hasA && !hasRec) setStep(3);
+    else if(hasRec) setStep(5);
   }
 
-  // Wizard UI highlight
   const steps = Array.from(document.querySelectorAll(".wizStep"));
   if(steps.length){
-    let active = 1;
-    if(isSimple){
-      active = window.__step;
-    }else{
-      active = !hasQ ? 1 : (!hasA ? 3 : 4);
-      if(camOk) active = 5;
-      if(hasRec) active = 6;
-    }
+    let active = isSimple ? window.__step : 1;
     steps.forEach(s=>{
       const n = Number(s.dataset.step||0);
       s.classList.toggle("active", n===active);
@@ -1080,17 +1329,9 @@ function updateWizard(){
     });
   }
 
-  const hint = $("wizardHint");
-  if(hint){
-    if(!hasQ) hint.innerHTML = '1) Premi <b>Nuova domanda</b>.';
-    else if(hasQ && !hasA) hint.innerHTML = '2) <b>Apri ChatGPT</b> → 3) <b>Incolla risposta</b>.';
-    else if(hasQ && hasA && !hasRec) hint.innerHTML = '4) <b>Invia al teleprompter</b> → 5) <b>START VIDEO</b>.';
-    else hint.innerHTML = '6) <b>Scarica</b> o <b>WhatsApp</b>. Poi nuova domanda.';
-  }
-
-  // Utility to lock/unlock
-  function lock(btnId, locked){
-    const el = $(btnId);
+  // Locks
+  function lock(id, locked){
+    const el = $(id);
     if(!el) return;
     el.disabled = !!locked;
     el.style.opacity = locked ? ".45" : "1";
@@ -1098,57 +1339,33 @@ function updateWizard(){
   }
 
   if(isSimple){
-    const step = window.__step;
+    // Lock all except what we need
+    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp"].forEach(id=>lock(id,true));
+    lock("btnNext", false); // nuova domanda
 
-    // Lock everything first
-    ["btnOpenChatGPTPasteQ","btnPasteTop","btnSendTele","btnStartVideo","btnTeleRec","btnCam","btnDownloadVideo","btnWhatsApp","btnCopyCaption"].forEach(id=>lock(id, true));
-    // btnNext is always allowed to restart the flow
-    lock("btnNext", false);
-
-    // Step 1: only "Nuova domanda"
-    if(step === 1){
-      // nothing else
-    }
-
-    // Step 2: "Apri ChatGPT"
-    if(step === 2){
-      lock("btnOpenChatGPTPasteQ", false);
-    }
-
-    // Step 3: "Incolla risposta"
-    if(step === 3){
-      lock("btnOpenChatGPTPasteQ", false);
-      lock("btnPasteTop", false);
-    }
-
-    // Step 4: "Invia al teleprompter"
-    if(step === 4){
-      lock("btnOpenChatGPTPasteQ", false);
-      lock("btnPasteTop", false);
-      lock("btnSendTele", false);
-    }
-
-    // Step 5: "START VIDEO" (camera+rec)
-    if(step === 5){
-      lock("btnStartVideo", false);
+    if(window.__step === 1){
+      // only nuova domanda
+    }else if(window.__step === 2){
+      // allow REC only after answer exists; still keep locked
+    }else if(window.__step === 3){
+      lock("btnStartVideo", false); // REC
       lock("btnCam", false);
-      // allow restart teleprompter in simple? keep hidden (proOnly)
-    }
-
-    // Step 6: "Scarica / WhatsApp" + caption
-    if(step === 6){
+      lock("btnStop", false); // allow stop (recording will start after rec)
+    }else if(window.__step === 5){
       lock("btnDownloadVideo", false);
       lock("btnWhatsApp", false);
-      lock("btnCopyCaption", false);
+      lock("btnNext", false);
     }
 
-    // Safety: if no question, force step 1
-    if(!hasQ) setStep(1);
+    // If camera ready and no recording yet but answer exists, ensure step 3
+    if(hasQ && hasA && !hasRec) setStep(3);
+
+    // Provide minimal guidance via toast hints (optional)
   }else{
-    // PRO: no rigid locks
-    ["btnOpenChatGPTPasteQ","btnPasteTop","btnSendTele","btnStartVideo","btnTeleRec","btnCam","btnDownloadVideo","btnWhatsApp","btnCopyCaption","btnNext"].forEach(id=>lock(id, false));
+    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp","btnNext"].forEach(id=>lock(id,false));
   }
 }
+
 
 
 
@@ -1212,14 +1429,19 @@ function setCaptionClean(clean){
     try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
   }
 
-  function buildWhatsAppMessage(){
-    const q = String(currentQuestion || "").trim();
-    const a = String(($("answerBox") && $("answerBox").value) || lastCaptionClean || "").trim();
-    const parts = [];
-    if(q) parts.push("Domanda: " + q);
-    if(a) parts.push("\nRisposta:\n" + a);
-    return parts.join("\n\n").trim();
-  }
+  
+function buildCaptionFromInputs(){
+  const q = String(currentQuestion||"").trim();
+  const a = String(($("answerBox") && $("answerBox").value) || "").trim();
+  const parts = [];
+  if(q) parts.push("Domanda: " + q);
+  if(a) parts.push("Risposta:\n" + a);
+  return parts.join("\n\n").trim();
+}
+
+function buildWhatsAppMessage(){
+  return buildCaptionQA();
+}
 
 }
 
@@ -1258,16 +1480,21 @@ function savePrompt(){
 function showQuestionInOverlay(q){
   $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
 }
+
 function nextQuestion(){
+  if(ARCHIVIO && ARCHIVIO.length){
+    const it = pickRandomItem();
+    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
+    setCurrentItem(it);
+    return;
+  }
+  // fallback
   qIdx = (qIdx + 1) % QUESTION_BANK.length;
   currentQuestion = QUESTION_BANK[qIdx].q;
   showQuestionInOverlay(currentQuestion);
-  
-  // reset downstream (rigid flow)
-  try{ if($("answerBox")) $("answerBox").value = ""; }catch(e){}
-  try{ setCaptionClean(""); }catch(e){}
-  if(document.body.classList.contains("modeSimple")){ window.__step = 2; }
+  if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
   updateWizard();
+  showToast("Carica l’archivio CSV per avere anche le risposte 📁", 2200);
 }
 function composeChatGPTInput(){
   const q = String(currentQuestion || "").trim();
@@ -1388,6 +1615,10 @@ function setSpeed(seconds){
    CAMERA + REC (CANVAS CLEAN)
 ========================== */
 let camStream = null;
+let camFacing = "user"; // user | environment
+let countdownTimer = null;
+let countdownRemaining = 120;
+
 let chunks = [];
 let rafCanvasId = null;
 
@@ -1541,7 +1772,24 @@ function buildFileName(videoNum, platform, question){
   return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
 }
 
+
+// delayed auto-scroll only if overflow
+function delayedAutoScroll(){
+  const el = $("teleText");
+  if(!el) return;
+  setTimeout(()=>{
+    if(el.scrollHeight > el.clientHeight){
+      el.scrollTop = 0;
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      el.scrollTo({ top: maxScroll, behavior: "smooth" });
+    }
+  }, 2000);
+}
+
 function startRecording(){
+  // countdown starts after 2s
+  try{ setTimeout(()=>{ startCountdown(); }, 2000); }catch(e){}
+
   if(!camStream){ alert("Attiva la camera."); return; }
   if(recorder && recorder.state !== "inactive"){ return; }
 
@@ -1565,7 +1813,7 @@ function startRecording(){
   recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
 
   const qNow = String(currentQuestion || "").trim();
-  const capNow = String(lastCaptionClean || "").trim();
+  const capNow = buildCaptionFromInputs();
   const platformNow = getActivePlatform();
 
   recorder.onstop = ()=>{
@@ -1729,11 +1977,48 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // nuova domanda
   $("btnNext").addEventListener("click", ()=> nextQuestion());
 
+  // Archivio CSV
+  $("csvFile").addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const text = await file.text();
+    const res = loadArchiveFromCSV(text);
+    if(!res.ok){ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : " + res.err, 2200); return; }
+    showToast(`Archivio caricato ✅ (${res.count})`, 1800);
+  });
+
+  $("questionSelect").addEventListener("change", ()=>{
+    const v = $("questionSelect").value;
+    if(v === "") return;
+    const it = ARCHIVIO[Number(v)];
+    if(it) setCurrentItem(it);
+  });
+
+  $("btnGenerateQuestion").addEventListener("click", ()=>{
+    if(!ARCHIVIO.length){
+      showToast("Carica prima l’archivio CSV 📁", 2000);
+      return;
+    }
+    const it = pickRandomItem();
+    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
+    setCurrentItem(it);
+  });
+
+
   // modalità semplice/pro
   $("btnModeSimple").addEventListener("click", ()=> setMode("simple"));
   $("btnModePro").addEventListener("click", ()=> setMode("pro"));
 
   // START VIDEO (Semplice): camera + domanda + teleprompter + REC
+  
+  // quando scrivi/incolli il testo, sblocca REC
+  $("answerBox").addEventListener("input", ()=>{
+    if(document.body.classList.contains("modeSimple")){
+      window.__step = ($("answerBox").value||"").trim() ? 3 : 2;
+      updateWizard();
+    }
+  });
+
   $("btnStartVideo").addEventListener("click", async ()=>{
     if(!currentQuestion){ nextQuestion(); showToast("Domanda pronta ✅"); }
     const ans = ($("answerBox").value || "").trim();
@@ -1748,7 +2033,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
     applyAnswer(ans);
     showToast("REC avviato 🔴");
     if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
+    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
     startRecording();
+    delayedAutoScroll();
     updateWizard();
   });
 
@@ -1788,9 +2075,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   // camera
-  $("btnCam").addEventListener("click", async ()=>{ const ok = await ensureReady(); if(ok) showToast("Camera pronta ✅"); updateWizard(); });
-
-  // Teleprompter + REC
+  $("btnCam").addEventListener("click", async ()=>{
+  camFacing = (camFacing === "user") ? "environment" : "user";
+  // restart camera with new facing
+  try{ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }catch(e){}
+  const ok = await ensureReady();
+  if(ok) showToast(camFacing === "user" ? "Camera frontale ✅" : "Camera posteriore ✅");
+  updateWizard();
+});
+// Teleprompter + REC
   $("btnTeleRec").addEventListener("click", async ()=>{
     const okCam = await ensureReady();
     if(!okCam) return;
@@ -1806,6 +2099,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
 
     applyAnswer(ans);
+    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
     startRecording();
   });
 
@@ -1831,12 +2125,56 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 
   // invia whatsapp (domanda + risposta)
-  $("btnWhatsApp").addEventListener("click", async ()=>{
+  
+  async function shareVideoOnWhatsApp(blob, filename, captionText){
+    const file = new File([blob], filename, { type: blob.type || "video/webm" });
+
+    // 1) Native share (mobile)
+    if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+      await navigator.share({ files:[file], text: captionText, title: "Video" });
+      return "native-share";
+    }
+
+    // 2) Fallback: copy caption + open WhatsApp text + download video
+    try{ await navigator.clipboard.writeText(captionText); }catch(e){}
     const phone = "393713708294";
-    const msg = buildWhatsAppMessage();
-    if(!msg){ alert("Niente da inviare."); return; }
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(captionText)}`;
     window.open(url, "_blank", "noopener");
+
+    // download file
+    const a = document.createElement("a");
+    const u = URL.createObjectURL(blob);
+    a.href = u;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 5000);
+
+    return "fallback";
+  }
+
+  // invia whatsapp: video + caption (domanda + risposta)
+  $("btnWhatsApp").addEventListener("click", async ()=>{
+    const r = recordings && recordings[0];
+    if(!r || !r.blob){
+      showToast("Registra un video prima 👇");
+      return;
+    }
+    const captionText = String(r.captionClean || buildCaptionFromInputs() || "").trim();
+    if(!captionText){
+      showToast("Manca il testo per la caption");
+      return;
+    }
+    showToast("Condivisione…");
+    try{
+      const mode = await shareVideoOnWhatsApp(r.blob, r.name || "video.webm", captionText);
+      if(mode === "fallback") showToast("Scaricato + WhatsApp aperto ✅");
+      else showToast("Inviato ✅");
+    }catch(err){
+      console.error(err);
+      showToast("Non riuscito. Prova Scarica + invio manuale.");
+    }
   });
 
   // download selected video
@@ -1906,6 +2244,45 @@ document.addEventListener("DOMContentLoaded", ()=>{
     $("unlockCode").value = "";
   });
 });
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const csv = document.getElementById("csvFile");
+  const gen = document.getElementById("btnGenerateQuestion");
+  const sel = document.getElementById("questionSelect");
+
+  if(csv && !csv._bound){
+    csv._bound = true;
+    csv.addEventListener("change", async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      const text = await file.text();
+      const res = loadArchiveFromCSV(text);
+      if(!res.ok){ try{ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : "+res.err,2200);}catch(e){} return; }
+      try{ showToast(`Archivio caricato ✅ (${res.count})`,1800);}catch(e){}
+    });
+  }
+
+  if(sel && !sel._bound){
+    sel._bound = true;
+    sel.addEventListener("change", ()=>{
+      const v = sel.value;
+      if(v==="") return;
+      const it = ARCHIVIO[Number(v)];
+      if(it) setCurrentItem(it);
+    });
+  }
+
+  if(gen && !gen._bound){
+    gen._bound = true;
+    gen.addEventListener("click", ()=>{
+      if(!ARCHIVIO.length){ try{ showToast("Carica prima l’archivio CSV 📁",2000);}catch(e){} return; }
+      const it = pickRandomItem();
+      sel.value = String(ARCHIVIO.indexOf(it));
+      setCurrentItem(it);
+    });
+  }
+});
+
 </script>
 
 <div id="toast" aria-live="polite"></div>
