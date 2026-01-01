@@ -566,7 +566,68 @@
       color: rgba(243,244,246,.92);
       white-space: nowrap;
     }
-  </style>
+  
+    /* ==========================
+       SIMPLE / PRO UI
+    ========================== */
+    .proOnly{ display:block; }
+    .simpleOnly{ display:none; }
+    body.modeSimple .proOnly{ display:none !important; }
+    body.modeSimple .simpleOnly{ display:block !important; }
+
+    body.modeSimple .btn{ font-size:12px; padding:10px 12px; }
+    body.modeSimple .btn.tiny{ font-size:11px; padding:8px 10px; }
+    body.modeSimple .hintTop{ display:none; }
+
+    .wizard{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    .wizStep{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      font-weight:1000;
+      font-size:11px;
+      color: rgba(243,244,246,.88);
+      user-select:none;
+    }
+    .wizStep.active{
+      border-color: rgba(216,162,58,.55);
+      box-shadow: 0 0 0 6px rgba(216,162,58,.10);
+      background: rgba(216,162,58,.12);
+      color: rgba(255,255,255,.98);
+    }
+    .wizStep.done{
+      border-color: rgba(37,211,102,.45);
+      background: rgba(37,211,102,.10);
+    }
+
+    #toast{
+      position: fixed;
+      left: 50%;
+      bottom: 84px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      color: rgba(243,244,246,.98);
+      font-weight: 950;
+      font-size: 12px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      display:none;
+      z-index: 2000;
+      max-width: min(560px, 92vw);
+      text-align:center;
+    }
+
+</style>
 </head>
 
 <body>
@@ -588,9 +649,18 @@
       </button>
 
       <!-- NUOVO: ISTRUZIONI -->
-      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
+      <button class="btn gray proOnly" id="btnInstructions" type="button" title="Apri guida operativa">
         <span class="ico">📘</span> Istruzioni
       </button>
+
+
+      <span class="pill" style="gap:10px;">
+        <span style="display:inline-flex;align-items:center;gap:8px;">
+          <span style="font-weight:1000;font-size:10px;color:var(--muted);">Modalità</span>
+          <button class="btn tiny primary" id="btnModeSimple" type="button" title="Interfaccia semplificata">Semplice</button>
+          <button class="btn tiny gray" id="btnModePro" type="button" title="Mostra tutte le impostazioni">Pro</button>
+        </span>
+      </span>
 
       <span class="pill">
         <span id="videoCounter">Video: 0</span>
@@ -610,6 +680,23 @@
     4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
   </div>
 
+
+  <!-- Wizard steps (Semplice) -->
+  <div class="card simpleOnly" style="margin-top:10px;">
+    <div class="section" style="padding:10px 12px;">
+      <div class="wizard">
+        <div class="wizStep" data-step="1">1) Domanda</div>
+        <div class="wizStep" data-step="2">2) ChatGPT</div>
+        <div class="wizStep" data-step="3">3) Incolla</div>
+        <div class="wizStep" data-step="4">4) Teleprompter</div>
+        <div class="wizStep" data-step="5">5) REC</div>
+        <div class="wizStep" data-step="6">6) Scarica / WhatsApp</div>
+      </div>
+      <div class="subtle" id="wizardHint" style="margin-top:8px;">Premi <b>Nuova domanda</b> per iniziare.</div>
+    </div>
+  </div>
+
+
   <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
   <div class="card">
     <div class="section">
@@ -626,6 +713,11 @@
         <button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
           <span class="ico">🟢</span> Invia WhatsApp
         </button>
+
+        <button class="btn rec simpleOnly" id="btnStartVideo" type="button" title="Fa tutto: camera + domanda + teleprompter + REC">
+          <span class="dot"></span> START VIDEO
+        </button>
+
       </div>
 
       <div class="subtle">
@@ -678,14 +770,14 @@
                 </div>
               </div>
 
-              <div class="bar">
+              <div class="bar proOnly">
                 <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
                 <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
                 <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
                 <span class="pill" id="speedLabel">Vel: 105s</span>
               </div>
 
-              <div class="sliderRow">
+              <div class="sliderRow proOnly">
                 <span>Zoom</span>
                 <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
                 <span id="zoomVal">1.0x</span>
@@ -693,7 +785,7 @@
             </div>
           </div>
 
-          <div>
+          <div class="proOnly">
             <p class="h">Rotazione profili (piccola)</p>
             <div class="profiles">
               <div class="profileRow">
@@ -754,11 +846,11 @@
 
           <!-- NUOVO: UPLOAD VIDEO -->
           <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
-          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
+          <button class="btn proOnly" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
             <span class="ico">⬆️</span> Carica video
           </button>
 
-          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
+          <button class="btn tiny gray proOnly" id="btnClearList" type="button">🗑️ Svuota</button>
         </div>
 
         <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
@@ -766,7 +858,7 @@
 
       <!-- PROMPT BLOCCO A FONDO PAGINA -->
       <div class="section">
-        <details id="promptDetails">
+        <details id="promptDetails" class="proOnly">
           <summary>
             <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
             <span class="pill" id="promptStatePill">Bloccato</span>
@@ -936,6 +1028,62 @@ let promptText = "";
 ========================== */
 const $ = (id) => document.getElementById(id);
 
+function showToast(msg, ms=1600){
+  const el = $("toast");
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>{ el.style.display="none"; }, ms);
+}
+
+function setMode(mode){
+  const isSimple = mode === "simple";
+  document.body.classList.toggle("modeSimple", isSimple);
+  $("btnModeSimple").classList.toggle("primary", isSimple);
+  $("btnModeSimple").classList.toggle("gray", !isSimple);
+  $("btnModePro").classList.toggle("primary", !isSimple);
+  $("btnModePro").classList.toggle("gray", isSimple);
+  try{ localStorage.setItem("vc_mode", isSimple ? "simple" : "pro"); }catch(e){}
+  updateWizard();
+}
+
+function updateWizard(){
+  const hasQ = !!String(currentQuestion||"").trim();
+  const hasA = !!String(($("answerBox") && $("answerBox").value) || "").trim();
+  const camOk = !!camStream;
+
+  const steps = Array.from(document.querySelectorAll(".wizStep"));
+  if(!steps.length) return;
+
+  let active = 1;
+  if(hasQ) active = 2;
+  if(hasQ && !hasA) active = 3;
+  if(hasQ && hasA) active = 4;
+  if(hasQ && hasA && camOk) active = 5;
+
+  steps.forEach(s=>{
+    const n = Number(s.dataset.step||0);
+    s.classList.toggle("active", n===active);
+    s.classList.toggle("done", n < active);
+  });
+
+  const hint = $("wizardHint");
+  if(hint){
+    if(!hasQ) hint.innerHTML = 'Premi <b>Nuova domanda</b> per iniziare.';
+    else if(hasQ && !hasA) hint.innerHTML = 'Clicca <b>Apri ChatGPT</b>, poi <b>Incolla risposta</b>.';
+    else if(hasQ && hasA && !camOk) hint.innerHTML = 'Clicca <b>START VIDEO</b> (attiva camera + REC).';
+    else hint.innerHTML = 'Pronto: <b>START VIDEO</b> registra. Poi scarica o invia su WhatsApp.';
+  }
+
+  const startBtn = $("btnStartVideo");
+  if(startBtn){
+    startBtn.disabled = hasQ && !hasA;
+    startBtn.style.opacity = startBtn.disabled ? ".55" : "1";
+  }
+}
+
+
 function pad2(n){ return String(n).padStart(2,"0"); }
 function nowStamp(){
   const d = new Date();
@@ -1046,6 +1194,7 @@ function nextQuestion(){
   qIdx = (qIdx + 1) % QUESTION_BANK.length;
   currentQuestion = QUESTION_BANK[qIdx].q;
   showQuestionInOverlay(currentQuestion);
+  updateWizard();
 }
 function composeChatGPTInput(){
   const q = String(currentQuestion || "").trim();
@@ -1368,6 +1517,7 @@ function startRecording(){
 
     advancePlatform();
     refreshProfileUI();
+    updateWizard();
   };
 
   recorder.start(1000);
@@ -1441,6 +1591,14 @@ function addUploadedVideo(file){
    INIT
 ========================== */
 document.addEventListener("DOMContentLoaded", ()=>{
+  // mode init (default: Semplice)
+  try{
+    const savedMode = localStorage.getItem("vc_mode");
+    setMode(savedMode === "pro" ? "pro" : "simple");
+  }catch(e){
+    setMode("simple");
+  }
+
   // prompt
   loadPrompt();
   lockPromptUI();
@@ -1479,6 +1637,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   resetTeleprompter();
   applyZoom(1.0);
   setSpeed(105);
+  updateWizard();
 
   // speed radio-like
   $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
@@ -1496,6 +1655,28 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // nuova domanda
   $("btnNext").addEventListener("click", ()=> nextQuestion());
 
+  // modalità semplice/pro
+  $("btnModeSimple").addEventListener("click", ()=> setMode("simple"));
+  $("btnModePro").addEventListener("click", ()=> setMode("pro"));
+
+  // START VIDEO (Semplice): camera + domanda + teleprompter + REC
+  $("btnStartVideo").addEventListener("click", async ()=>{
+    if(!currentQuestion){ nextQuestion(); showToast("Domanda pronta ✅"); }
+    const ans = ($("answerBox").value || "").trim();
+    if(!ans){
+      showToast("Incolla la risposta prima 👇");
+      $("answerBox").focus();
+      updateWizard();
+      return;
+    }
+    const okCam = await ensureReady();
+    if(!okCam){ showToast("Camera non disponibile"); return; }
+    applyAnswer(ans);
+    showToast("REC avviato 🔴");
+    startRecording();
+    updateWizard();
+  });
+
   // apri chatgpt + copia prompt+domanda
   $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
     if(!currentQuestion){
@@ -1503,6 +1684,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
     const payload = composeChatGPTInput();
     await copyText(payload);
+    showToast("Copiato ✅ Incolla su ChatGPT");
+    updateWizard();
     window.open(CHATGPT_URL, "_blank", "noopener");
   });
 
@@ -1511,6 +1694,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     try{
       const t = await readClipboardText();
       $("answerBox").value = (t || "");
+      showToast("Risposta incollata ✅");
+      updateWizard();
     }catch(e){
       alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
     }
@@ -1519,11 +1704,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // invia al teleprompter
   $("btnSendTele").addEventListener("click", ()=>{
     const ok = applyAnswer($("answerBox").value || "");
-    if(!ok) alert("Scrivi o incolla una risposta prima.");
+    if(!ok){ showToast("Scrivi o incolla una risposta prima 👇"); return; }
+    showToast("Teleprompter pronto ✅");
+    updateWizard();
   });
 
   // camera
-  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+  $("btnCam").addEventListener("click", async ()=>{ const ok = await ensureReady(); if(ok) showToast("Camera pronta ✅"); updateWizard(); });
 
   // Teleprompter + REC
   $("btnTeleRec").addEventListener("click", async ()=>{
@@ -1642,5 +1829,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 });
 </script>
+
+<div id="toast" aria-live="polite"></div>
+
 </body>
 </html>
+
