@@ -1,18 +1,76 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Teleprompter Vertical</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teleprompter Vertical</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="assets/css/style.css">
+<style>
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.phone{
+  width:360px;
+  height:640px;
+  background:#111;
+  border-radius:24px;
+  padding:20px;
+  box-sizing:border-box;
+}
+.question{
+  background:#222;
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:20px;
+  font-weight:bold;
+}
+.prompter{
+  height:460px;
+  overflow:hidden;
+  font-size:20px;
+  line-height:1.6;
+}
+</style>
 </head>
+
 <body>
 
-  <h1>Teleprompter Vertical</h1>
+<div class="phone">
+  <div id="question" class="question"></div>
+  <div id="prompter" class="prompter"></div>
+</div>
 
-  <!-- JS -->
- <script src="assets/js/app.js"></script>
+<script>
+const QA = [
+  {
+    q: "Quanto vale davvero casa mia oggi?",
+    a: "Vale quanto il mercato è disposto a pagare oggi per immobili simili già venduti nella stessa zona."
+  },
+  {
+    q: "Perché la mia casa non si vende?",
+    a: "Perché prezzo, presentazione o strategia non sono allineati al mercato."
+  }
+];
+
+const qa = QA[Math.floor(Math.random() * QA.length)];
+
+document.getElementById("question").textContent = qa.q;
+document.getElementById("prompter").textContent = qa.a;
+
+// SCROLL AUTOMATICO
+let y = 0;
+setInterval(() => {
+  y += 0.3;
+  document.getElementById("prompter").scrollTop = y;
+}, 30);
+</script>
+
 </body>
 </html>
