@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="it">
 <head>
@@ -171,13 +170,6 @@
       gap:8px;
       align-items:center;
       white-space:nowrap;
-    }
-
-    .hintTop{
-      margin: 6px 0 10px;
-      font-size:11px;
-      color: var(--muted);
-      line-height: 1.35;
     }
 
     .layout{
@@ -433,274 +425,72 @@
       flex-wrap:wrap;
     }
 
-    /* Prompt accordion */
-    details{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      background: rgba(0,0,0,.14);
-      padding:10px;
-    }
-    summary{
-      cursor:pointer;
-      list-style:none;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      user-select:none;
-      font-weight:950;
-      color: var(--text);
-      font-size:11px;
-    }
-    summary::-webkit-details-marker{ display:none; }
-    .subtle{
-      font-size:11px;
-      color: var(--muted);
-      line-height:1.35;
-      margin-top:6px;
-    }
-    .codeRow{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;
-    }
-    .codeRow input{
-      flex:1;
-      min-width: 160px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:900;
-      font-size:12px;
-    }
-    .codeRow input:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
-    }
-
-    /* Right-align helpers for REC */
     .ctrlLeft{ display:flex; gap:8px; align-items:center; }
     .ctrlMid{ display:flex; gap:8px; align-items:center; justify-content:center; }
     .ctrlRight{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
 
-    /* ==========================
-       ISTRUZIONI MODAL
-    ========================== */
-    .modalBackdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      padding: 14px;
-    }
-    .modalBackdrop.show{ display:flex; }
-
-    .modalCard{
-      width: min(920px, 96vw);
-      max-height: min(82vh, 760px);
-      overflow: auto;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-    }
-    .modalHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 12px 12px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,.28);
-      backdrop-filter: blur(8px);
-      z-index: 2;
-    }
-    .modalHeader .title{
+    /* Countdown pill */
+    #countdownPill{
+      border-color: rgba(255,255,255,.18);
+      background: rgba(0,0,0,.24);
       font-weight: 1000;
-      letter-spacing:.2px;
-      font-size: 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
     }
-    .modalBody{
-      padding: 12px;
-      color: rgba(243,244,246,.95);
-      font-size: 12px;
-      line-height: 1.35;
+    body.isRecording #countdownPill{
+      border-color: rgba(255,59,48,.55);
+      background: rgba(255,59,48,.12);
     }
-    .modalBody h3{
-      margin: 12px 0 6px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing:.8px;
-      color: var(--muted);
+
+    /* TELEPROMPTER UPGRADE */
+    #teleWrap{
+      height: 70vh !important;
     }
-    .modalBody ol, .modalBody ul{
-      margin: 8px 0 10px 18px;
-      padding: 0;
+    #teleText{
+      font-size: 26px !important;
+      line-height: 1.45 !important;
+      padding: 24px !important;
+      overflow-y: auto;
+      scroll-behavior: smooth;
     }
-    .modalBody li{ margin: 6px 0; }
-    .callout{
-      border: 1px solid rgba(216,162,58,.25);
-      background: rgba(216,162,58,.10);
-      border-radius: 14px;
-      padding: 10px 12px;
-      margin: 10px 0;
-      color: rgba(243,244,246,.96);
+
+    /* keyword emphasis */
+    .tele-strong{
+      color: #ffd166;
+      font-weight: 900;
     }
-    .kbd{
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color: rgba(243,244,246,.92);
-      white-space: nowrap;
-    }
-  
-    /* ==========================
-       SIMPLE / PRO UI
-    ========================== */
-    .proOnly{ display:block; }
-    .simpleOnly{ display:none; }
+
+    /* Minimal UI */
+    .hintTop, .wizard, #wizardHint, #promptDetails, #instructionsModal { display:none !important; }
+    #btnOpenChatGPTPasteQ, #btnPasteTop, #btnSendTele { display:none !important; }
+    #answerBox{ display:none !important; }
+
+    /* Solo modalità semplice */
     body.modeSimple .proOnly{ display:none !important; }
     body.modeSimple .simpleOnly{ display:block !important; }
 
-    body.modeSimple .btn{ font-size:12px; padding:10px 12px; }
-    body.modeSimple .btn.tiny{ font-size:11px; padding:8px 10px; }
-    body.modeSimple .hintTop{ display:none; }
-
-    .wizard{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-    .wizStep{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      font-weight:1000;
-      font-size:11px;
-      color: rgba(243,244,246,.88);
-      user-select:none;
-    }
-    .wizStep.active{
-      border-color: rgba(216,162,58,.55);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.10);
-      background: rgba(216,162,58,.12);
-      color: rgba(255,255,255,.98);
-    }
-    .wizStep.done{
-      border-color: rgba(37,211,102,.45);
-      background: rgba(37,211,102,.10);
-    }
-
-    #toast{
-      position: fixed;
-      left: 50%;
-      bottom: 84px;
-      transform: translateX(-50%);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
-      color: rgba(243,244,246,.98);
-      font-weight: 950;
-      font-size: 12px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      display:none;
-      z-index: 2000;
-      max-width: min(560px, 92vw);
-      text-align:center;
-    }
-
-
-    /* ==========================
-       MINIMAL SIMPLE UI (rigida)
-    ========================== */
     body.modeSimple header{ display:none !important; }
-    body.modeSimple #promptDetails{ display:none !important; }
     body.modeSimple .hintTop{ display:none !important; }
     body.modeSimple .card.simpleOnly{ display:none !important; }
-    body.modeSimple .proOnly{ display:none !important; }
     body.modeSimple #recList{ max-height:200px; }
-    /* Hide unused buttons/sections in simple */
-    body.modeSimple #btnOpenChatGPTPasteQ,
-    body.modeSimple #btnPasteTop,
-    body.modeSimple #btnSendTele,
-    body.modeSimple #btnCopyCaption{ display:none !important; }
-    /* Make main actions bigger */
     body.modeSimple .btn{ font-size:14px; padding:12px 14px; }
     body.modeSimple textarea{ font-size:14px; }
 
+    #captionCard{ display:block !important; }
+    #captionBox{ display:block !important; }
+    #btnCopyCaption{ display:inline-flex !important; }
 
-    /* Minimal UI: nasconde spiegazioni e blocchi non più usati */
-    .hintTop, .wizard, #wizardHint, #promptDetails, #instructionsModal { display:none !important; }
-    #btnOpenChatGPTPasteQ, #btnPasteTop, #btnSendTele, #btnCopyCaption { display:none !important; }
-    /* nasconde il box risposta (usato solo come storage) */
-    #answerBox{ display:none !important; }
-
-
-/* === TELEPROMPTER UPGRADE === */
-#teleWrap{
-  height: 70vh !important;
-}
-#teleText{
-  font-size: 26px !important;
-  line-height: 1.45 !important;
-  padding: 24px !important;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
-/* keyword emphasis */
-.tele-strong{
-  color: #ffd166;
-  font-weight: 900;
-}
-
-
-/* Countdown pill */
-#countdownPill{
-  border-color: rgba(255,255,255,.18);
-  background: rgba(0,0,0,.24);
-  font-weight: 1000;
-}
-body.isRecording #countdownPill{
-  border-color: rgba(255,59,48,.55);
-  background: rgba(255,59,48,.12);
-}
-
-</style>
+  </style>
 </head>
 
-<body>
+<body class="modeSimple">
 <div class="wrap">
-  <!-- ARCHIVIO (CSV) + SELEZIONE DOMANDA -->
-  <div class="card" id="archiveCard" style="margin-top:14px;">
+
+  <!-- MINI ARCHIVIO DOMANDE -->
+  <div class="card" style="margin-top:14px;">
     <div class="section">
       <div class="bar between" style="width:100%; gap:10px; flex-wrap:wrap;">
         <div class="bar left" style="gap:10px; flex-wrap:wrap;">
-          <label class="btn gray" style="cursor:pointer;">
-            <span class="ico">📁</span> Carica archivio CSV
-            <input id="csvFile" type="file" accept=".csv,text/csv" style="display:none">
-          </label>
-
-          <button class="btn blue" id="btnGenerateQuestion" type="button">
-            <span class="ico">🎲</span> Genera domanda
+          <button class="btn primary" id="btnGenerateQuestion" type="button">
+            <span class="ico">🎲</span> Genera domanda e risposta
           </button>
         </div>
 
@@ -708,100 +498,18 @@ body.isRecording #countdownPill{
           <select id="questionSelect" class="sel" style="min-width:260px; flex:1;">
             <option value="">Seleziona una domanda…</option>
           </select>
-          <span class="pill" id="archiveCountPill">Archivio: 0</span>
+          <span class="pill" id="archiveCountPill">Archivio: 10</span>
         </div>
       </div>
     </div>
   </div>
 
-
-  <!-- TOP ROW -->
-  <header>
-    <div class="row" style="flex:1;">
-      <button class="btn primary" id="btnNext" type="button">
-        <span class="ico">✨</span> Nuova domanda
-      </button>
-
-      <button class="btn blue" id="btnOpenChatGPTPasteQ" type="button" title="Copia PROMPT + domanda e apre ChatGPT">
-        <span class="ico">💬</span> Apri ChatGPT + copia domanda
-      </button>
-
-      <button class="btn violet" id="btnPasteTop" type="button" title="Incolla dagli appunti nel blocco risposta qui sotto">
-        <span class="ico">📋</span> Incolla risposta
-      </button>
-
-      <!-- NUOVO: ISTRUZIONI -->
-      <button class="btn gray proOnly" id="btnInstructions" type="button" title="Apri guida operativa">
-        <span class="ico">📘</span> Istruzioni
-      </button>
-
-
-      <span class="pill" style="gap:10px;">
-        <span style="display:inline-flex;align-items:center;gap:8px;">
-          <span style="font-weight:1000;font-size:10px;color:var(--muted);">Modalità</span>
-          <button class="btn tiny primary" id="btnModeSimple" type="button" title="Interfaccia semplificata">Semplice</button>
-          <button class="btn tiny gray" id="btnModePro" type="button" title="Mostra tutte le impostazioni">Pro</button>
-        </span>
-      </span>
-
-      <span class="pill">
-        <span id="videoCounter">Video: 0</span>
-        <span>•</span>
-        <span id="activeProfileLabel">Prossimo: —</span>
-      </span>
-    </div>
-
-    <div class="row">
-      <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
-    </div>
-  </header>
-
-  <!-- Didascalia breve -->
-  <div class="hintTop">
-    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT + copia domanda</b> (incolla e invia) → 3) usa <b>copia</b> su ChatGPT →
-    4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
-  </div>
-
-
-  <!-- Wizard steps (Semplice) -->
-  <div class="card simpleOnly" style="margin-top:10px;">
-    <div class="section" style="padding:10px 12px;">
-      <div class="wizard">
-        <div class="wizStep" data-step="1">1) Domanda</div>
-        <div class="wizStep" data-step="2">2) ChatGPT</div>
-        <div class="wizStep" data-step="3">3) Incolla</div>
-        <div class="wizStep" data-step="4">4) Teleprompter</div>
-        <div class="wizStep" data-step="5">5) REC</div>
-        <div class="wizStep" data-step="6">6) Scarica / WhatsApp</div>
-      </div>
-      <div class="subtle" id="wizardHint" style="margin-top:8px;">Premi <b>Nuova domanda</b> per iniziare.</div>
-    </div>
-  </div>
-
-
-  <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
-  <div class="card">
+  <!-- BLOCCO RISPOSTA (nascosto) -->
+  <div class="card" style="display:none;">
     <div class="section">
-      <p class="h">Risposta (da ChatGPT o scritta da te)</p>
+      <p class="h">Risposta</p>
       <div class="field">
-        <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
-      </div>
-
-      <div class="bar left" style="margin-top:10px;">
-        <button class="btn primary" id="btnSendTele" type="button"><span class="ico">➡️</span> Invia al teleprompter</button>
-        <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
-          <span class="ico">📋</span> Copia caption
-        </button>
-<button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
-          <span class="ico">🟢</span> Invia WhatsApp
-        </button>
-
-        
-
-      </div>
-
-      <div class="subtle">
-        “Invia al teleprompter” ti permette anche di inserire messaggi scritti da te (non solo incollati da ChatGPT).
+        <textarea id="answerBox"></textarea>
       </div>
     </div>
   </div>
@@ -823,22 +531,20 @@ body.isRecording #countdownPill{
               </div>
 
               <div id="overlay">
-                <div id="questionBoxOverlay">Premi “Nuova domanda”.</div>
+                <div id="questionBoxOverlay">Premi “Genera domanda e risposta”.</div>
                 <div id="teleprompterOverlay">
-                  <div id="teleText">Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.</div>
+                  <div id="teleText">Il testo della risposta apparirà qui automaticamente.</div>
                 </div>
               </div>
             </div>
 
             <div class="controlsRow">
-              <!-- REC più a destra: layout a 3 blocchi -->
               <div class="bar between" style="width:100%;">
                 <div class="ctrlLeft">
                   <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
                     <span class="dot"></span> Teleprompter + REC
                   </button>
-      <span class="pill" id="countdownPill" style="min-width:120px; text-align:center;">⏱️ 120</span>
-
+                  <span class="pill" id="countdownPill" style="min-width:120px; text-align:center;">⏱️ 120</span>
                   <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
                 </div>
 
@@ -847,53 +553,14 @@ body.isRecording #countdownPill{
                   <button class="btn gray" id="btnRestart" type="button"><span class="ico">↻</span> Riavvia</button>
                 </div>
 
-                <div class="ctrlRight">
-                  <!-- REC spostato a sinistra -->
-                </div>
+                <div class="ctrlRight"></div>
               </div>
 
-              <div class="bar proOnly">
-                <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
-                <span class="pill" id="speedLabel">Vel: 105s</span>
-              </div>
-
-              <div class="sliderRow proOnly">
+              <div class="sliderRow">
                 <span>Zoom</span>
                 <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
                 <span id="zoomVal">1.0x</span>
               </div>
-            </div>
-          </div>
-
-          <div class="proOnly">
-            <p class="h">Rotazione profili (piccola)</p>
-            <div class="profiles">
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_tiktok" checked>
-                <div class="profileMeta"><b>📱 TikTok</b></div>
-                <span class="nextBadge" id="badge_tiktok">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_instagram" checked>
-                <div class="profileMeta"><b>📸 Instagram</b></div>
-                <span class="nextBadge" id="badge_instagram">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_shorts">
-                <div class="profileMeta"><b>🎥 Shorts</b></div>
-                <span class="nextBadge" id="badge_shorts">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_facebook">
-                <div class="profileMeta"><b>💼 Facebook</b></div>
-                <span class="nextBadge" id="badge_facebook">PROSSIMO</span>
-              </div>
-            </div>
-
-            <div class="subtle">
-              Seleziona i canali da includere. “PROSSIMO” è solo un indicatore (non cliccabile).
             </div>
           </div>
         </div>
@@ -905,16 +572,11 @@ body.isRecording #countdownPill{
     <!-- SIDE -->
     <div class="card">
       <div class="section">
-        <div class="bar between">
-          <p class="h" style="margin:0;">Caption (memorizzata)</p>
-          <label class="chk" title="Memorizza la caption (senza hashtag) per il prossimo avvio">
-            <input type="checkbox" id="chkRememberCaption" class="check" checked />
-            Memorizza
-          </label>
+        <p class="h">Caption (Domanda + Risposta)</p>
+        <textarea id="captionBox" class="ta" rows="4" readonly></textarea>
+        <div class="bar left" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
+          <button class="btn gray" id="btnCopyCaption" type="button"><span class="ico">📋</span> Copia caption</button>
         </div>
-
-        <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
-        <div class="subtle">Gli hashtag automatici vengono aggiunti solo in copia (se non già presenti).</div>
       </div>
 
       <div class="section">
@@ -925,44 +587,9 @@ body.isRecording #countdownPill{
 
         <div class="bar left" style="margin-top:10px;">
           <button class="btn" id="btnDownloadVideo" type="button"><span class="ico">📥</span> Scarica video</button>
-
-          <!-- NUOVO: UPLOAD VIDEO -->
-          <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
-          <button class="btn proOnly" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
-            <span class="ico">⬆️</span> Carica video
-          </button>
-
-          <button class="btn tiny gray proOnly" id="btnClearList" type="button">🗑️ Svuota</button>
         </div>
 
-        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
-      </div>
-
-      <!-- PROMPT BLOCCO A FONDO PAGINA -->
-      <div class="section">
-        <details id="promptDetails" class="proOnly">
-          <summary>
-            <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
-            <span class="pill" id="promptStatePill">Bloccato</span>
-          </summary>
-
-          <div class="subtle">
-            Questo prompt viene sempre inserito <b>prima</b> della domanda quando premi “Apri ChatGPT + copia domanda”.
-          </div>
-
-          <div class="field" style="margin-top:10px;">
-            <textarea id="promptBox" readonly></textarea>
-          </div>
-
-          <div class="codeRow">
-            <input id="unlockCode" placeholder="Codice per modificare il prompt" />
-            <button class="btn tiny primary" id="btnUnlock" type="button">Sblocca</button>
-            <button class="btn tiny" id="btnSavePrompt" type="button" disabled>Salva</button>
-            <button class="btn tiny" id="btnResetPrompt" type="button" disabled>Ripristina</button>
-          </div>
-
-          <div class="subtle">Per modificare serve il codice: <b>16091979Jm</b>.</div>
-        </details>
+        <div id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
       </div>
     </div>
   </div>
@@ -971,53 +598,6 @@ body.isRecording #countdownPill{
 <!-- Bottom bar -->
 <div class="bottomBar">
   <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
-  <button class="btn tiny gray" id="btnInstructionsBottom" type="button"><span class="ico">📘</span> Istruzioni</button>
-</div>
-
-<!-- ==========================
-     MODAL ISTRUZIONI
-========================== -->
-<div class="modalBackdrop" id="instructionsModal" aria-hidden="true">
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
-    <div class="modalHeader">
-      <div class="title" id="instrTitle">📘 Istruzioni operative – Video Creator</div>
-      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✕ Chiudi</button>
-    </div>
-
-    <div class="modalBody">
-      <div class="callout">
-        Obiettivo: creare video verticali <b>9:16</b> in serie (TikTok/Instagram/Shorts/Facebook) con <b>domanda → risposta → teleprompter → REC → caption → download</b>.
-      </div>
-
-      <h3>Flusso standard</h3>
-      <ol>
-        <li><b>Nuova domanda</b> → clicca <span class="kbd">✨ Nuova domanda</span> e leggi la domanda che appare sul video.</li>
-        <li><b>Risposta da ChatGPT</b> → clicca <span class="kbd">💬 Apri ChatGPT + copia domanda</span>, incolla in ChatGPT e invia. Poi copia la risposta completa.</li>
-        <li><b>Incolla risposta</b> → torna qui e clicca <span class="kbd">📋 Incolla risposta</span> (finisce nel box “Risposta”).</li>
-        <li><b>Invia al teleprompter</b> → clicca <span class="kbd">➡️ Invia al teleprompter</span> (il testo va nel teleprompter e diventa anche caption base).</li>
-        <li><b>Prepara</b> → se serve clicca <span class="kbd">📷 Camera</span>, scegli velocità (90/105/120) e regola zoom.</li>
-        <li><b>Registra</b> → clicca <span class="kbd">🔴 Teleprompter + REC</span>. Quando finisci clicca <span class="kbd">⏹ Stop</span>.</li>
-        <li><b>Rivedi/Scarica</b> → seleziona il video in “Video creati” e clicca <span class="kbd">📥 Scarica video</span>.</li>
-        <li><b>Caption</b> → clicca <span class="kbd">📋 Copia caption</span> (aggiunge hashtag automatici se mancanti).</li>
-      </ol>
-
-      <h3>Produzione in serie</h3>
-      <ul>
-        <li>Ripeti sempre: <b>Nuova domanda → ChatGPT → Incolla → Invia al teleprompter → REC → Stop</b>.</li>
-        <li>La “rotazione profili” sposta automaticamente il <b>prossimo canale</b> dopo ogni registrazione.</li>
-      </ul>
-
-      <h3>Upload video</h3>
-      <ul>
-        <li>Puoi aggiungere un video manualmente con <span class="kbd">⬆️ Carica video</span>: entra in lista, si può rivedere e scaricare.</li>
-        <li>Il video caricato resta disponibile finché la pagina è aperta (workflow perfetto per test e revisione).</li>
-      </ul>
-
-      <div class="subtle">
-        Tip: premi <span class="kbd">ESC</span> per chiudere questa finestra.
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -1025,9 +605,8 @@ body.isRecording #countdownPill{
    CONFIG
 ========================== */
 const GESTIONALE_URL = "https://tuo-gestionale.com";
-const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
 
-/* Hashtag automatici (NON mostrati in preview) */
+/* Hashtag automatici */
 const HIDDEN_HASHTAGS = [
   "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
   "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
@@ -1036,57 +615,48 @@ const HIDDEN_HASHTAGS = [
   "#businessdigitale","#marketingonline"
 ].join(" ");
 
-/* Prompt base (nuovo) */
-const BASE_PROMPT = `🧩 PROMPT ADATTIVO – VERSIONE FINALE (250 PAROLE + HASHTAG)
-
-Agisci come un consulente immobiliare esperto, con uno stile friendly, chiaro e professionale, adatto anche a un ragazzo di 15 anni.
-
-Rispondi alle domande che ti fornirò con testi di massimo 250 parole, semplici, scorrevoli e concreti.
-
-Adatta progressivamente il tuo stile sulla base delle domande precedenti e delle risposte già fornite, migliorando chiarezza, precisione ed efficacia comunicativa nel tempo.
-
-Usa un linguaggio:
-
-semplice e diretto
-
-privo di tecnicismi inutili
-
-arricchito da esempi pratici della vita quotidiana
-
-Se utilizzi un termine tecnico, spiegalo immediatamente in modo semplice.
-
-Mantieni sempre un tono amichevole, rassicurante e professionale, mai infantile e mai burocratico.
-
-Struttura ogni risposta in questo modo:
-
-problema che andiamo a risolvere Breve introduzione che inquadra l’argomento
-
-Spiegazione chiara, con esempi concreti
-
-Conclusione, con un consiglio pratico
-
-Al termine di ogni risposta, aggiungi una breve lista di hashtag pertinenti al tema trattato (5), e #immobiliarelasacra #josephcretorlab #realmediapro #amamy #immobiliare #realestateitalia #mercatoimmobiliare #agenziaimmobiliare #casainvendita #venditacasa #investimentiimmobiliari #property #realestate #digitalstrategist #digitalstrategy #marketingdigitale #strategiamarketing #brandstrategy #contentstrategy #socialmediastrategy #growthmarketing #personalbranding #branding #businessdigitale #marketingonline
-
-Regole fondamentali:
-
-Lunghezza massima: 250 parole non di piu'
-
-Niente linguaggio tecnico inutile`;
-
-/* Codice sblocco prompt */
-const UNLOCK_CODE = "16091979Jm";
-
-/* Archivio domande */
-const QUESTION_BANK = [
-  { q:"Perché ricevo poche chiamate anche se l'annuncio è online da settimane?" },
-  { q:"Se arrivano solo curiosi e nessuna proposta, cosa significa?" },
-  { q:"Come capisco se il prezzo sta bloccando la vendita?" },
-  { q:"Meglio partire alto e poi scendere o partire subito con il prezzo giusto?" },
-  { q:"Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?" },
-  { q:"Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?" },
-  { q:"Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?" },
-  { q:"Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?" },
-  { q:"Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?" },
+/* Mini archivio domande e risposte */
+const ARCHIVIO = [
+  {
+    domanda: "Come posso valorizzare la mia casa prima di metterla in vendita?",
+    risposta: "Per valorizzare la tua casa, concentrati su tre cose: pulizia profonda, illuminazione e piccole riparazioni. Pulisci ogni angolo, dalle finestre ai pavimenti. Aggiungi lampade per creare atmosfera accogliente. Sistema quelle piccole cose che trascuri ogni giorno: una maniglia che si allenta, un rubinetto che perde. Non serve ristrutturare completamente, basta far vedere che la casa è curata. Investi in un servizio fotografico professionale: le foto belle attirano più visitatori online. Infine, chiedi a un amico di fiducia di fare un tour critico: noterà dettagli che tu non vedi più."
+  },
+  {
+    domanda: "Qual è il momento migliore per vendere una casa?",
+    risposta: "Il momento migliore è quando il mercato è attivo e tu sei pronto. In generale, la primavera è ottima perché le giornate sono più lunghe, i giardini fioriscono e le persone sono più motivate a cercare casa. Ma non aspettare il periodo perfetto se ne hai bisogno ora. Piuttosto, prepara bene la casa e il prezzo giusto. Un immobile ben presentato e prezzato correttamente vende in qualsiasi stagione. La cosa più importante è non avere fretta: meglio aspettare qualche settimana in più per ottenere il prezzo giusto che svendere per sbrigarsi."
+  },
+  {
+    domanda: "Come faccio a capire se il prezzo della mia casa è giusto?",
+    risposta: "Il prezzo giusto non è quello che vorresti tu, né quello che dice il vicino. È quello che il mercato è disposto a pagare. Fai una ricerca su portali immobiliari per case simili nella tua zona, stessi metri quadrati, stesse condizioni. Poi sottrai un 5-10% per essere competitivo. Se dopo 3-4 settimane non ricevi chiamate, il prezzo è troppo alto. Se ricevi solo offerte bassissime, forse la presentazione non convince. Chiedi feedback ai visitatori: spesso dicono onestamente cosa non convince. Un prezzo realistico attira seri acquirenti e riduce i tempi di vendita."
+  },
+  {
+    domanda: "Devo fare ristrutturazioni prima di vendere?",
+    risposta: "Dipende. Ristrutturazioni pesanti raramente si recuperano nella vendita. Concentrati su interventi low-cost ad alto impatto: vernice fresca sulle pareti (colori neutri), sostituzione di vecchi sanitari, illuminazione moderna. Se la cucina è datata ma funzionale, puliscila bene e cambia le maniglie. Se il bagno ha piastrelle anni '70 ma è integro, lascialo così. Investire 50.000€ per una ristrutturazione che ne aumenta il valore di 30.000€ non conviene. Meglio abbassare il prezzo e lasciare che l'acquirente scelga come ristrutturare."
+  },
+  {
+    domanda: "Come gestisco le trattative con i potenziali acquirenti?",
+    risposta: "Mantieni la calma e non mostrare fretta. Ascolta tutte le offerte, anche quelle basse: ogni offerta è un punto di partenza. Non rifiutare subito, chiedi tempo per valutare. Se l'offerta è molto bassa, rispondi con educazione: 'Grazie per l'offerta, la valuterò con il mio consulente'. Crea competizione: se hai più interessati, fallo sapere (senza mentire). Fissa una scadenza per le offerte. Ricorda: tutto è negoziabile, non solo il prezzo. Puoi trattare sui tempi di consegna, su mobili inclusi, su piccoli lavori. L'obiettivo è chiudere con soddisfazione di entrambi."
+  },
+  {
+    domanda: "Vendere da privato o con agenzia?",
+    risposta: "Se hai tempo, esperienza e pazienza, prova da privato. Ma considera che un'agenzia ti dà: visibilità su più portali, filtro dei visitatori seri, supporto nella trattativa, gestione documentale. Le commissioni si ripagano se ottieni un prezzo migliore e eviti errori costosi. Se decidi per l'agenzia, scegline una che comunichi spesso e abbia un piano marketing chiaro. Chiedi referenze di vendite recenti nella tua zona. In molti casi, l'agenzia paga se stessa con il prezzo più alto che riesce a ottenere."
+  },
+  {
+    domanda: "Cosa devo dichiarare obbligatoriamente a chi compra?",
+    risposta: "Devi essere trasparente su: vizi occulti (problemi strutturali, umidità, infiltrazioni), conformità urbanistica, impianti (elettrico, idraulico, gas), eventuali condoni. Nascondere problemi può portare a cause legali. Meglio dichiarare tutto e eventualmente abbassare il prezzo. Prepara una lista di cosa funziona e cosa no. Se c'è un problema noto, discuti se sistemarlo tu o fare uno sconto. La fiducia è fondamentale: un acquirente che si fida è più propenso a chiudere e a non rinegoziare all'ultimo."
+  },
+  {
+    domanda: "Quanto tempo ci vuole per vendere una casa?",
+    risposta: "Dipende da zona, prezzo e mercato. In media 3-6 mesi. Se dopo 2 mesi non hai visite, rivedi prezzo e presentazione. Le prime 4-6 settimane sono cruciali: se la casa è nuova sul mercato e ben prezzata, attira i cercatori più attivi. Non demoralizzarti se all'inizio è lento. Fatti un piano: settimana 1-2: promozione online; settimana 3-4: prime visite; settimana 5-6: feedback e eventuale aggiustamento. Una casa in vendita da troppo tempo (oltre 6 mesi) viene percepita come 'problematia', quindi meglio ritirarla e ripresentarla dopo un periodo."
+  },
+  {
+    domanda: "Come preparo la casa per le visite?",
+    risposta: "Crea un'atmosfera accogliente: luci accese (anche di giorno), temperatura confortevole, profumo neutro (no cucina pesante). Rimuovi oggetti personali (foto, troppi soprammobili) per permettere all'acquirente di immaginarsi a casa sua. Pulisci ogni superficie, soprattutto bagni e cucina. Togli il disordine: armadi pieni al 70% danno idea di spazio. Se hai animali, assicurati che non ci siano odori. Prepara un opuscoletto con informazioni utili: bollette medie, manutenzione caldaia, vicinato. Accompagna la visita senza essere invadente, lascia che si muovano liberamente."
+  },
+  {
+    domanda: "Cosa succede dopo aver accettato un'offerta?",
+    risposta: "Firma un preliminare di vendita con acconto (di solito 10-20%). Questo impegna entrambe le parti. Poi inizia il percorso notarile: il notaio verifica tutti i documenti (catasto, urbanistica, eventuali ipoteche). Se serve un mutuo, l'acquirente lo richiede. Tu intanto prepara lo stato di fatto: bollette pagate, certificazioni impianti. Programma la consegna delle chiavi, di solito al rogito. Il giorno del rogito, tutti dal notaio: si firma l'atto, l'acquirente paga il resto, tu consegni le chiavi. Ricorda di dare disdetta per utenze e cambiare domicilio."
+  }
 ];
 
 /* Teleprompter speed */
@@ -1098,156 +668,37 @@ let qIdx = -1;
 let currentQuestion = "";
 let lastCaptionClean = "";
 let totalVideos = 0;
+let currentItem = null;
 
-/* Rotazione profili */
-let rotationIndex = 0;
-
-/* Prompt state */
-let promptText = "";
+/* Countdown */
+let countdownTimer = null;
+let countdownRemaining = 120;
 
 /* ==========================
    HELPERS
 ========================== */
 const $ = (id) => document.getElementById(id);
 
-function highlightKeywords(text){
-  const keywords = [
-    "io", "decido", "responsabilità", "prezzo", "trattativa",
-    "mercato", "scelte", "intervengo", "gestisco", "proteggo"
-  ];
-  let out = text;
-  keywords.forEach(k=>{
-    const re = new RegExp("\\b("+k+")\\b","gi");
-    out = out.replace(re, '<span class="tele-strong">$1</span>');
-  });
-  return out;
+function pad2(n){ return String(n).padStart(2,"0"); }
+function nowStamp(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
 }
-
-
-/* ==========================
-   ARCHIVIO CSV (domanda+risposta)
-========================== */
-let ARCHIVIO = [];        // [{id, area, domanda, risposta}]
-let currentItem = null;   // item selezionato
-
-function normalizeHeader(h){
-  return String(h||"").trim().toLowerCase();
+function slugify(it){
+  return String(it || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s-]/g,"")
+    .trim()
+    .replace(/\s+/g,"-")
+    .replace(/-+/g,"-")
+    .slice(0, 50);
 }
-
-function detectDelimiter(text){
-  const firstLine = (text.split(/
-?
-/)[0] || "");
-  const commas = (firstLine.match(/,/g) || []).length;
-  const semis  = (firstLine.match(/;/g) || []).length;
-  return semis > commas ? ";" : ",";
+function keywordsFromQuestion(q){
+  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","aggi","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
+  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
+  return words.slice(0, 4).join("-");
 }
-
-// Simple CSV parser supporting quoted fields + delimiter autodetect
-function parseCSV(text){
-  const delim = detectDelimiter(text);
-  const rows = [];
-  let row = [], cell = "", inQuotes = false;
-
-  for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    const next = text[i+1];
-
-    if(ch === '"'){
-      if(inQuotes && next === '"'){ cell += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if(ch === delim && !inQuotes){
-      row.push(cell); cell="";
-    } else if((ch === '
-' || ch === '
-') && !inQuotes){
-      if(ch === '
-' && next === '
-') i++;
-      row.push(cell); cell="";
-      if(row.some(v => String(v).trim().length)) rows.push(row);
-      row = [];
-    } else {
-      cell += ch;
-    }
-  }
-
-  if(cell.length || row.length){
-    row.push(cell);
-    if(row.some(v => String(v).trim().length)) rows.push(row);
-  }
-  return rows;
-}
-
-
-function loadArchiveFromCSV(csvText){
-  const rows = parseCSV(csvText);
-  if(!rows.length) return { ok:false, err:"CSV vuoto" };
-
-  const headers = rows[0].map(normalizeHeader);
-  const idxDom = headers.findIndex(h => ["domanda","question","q"].includes(h));
-  const idxRis = headers.findIndex(h => ["risposta","answer","a"].includes(h));
-  const idxArea = headers.findIndex(h => ["area","categoria","category"].includes(h));
-
-  if(idxDom === -1) return { ok:false, err:"Manca la colonna 'domanda' (o 'question')" };
-  if(idxRis === -1) return { ok:false, err:"Manca la colonna 'risposta' (o 'answer')" };
-
-  const out = [];
-  for(let i=1;i<rows.length;i++){
-    const r = rows[i];
-    const domanda = (r[idxDom]||"").trim();
-    const risposta = (r[idxRis]||"").trim();
-    const area = idxArea>-1 ? (r[idxArea]||"").trim() : "";
-    if(!domanda || !risposta) continue;
-    out.push({ id: out.length+1, area, domanda, risposta });
-  }
-  ARCHIVIO = out;
-  refreshArchiveUI();
-  return { ok:true, count: ARCHIVIO.length };
-}
-
-function refreshArchiveUI(){
-  const sel = $("questionSelect");
-  if(!sel) return;
-  sel.innerHTML = '<option value="">Seleziona una domanda…</option>';
-  ARCHIVIO.forEach((it, i)=>{
-    const opt = document.createElement("option");
-    opt.value = String(i);
-    opt.textContent = it.area ? `[${it.area}] ${it.domanda}` : it.domanda;
-    sel.appendChild(opt);
-  });
-  const pill = $("archiveCountPill");
-  if(pill) pill.textContent = `Archivio: ${ARCHIVIO.length}`;
-}
-
-function setCurrentItem(it){
-  currentItem = it;
-  if(!it) return;
-
-  currentQuestion = it.domanda;
-  showQuestionInOverlay(currentQuestion);
-
-  // risposta nel teleprompter
-  if($("answerBox")) $("answerBox").value = it.risposta;
-  applyAnswer(it.risposta);
-
-  if(document.body.classList.contains("modeSimple")){
-    window.__step = 5; // pronto per REC
-  }
-  updateWizard();
-  showToast("Domanda pronta ✅", 1200);
-  try{   return ARCHIVIO[idx];
-}
-
-function buildCaptionQA(){
-  const q = String(currentItem?.domanda || currentQuestion || "").trim();
-  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
-  const parts = [];
-  if(q) parts.push("Domanda: " + q);
-  if(a) parts.push("Risposta: " + a);
-  return parts.join("\n");
-}
-
 
 function showToast(msg, ms=1600){
   const el = $("toast");
@@ -1278,7 +729,6 @@ function startCountdown(){
     if(countdownRemaining <= 0){
       countdownRemaining = 0;
       renderCountdown();
-      // auto stop
       try{ stopRecording(); }catch(e){}
       stopCountdown();
       document.body.classList.remove("isRecording");
@@ -1288,133 +738,18 @@ function startCountdown(){
   }, 1000);
 }
 
-function setMode(mode){
-  const isSimple = mode === "simple";
-  document.body.classList.toggle("modeSimple", isSimple);
-  $("btnModeSimple").classList.toggle("primary", isSimple);
-  $("btnModeSimple").classList.toggle("gray", !isSimple);
-  $("btnModePro").classList.toggle("primary", !isSimple);
-  $("btnModePro").classList.toggle("gray", isSimple);
-  try{ localStorage.setItem("vc_mode", isSimple ? "simple" : "pro"); }catch(e){}
-  if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    updateWizard();
+function buildCaptionQA(){
+  const q = String(currentItem?.domanda || currentQuestion || "").trim();
+  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
+  const parts = [];
+  if(q) parts.push("Domanda: " + q);
+  if(a) parts.push("Risposta: " + a);
+  return parts.join("\n");
 }
 
-
-
-function updateWizard(){
-  const isSimple = document.body.classList.contains("modeSimple");
-  const hasQ = !!String(currentQuestion||"").trim();
-  const hasA = !!String(($("answerBox") && $("answerBox").value) || "").trim();
-  const hasRec = (typeof recordings !== "undefined") && recordings && recordings.length > 0;
-  const camOk = !!camStream;
-
-  if(typeof window.__step === "undefined") window.__step = 1;
-  const setStep = (n)=>{ window.__step = Math.max(1, Math.min(5, n)); };
-
-  if(isSimple){
-    if(!hasQ) setStep(1);
-    else if(hasQ && !hasA) setStep(2);
-    else if(hasQ && hasA && !hasRec) setStep(3);
-    else if(hasRec) setStep(5);
-  }
-
-  const steps = Array.from(document.querySelectorAll(".wizStep"));
-  if(steps.length){
-    let active = isSimple ? window.__step : 1;
-    steps.forEach(s=>{
-      const n = Number(s.dataset.step||0);
-      s.classList.toggle("active", n===active);
-      s.classList.toggle("done", n < active);
-    });
-  }
-
-  // Locks
-  function lock(id, locked){
-    const el = $(id);
-    if(!el) return;
-    el.disabled = !!locked;
-    el.style.opacity = locked ? ".45" : "1";
-    el.style.pointerEvents = locked ? "none" : "auto";
-  }
-
-  if(isSimple){
-    // Lock all except what we need
-    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp"].forEach(id=>lock(id,true));
-    lock("btnNext", false); // nuova domanda
-
-    if(window.__step === 1){
-      // only nuova domanda
-    }else if(window.__step === 2){
-      // allow REC only after answer exists; still keep locked
-    }else if(window.__step === 3){
-      lock("btnStartVideo", false); // REC
-      lock("btnCam", false);
-      lock("btnStop", false); // allow stop (recording will start after rec)
-    }else if(window.__step === 5){
-      lock("btnDownloadVideo", false);
-      lock("btnWhatsApp", false);
-      lock("btnNext", false);
-    }
-
-    // If camera ready and no recording yet but answer exists, ensure step 3
-    if(hasQ && hasA && !hasRec) setStep(3);
-
-    // Provide minimal guidance via toast hints (optional)
-  }else{
-    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp","btnNext"].forEach(id=>lock(id,false));
-  }
-}
-
-
-
-
-function pad2(n){ return String(n).padStart(2,"0"); }
-function nowStamp(){
-  const d = new Date();
-  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
-}
-function slugify(it){
-  return String(it || "")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9\s-]/g,"")
-    .trim()
-    .replace(/\s+/g,"-")
-    .replace(/-+/g,"-")
-    .slice(0, 50);
-}
-function keywordsFromQuestion(q){
-  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","agli","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
-  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
-  return words.slice(0, 4).join("-");
-}
-
-async function copyText(text){
-  const t = String(text || "");
-  if(!t.trim()) return false;
-  try{
-    await navigator.clipboard.writeText(t);
-    return true;
-  }catch(e){
-    const ta = document.createElement("textarea");
-    ta.value = t;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    return true;
-  }
-}
-async function readClipboardText(){
-  return await navigator.clipboard.readText(); // HTTPS/localhost
-}
-
-/* Caption: aggiungi hashtag solo se non già presenti */
 function captionWithHashtagsIfNeeded(clean){
   const c = String(clean || "").trim();
   if(!c) return "";
-
   const lower = c.toLowerCase();
   if (lower.includes("#immobiliarelasacra") || lower.includes("#josephcretorlab") || lower.includes("#realmediapro")){
     return c;
@@ -1422,123 +757,42 @@ function captionWithHashtagsIfNeeded(clean){
   return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
 }
 
-function setCaptionClean(clean){
-  lastCaptionClean = String(clean || "").trim();
-  $("captionPreview").textContent = lastCaptionClean || "—";
-  if ($("chkRememberCaption").checked){
-    try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
-  }
+function setCurrentItem(it){
+  currentItem = it;
+  if(!it) return;
 
-  
-function buildCaptionFromInputs(){
-  const q = String(currentQuestion||"").trim();
-  const a = String(($("answerBox") && $("answerBox").value) || "").trim();
-  const parts = [];
-  if(q) parts.push("Domanda: " + q);
-  if(a) parts.push("Risposta:\n" + a);
-  return parts.join("\n\n").trim();
-}
-
-function buildWhatsAppMessage(){
-  return buildCaptionQA();
-}
-
-}
-
-/* ==========================
-   PROMPT
-========================== */
-function loadPrompt(){
-  try{
-    const saved = localStorage.getItem("vc_prompt_text");
-    promptText = (saved && saved.trim()) ? saved : BASE_PROMPT;
-  }catch(e){
-    promptText = BASE_PROMPT;
-  }
-  $("promptBox").value = promptText;
-}
-function lockPromptUI(){
-  $("promptBox").readOnly = true;
-  $("btnSavePrompt").disabled = true;
-  $("btnResetPrompt").disabled = true;
-  $("promptStatePill").textContent = "Bloccato";
-}
-function unlockPromptUI(){
-  $("promptBox").readOnly = false;
-  $("btnSavePrompt").disabled = false;
-  $("btnResetPrompt").disabled = false;
-  $("promptStatePill").textContent = "Sbloccato";
-}
-function savePrompt(){
-  promptText = $("promptBox").value || BASE_PROMPT;
-  try{ localStorage.setItem("vc_prompt_text", promptText); }catch(e){}
-}
-
-/* ==========================
-   QUESTIONS
-========================== */
-function showQuestionInOverlay(q){
-  $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
-}
-
-function nextQuestion(){
-  if(ARCHIVIO && ARCHIVIO.length){
-    const it = pickRandomItem();
-    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
-    setCurrentItem(it);
-    return;
-  }
-  // fallback
-  qIdx = (qIdx + 1) % QUESTION_BANK.length;
-  currentQuestion = QUESTION_BANK[qIdx].q;
+  currentQuestion = it.domanda;
   showQuestionInOverlay(currentQuestion);
-  if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
-  updateWizard();
-  showToast("Carica l’archivio CSV per avere anche le risposte 📁", 2200);
-}
-function composeChatGPTInput(){
-  const q = String(currentQuestion || "").trim();
-  if(!q) return (promptText || BASE_PROMPT).trim();
-  return `${(promptText || BASE_PROMPT).trim()}\n\nInput:\n👉 ${q}`.trim();
+
+  // Imposta risposta nel teleprompter
+  applyAnswer(it.risposta);
+  
+  // Aggiorna caption
+  const captionText = buildCaptionQA();
+  $("captionBox").value = captionText;
+  
+  showToast("Domanda e risposta caricate ✅", 1200);
 }
 
-/* ==========================
-   ROTAZIONE PROFILI
-========================== */
-function getRotationPlatforms(){
-  const items = [
-    { id:"rot_tiktok", platform:"tiktok" },
-    { id:"rot_instagram", platform:"instagram" },
-    { id:"rot_shorts", platform:"shorts" },
-    { id:"rot_facebook", platform:"facebook" },
-  ];
-  return items.filter(x => $(x.id).checked);
+function showQuestionInOverlay(q){
+  $("questionBoxOverlay").textContent = q ? q : "Premi 'Genera domanda e risposta'.";
 }
-function setNextBadge(platform){
-  const map = {
-    tiktok: $("badge_tiktok"),
-    instagram: $("badge_instagram"),
-    shorts: $("badge_shorts"),
-    facebook: $("badge_facebook"),
-  };
-  Object.values(map).forEach(el => el.classList.remove("show"));
-  if(platform && map[platform]) map[platform].classList.add("show");
+
+function pickRandomItem(){
+  return ARCHIVIO[Math.floor(Math.random() * ARCHIVIO.length)];
 }
-function getActivePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return null;
-  rotationIndex = rotationIndex % list.length;
-  return list[rotationIndex].platform;
-}
-function advancePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return;
-  rotationIndex = (rotationIndex + 1) % list.length;
-}
-function refreshProfileUI(){
-  const active = getActivePlatform();
-  setNextBadge(active);
-  $("activeProfileLabel").textContent = "Prossimo: " + (active ? active : "—");
+
+function refreshArchiveUI(){
+  const sel = $("questionSelect");
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Seleziona una domanda…</option>';
+  ARCHIVIO.forEach((it, i)=>{
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = it.domanda.length > 60 ? it.domanda.substring(0, 60) + "..." : it.domanda;
+    sel.appendChild(opt);
+  });
+  $("archiveCountPill").textContent = `Archivio: ${ARCHIVIO.length}`;
 }
 
 /* ==========================
@@ -1596,33 +850,24 @@ function applyAnswer(answer){
   $("teleText").textContent = a;
   resetTeleprompter();
   stopTeleprompter();
-  setCaptionClean(a);
   return true;
 }
 
 /* ==========================
-   SPEED UI (checkbox “radio”)
-========================== */
-function setSpeed(seconds){
-  teleprompterSeconds = seconds;
-  $("speedLabel").textContent = `Vel: ${seconds}s`;
-  $("speed120").checked = seconds === 120;
-  $("speed105").checked = seconds === 105;
-  $("speed90").checked  = seconds === 90;
-}
-
-/* ==========================
-   CAMERA + REC (CANVAS CLEAN)
+   CAMERA + REC
 ========================== */
 let camStream = null;
-let camFacing = "user"; // user | environment
-let countdownTimer = null;
-let countdownRemaining = 120;
+let camFacing = "user";
+let zoomValue = 1.0;
 
 let chunks = [];
 let rafCanvasId = null;
 
-let zoomValue = 1.0;
+let recStartTs = null;
+let recTimerId = null;
+let isRecording = false;
+let recorder = null;
+
 const camEl = $("cam");
 const canvas = $("recCanvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -1686,12 +931,6 @@ async function ensureReady(){
   if(!rafCanvasId) startCanvasLoop();
   return true;
 }
-
-/* REC lamp */
-let recStartTs = null;
-let recTimerId = null;
-let isRecording = false;
-let recorder = null;
 
 function fmtTime(ms){
   const sec = Math.floor(ms/1000);
@@ -1761,33 +1000,16 @@ function renderRecList(){
   }));
 }
 
-function buildVideoTitle(videoNum, platform, question){
+function buildVideoTitle(videoNum, question){
   const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
+  return `#${String(videoNum).padStart(3,"0")} • ${k}`;
 }
-function buildFileName(videoNum, platform, question){
+function buildFileName(videoNum, question){
   const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
-}
-
-
-// delayed auto-scroll only if overflow
-function delayedAutoScroll(){
-  const el = $("teleText");
-  if(!el) return;
-  setTimeout(()=>{
-    if(el.scrollHeight > el.clientHeight){
-      el.scrollTop = 0;
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      el.scrollTo({ top: maxScroll, behavior: "smooth" });
-    }
-  }, 2000);
+  return `video_${String(videoNum).padStart(3,"0")}_${k}_${nowStamp()}.webm`;
 }
 
 function startRecording(){
-  // countdown starts after 2s
   try{ setTimeout(()=>{ startCountdown(); }, 2000); }catch(e){}
 
   if(!camStream){ alert("Attiva la camera."); return; }
@@ -1813,8 +1035,7 @@ function startRecording(){
   recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
 
   const qNow = String(currentQuestion || "").trim();
-  const capNow = buildCaptionFromInputs();
-  const platformNow = getActivePlatform();
+  const platformNow = "video";
 
   recorder.onstop = ()=>{
     stopRecLamp();
@@ -1824,22 +1045,17 @@ function startRecording(){
     const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
     totalVideos += 1;
 
-    const title = buildVideoTitle(totalVideos, platformNow, qNow);
-    const name = buildFileName(totalVideos, platformNow, qNow);
+    const title = buildVideoTitle(totalVideos, qNow);
+    const name = buildFileName(totalVideos, qNow);
     const url = URL.createObjectURL(blob);
 
-    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow, kind:"recorded" });
+    recordings.unshift({ title, name, url, blob, question: qNow, kind:"recorded" });
     currentRecIndex = 0;
 
     $("playback").src = url;
     $("playback").load();
     renderRecList();
     updateCounters();
-
-    advancePlatform();
-    refreshProfileUI();
-    if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
-    updateWizard();
   };
 
   recorder.start(1000);
@@ -1859,134 +1075,26 @@ function goToGestionale(){
 }
 
 /* ==========================
-   ISTRUZIONI MODAL
-========================== */
-function openInstructions(){
-  const m = $("instructionsModal");
-  m.classList.add("show");
-  m.setAttribute("aria-hidden", "false");
-}
-function closeInstructions(){
-  const m = $("instructionsModal");
-  m.classList.remove("show");
-  m.setAttribute("aria-hidden", "true");
-}
-
-/* ==========================
-   UPLOAD VIDEO
-========================== */
-function addUploadedVideo(file){
-  if(!file) return;
-
-  const url = URL.createObjectURL(file);
-  totalVideos += 1;
-
-  const platformNow = getActivePlatform();
-  const qNow = String(currentQuestion || "Upload video").trim();
-  const k = keywordsFromQuestion(qNow) || "upload";
-  const p = platformNow || "upload";
-  const title = `#${String(totalVideos).padStart(3,"0")} • ${p} • ${k} • UPLOAD`;
-
-  const safeName = (file.name && file.name.trim()) ? file.name.trim() : `upload_${nowStamp()}.mp4`;
-
-  const capNow = String(lastCaptionClean || "").trim();
-
-  recordings.unshift({
-    title,
-    name: safeName,
-    url,
-    blob: file,
-    question: qNow,
-    captionClean: capNow,
-    platform: platformNow,
-    kind: "uploaded"
-  });
-
-  currentRecIndex = 0;
-  $("playback").src = url;
-  $("playback").load();
-  renderRecList();
-  updateCounters();
-}
-
-/* ==========================
    INIT
 ========================== */
 document.addEventListener("DOMContentLoaded", ()=>{
-  // mode init (default: Semplice)
-  try{
-    const savedMode = localStorage.getItem("vc_mode");
-    setMode(savedMode === "pro" ? "pro" : "simple");
-  }catch(e){
-    setMode("simple");
-  }
+  // Inizializza archivio
+  refreshArchiveUI();
 
-  // prompt
-  loadPrompt();
-  lockPromptUI();
+  // Zoom
+  applyZoom(1.0);
 
-  // blocco risposta: vuoto di default
-  $("answerBox").value = "";
-
-  // restore caption preview only
-  try{
-    const savedCap = localStorage.getItem("vc_caption_clean") || "";
-    if(savedCap.trim() && $("chkRememberCaption").checked){
-      setCaptionClean(savedCap);
-    }
-  }catch(e){}
-
-  // init UI
-  $("btnBackTop").addEventListener("click", goToGestionale);
+  // Pulsanti
   $("btnBackBottom").addEventListener("click", goToGestionale);
 
-  // Istruzioni
-  $("btnInstructions").addEventListener("click", openInstructions);
-  $("btnInstructionsBottom").addEventListener("click", openInstructions);
-  $("btnCloseInstructions").addEventListener("click", closeInstructions);
-  $("instructionsModal").addEventListener("click", (e)=>{
-    if(e.target && e.target.id === "instructionsModal") closeInstructions();
-  });
-  document.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape") closeInstructions();
+  // Genera domanda e risposta
+  $("btnGenerateQuestion").addEventListener("click", ()=>{
+    const it = pickRandomItem();
+    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
+    setCurrentItem(it);
   });
 
-  $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.";
-  showQuestionInOverlay("Premi “Nuova domanda”.");
-  updateCounters();
-  refreshProfileUI();
-  renderRecList();
-  resetTeleprompter();
-  applyZoom(1.0);
-  setSpeed(105);
-  updateWizard();
-
-  // speed radio-like
-  $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
-  $("speed105").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(105); });
-  $("speed90").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(90); });
-
-  // rotation change resets index
-  ["rot_tiktok","rot_instagram","rot_shorts","rot_facebook"].forEach(id=>{
-    $(id).addEventListener("change", ()=>{
-      rotationIndex = 0;
-      refreshProfileUI();
-    });
-  });
-
-  // nuova domanda
-  $("btnNext").addEventListener("click", ()=> nextQuestion());
-
-  // Archivio CSV
-  $("csvFile").addEventListener("change", async (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    const text = await file.text();
-    const res = loadArchiveFromCSV(text);
-    if(!res.ok){ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : " + res.err, 2200); return; }
-    showToast(`Archivio caricato ✅ (${res.count})`, 1800);
-  });
-
+  // Selezione dal menu
   $("questionSelect").addEventListener("change", ()=>{
     const v = $("questionSelect").value;
     if(v === "") return;
@@ -1994,112 +1102,26 @@ document.addEventListener("DOMContentLoaded", ()=>{
     if(it) setCurrentItem(it);
   });
 
-  $("btnGenerateQuestion").addEventListener("click", ()=>{
-    if(!ARCHIVIO.length){
-      showToast("Carica prima l’archivio CSV 📁", 2000);
-      return;
-    }
-    const it = pickRandomItem();
-    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
-    setCurrentItem(it);
-  });
-
-
-  // modalità semplice/pro
-  $("btnModeSimple").addEventListener("click", ()=> setMode("simple"));
-  $("btnModePro").addEventListener("click", ()=> setMode("pro"));
-
-  // START VIDEO (Semplice): camera + domanda + teleprompter + REC
-  
-  // quando scrivi/incolli il testo, sblocca REC
-  $("answerBox").addEventListener("input", ()=>{
-    if(document.body.classList.contains("modeSimple")){
-      window.__step = ($("answerBox").value||"").trim() ? 3 : 2;
-      updateWizard();
-    }
-  });
-
-  $("btnStartVideo").addEventListener("click", async ()=>{
-    if(!currentQuestion){ nextQuestion(); showToast("Domanda pronta ✅"); }
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      showToast("Incolla la risposta prima 👇");
-      $("answerBox").focus();
-      updateWizard();
-      return;
-    }
-    const okCam = await ensureReady();
-    if(!okCam){ showToast("Camera non disponibile"); return; }
-    applyAnswer(ans);
-    showToast("REC avviato 🔴");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
-    startRecording();
-    delayedAutoScroll();
-    updateWizard();
-  });
-
-  // apri chatgpt + copia prompt+domanda
-  $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
-    if(!currentQuestion){
-      nextQuestion();
-    }
-    const payload = composeChatGPTInput();
-    await copyText(payload);
-    showToast("Copiato ✅ Incolla su ChatGPT");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
-    updateWizard();
-    window.open(CHATGPT_URL, "_blank", "noopener");
-  });
-
-  // incolla risposta
-  $("btnPasteTop").addEventListener("click", async ()=>{
-    try{
-      const t = await readClipboardText();
-      $("answerBox").value = (t || "");
-      showToast("Risposta incollata ✅");
-      if(document.body.classList.contains("modeSimple")){ window.__step = ($("answerBox").value||"").trim() ? 4 : 3; }
-      updateWizard();
-    }catch(e){
-      alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
-    }
-  });
-
-  // invia al teleprompter
-  $("btnSendTele").addEventListener("click", ()=>{
-    const ok = applyAnswer($("answerBox").value || "");
-    if(!ok){ showToast("Scrivi o incolla una risposta prima 👇"); return; }
-    showToast("Teleprompter pronto ✅");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    updateWizard();
-  });
-
-  // camera
+  // Camera
   $("btnCam").addEventListener("click", async ()=>{
-  camFacing = (camFacing === "user") ? "environment" : "user";
-  // restart camera with new facing
-  try{ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }catch(e){}
-  const ok = await ensureReady();
-  if(ok) showToast(camFacing === "user" ? "Camera frontale ✅" : "Camera posteriore ✅");
-  updateWizard();
-});
-// Teleprompter + REC
+    camFacing = (camFacing === "user") ? "environment" : "user";
+    try{ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }catch(e){}
+    const ok = await ensureReady();
+    if(ok) showToast(camFacing === "user" ? "Camera frontale ✅" : "Camera posteriore ✅");
+  });
+
+  // Teleprompter + REC
   $("btnTeleRec").addEventListener("click", async ()=>{
     const okCam = await ensureReady();
     if(!okCam) return;
 
     if(!currentQuestion){
-      nextQuestion();
-    }
-
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
+      showToast("Prima genera una domanda e risposta");
       return;
     }
 
-    applyAnswer(ans);
-    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
+    applyAnswer(currentItem?.risposta || "");
+    $("questionBoxOverlay").style.display="none";
     startRecording();
   });
 
@@ -2107,77 +1129,27 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
   $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
 
-  // remember caption toggle
-  $("chkRememberCaption").addEventListener("change", ()=>{
-    if(!$("chkRememberCaption").checked){
-      try{ localStorage.removeItem("vc_caption_clean"); }catch(e){}
-    }else{
-      try{ localStorage.setItem("vc_caption_clean", lastCaptionClean || ""); }catch(e){}
-    }
-  });
-
-  // copia caption
+  // Copia caption
   $("btnCopyCaption").addEventListener("click", async ()=>{
-    const out = captionWithHashtagsIfNeeded(lastCaptionClean);
-    if(!out){ alert("Niente da copiare."); return; }
-    await copyText(out);
-  });
-
-
-  // invia whatsapp (domanda + risposta)
-  
-  async function shareVideoOnWhatsApp(blob, filename, captionText){
-    const file = new File([blob], filename, { type: blob.type || "video/webm" });
-
-    // 1) Native share (mobile)
-    if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
-      await navigator.share({ files:[file], text: captionText, title: "Video" });
-      return "native-share";
-    }
-
-    // 2) Fallback: copy caption + open WhatsApp text + download video
-    try{ await navigator.clipboard.writeText(captionText); }catch(e){}
-    const phone = "393713708294";
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(captionText)}`;
-    window.open(url, "_blank", "noopener");
-
-    // download file
-    const a = document.createElement("a");
-    const u = URL.createObjectURL(blob);
-    a.href = u;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u), 5000);
-
-    return "fallback";
-  }
-
-  // invia whatsapp: video + caption (domanda + risposta)
-  $("btnWhatsApp").addEventListener("click", async ()=>{
-    const r = recordings && recordings[0];
-    if(!r || !r.blob){
-      showToast("Registra un video prima 👇");
-      return;
-    }
-    const captionText = String(r.captionClean || buildCaptionFromInputs() || "").trim();
-    if(!captionText){
-      showToast("Manca il testo per la caption");
-      return;
-    }
-    showToast("Condivisione…");
+    const captionText = $("captionBox").value.trim();
+    if(!captionText){ showToast("Niente da copiare",1400); return; }
+    
+    const textWithHashtags = captionWithHashtagsIfNeeded(captionText);
     try{
-      const mode = await shareVideoOnWhatsApp(r.blob, r.name || "video.webm", captionText);
-      if(mode === "fallback") showToast("Scaricato + WhatsApp aperto ✅");
-      else showToast("Inviato ✅");
-    }catch(err){
-      console.error(err);
-      showToast("Non riuscito. Prova Scarica + invio manuale.");
+      await navigator.clipboard.writeText(textWithHashtags);
+      showToast("Caption copiata con hashtag ✅",1400);
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = textWithHashtags;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast("Caption copiata con hashtag ✅",1400);
     }
   });
 
-  // download selected video
+  // Download video
   $("btnDownloadVideo").addEventListener("click", ()=>{
     if(currentRecIndex < 0 || !recordings[currentRecIndex]){
       alert("Seleziona un video dalla lista.");
@@ -2187,105 +1159,20 @@ document.addEventListener("DOMContentLoaded", ()=>{
     downloadBlob(r.blob, r.name);
   });
 
-  // upload video (button -> hidden input)
-  $("btnUploadVideo").addEventListener("click", ()=>{
-    $("videoUpload").click();
-  });
-  $("videoUpload").addEventListener("change", (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    if(!String(file.type || "").startsWith("video/")){
-      alert("Seleziona un file video valido.");
-      e.target.value = "";
-      return;
-    }
-    addUploadedVideo(file);
-    e.target.value = "";
-  });
-
-  // clear list
-  $("btnClearList").addEventListener("click", ()=>{
-    if(!recordings.length) return;
-    if(confirm("Svuotare la lista?")){
-      recordings.forEach(r => { try{ URL.revokeObjectURL(r.url); }catch(e){} });
-      recordings = [];
-      currentRecIndex = -1;
-      $("playback").removeAttribute("src");
-      $("playback").load();
-      renderRecList();
-      totalVideos = 0;
-      updateCounters();
-      rotationIndex = 0;
-      refreshProfileUI();
-    }
-  });
-
-  // prompt unlock/save/reset
-  $("btnUnlock").addEventListener("click", ()=>{
-    const code = ($("unlockCode").value || "").trim();
-    if(code === UNLOCK_CODE){
-      unlockPromptUI();
-    }else{
-      alert("Codice errato.");
-      lockPromptUI();
-    }
-  });
-
-  $("btnSavePrompt").addEventListener("click", ()=>{
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
-
-  $("btnResetPrompt").addEventListener("click", ()=>{
-    $("promptBox").value = BASE_PROMPT;
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
+  // Inizializzazione
+  showQuestionInOverlay("Premi 'Genera domanda e risposta'.");
+  updateCounters();
+  renderRecList();
+  resetTeleprompter();
 });
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  const csv = document.getElementById("csvFile");
-  const gen = document.getElementById("btnGenerateQuestion");
-  const sel = document.getElementById("questionSelect");
-
-  if(csv && !csv._bound){
-    csv._bound = true;
-    csv.addEventListener("change", async (e)=>{
-      const file = e.target.files && e.target.files[0];
-      if(!file) return;
-      const text = await file.text();
-      const res = loadArchiveFromCSV(text);
-      if(!res.ok){ try{ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : "+res.err,2200);}catch(e){} return; }
-      try{ showToast(`Archivio caricato ✅ (${res.count})`,1800);}catch(e){}
-    });
-  }
-
-  if(sel && !sel._bound){
-    sel._bound = true;
-    sel.addEventListener("change", ()=>{
-      const v = sel.value;
-      if(v==="") return;
-      const it = ARCHIVIO[Number(v)];
-      if(it) setCurrentItem(it);
-    });
-  }
-
-  if(gen && !gen._bound){
-    gen._bound = true;
-    gen.addEventListener("click", ()=>{
-      if(!ARCHIVIO.length){ try{ showToast("Carica prima l’archivio CSV 📁",2000);}catch(e){} return; }
-      const it = pickRandomItem();
-      sel.value = String(ARCHIVIO.indexOf(it));
-      setCurrentItem(it);
-    });
-  }
-});
+// Elemento toast
+const toast = document.createElement("div");
+toast.id = "toast";
+toast.setAttribute("aria-live", "polite");
+document.body.appendChild(toast);
 
 </script>
-
-<div id="toast" aria-live="polite"></div>
 
 </body>
 </html>
