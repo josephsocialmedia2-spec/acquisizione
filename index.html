@@ -9,7 +9,7 @@
 
   <style>
     :root{
-      --bg:#3b82f6;
+      --bg:#0b6b3a;
       --text:#f3f4f6;
       --muted:#a0adb8;
       --gold:#ffd400;
@@ -2120,19 +2120,22 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const okCam = await ensureReady();
     if(!okCam) return;
 
-    if(!currentQuestion){
-      nextQuestion();
+    // Se non hai ancora inviato nulla al teleprompter, prova a usare il testo nel box “Risposta”.
+    // Così puoi registrare anche video “liberi” (es: “Oggi sto bene”) senza dover avere per forza una domanda.
+    const maybe = String($("answerBox")?.value || "").trim();
+    if(String($("teleText")?.textContent || "").trim() === "" && maybe){
+      $("teleText").textContent = maybe;
+      resetTeleprompter();
     }
 
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
-      return;
-    }
+    // Avvia teleprompter (anche se vuoto: in quel caso registri comunque il video)
+    startTeleprompter();
 
-    applyAnswer(ans);
-    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
-    startRecording();
+    // Countdown + REC
+    startCountdown();
+    await startRecording();
+    if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
+    updateWizard();
   });
 
   $("btnStop").addEventListener("click", ()=> stopRecording());
@@ -2347,6 +2350,88 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 })();
 
+
+/* ==========================
+   FIX: ISTRUZIONI + WHATSAPP + ROTAZIONE PROFILI
+========================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // --- Istruzioni (modal)
+  const modal = $("instructionsModal");
+  const btnTop = $("btnInstructions");
+  const btnBottom = $("btnInstructionsBottom");
+  const btnClose = $("btnCloseInstructions");
+
+  function openInstructions(){
+    if(!modal) return;
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden","false");
+    try{ btnClose && btnClose.focus(); }catch(e){}
+  }
+  function closeInstructions(){
+    if(!modal) return;
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden","true");
+  }
+
+  [btnTop, btnBottom].forEach(b=>{
+    if(b && !b._bound){
+      b._bound = true;
+      b.addEventListener("click", openInstructions);
+    }
+  });
+  if(btnClose && !btnClose._bound){
+    btnClose._bound=true;
+    btnClose.addEventListener("click", closeInstructions);
+  }
+  if(modal && !modal._bound){
+    modal._bound=true;
+    modal.addEventListener("click", (e)=>{
+      if(e.target === modal) closeInstructions();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && modal.style.display === "flex") closeInstructions();
+    });
+  }
+
+  // --- WhatsApp (domanda + risposta, oppure solo testo libero)
+  const waBtn = $("btnWhatsApp");
+  if(waBtn && !waBtn._bound){
+    waBtn._bound=true;
+    waBtn.addEventListener("click", ()=>{
+      const q = String(currentQuestion || "").trim();
+      const a = String($("answerBox")?.value || "").trim();
+
+      let msg = "";
+      if(q && a) msg = `Domanda: ${q}\n\nRisposta:\n${a}`;
+      else if(a) msg = a;
+      else if(q) msg = q;
+
+      if(!msg.trim()){
+        showToast("Scrivi una risposta (o un testo libero) prima di inviare su WhatsApp 👇");
+        return;
+      }
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+      window.open(url, "_blank", "noopener");
+    });
+  }
+
+  // --- Rotazione profili: parte da un profilo casuale + avanza anche su “Nuova domanda”
+  try{
+    const list = getRotationPlatforms();
+    if(list.length > 0){
+      rotationIndex = Math.floor(Math.random() * list.length);
+      refreshProfileUI();
+    }
+  }catch(e){}
+  const btnNext = $("btnNext");
+  if(btnNext && !btnNext._rotBound){
+    btnNext._rotBound = true;
+    btnNext.addEventListener("click", ()=>{
+      advancePlatform();
+      refreshProfileUI();
+    });
+  }
+});
 </script>
 
 <div id="toast" aria-live="polite"></div>
