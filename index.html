@@ -2,1613 +2,1234 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – Teleprompter</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vertical Creator Studio (9:16) + Teleprompter</title>
   <style>
     :root{
-      --bg:#0b1120;
-      --text:#f3f4f6;
-      --muted:#a0adb8;
-      --gold:#d8a23a;
-      --border: rgba(225,225,225,0.18);
-      --shadow: 0 14px 50px rgba(0,0,0,0.45);
-      --radius: 18px;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-
-      --tele-font: 12px;
-      --tele-line: 1.22;
-      --stage-w: min(420px, 92vw);
-      --zoom: 1;
+      --bg:#0b0f1a;
+      --card:#11172a;
+      --muted:#97a3b6;
+      --text:#e9eef7;
+      --acc:#7c5cff;
+      --good:#3ddc97;
+      --bad:#ff4d6d;
+      --warn:#ffcc66;
+      --line: rgba(255,255,255,.08);
     }
-
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:var(--sans);
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(124,92,255,.25), transparent 60%),
+                  radial-gradient(900px 500px at 80% 10%, rgba(61,220,151,.15), transparent 60%),
+                  var(--bg);
       color:var(--text);
-      background:
-        radial-gradient(900px 500px at 15% 10%, rgba(216,162,58,.18), transparent 60%),
-        radial-gradient(900px 600px at 85% 30%, rgba(123,79,189,.14), transparent 55%),
-        radial-gradient(900px 600px at 70% 85%, rgba(74,143,114,.14), transparent 55%),
-        var(--bg);
     }
-
-    .wrap{ max-width:1150px; margin:0 auto; padding:14px 12px 84px; }
-
     header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
+      padding:18px 18px 10px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border-bottom:1px solid var(--line);
+      position:sticky; top:0; background: rgba(11,15,26,.85); backdrop-filter: blur(10px);
+      z-index:10;
     }
-
-    .row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
+    header .title{display:flex; gap:10px; align-items:center}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border:1px solid var(--line); border-radius:999px;
+      background: rgba(255,255,255,.04); color:var(--muted); font-size:12px;
     }
-
-    /* ---------- Buttons (friendly + animazioni) ---------- */
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
-      padding:8px 10px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:950;
-      letter-spacing:.2px;
-      font-size:11px;
-      line-height:1;
-      white-space:nowrap;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-      position:relative;
-
-      transform: translateY(0) scale(1);
-      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
-      box-shadow: 0 10px 22px rgba(0,0,0,.18);
-      overflow:hidden;
-    }
-    .btn::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: radial-gradient(500px 140px at 20% 0%, rgba(255,255,255,.14), transparent 60%),
-                  radial-gradient(500px 140px at 80% 100%, rgba(255,255,255,.10), transparent 55%);
-      opacity:0;
-      transition: opacity .18s ease;
-      pointer-events:none;
-    }
-    .btn:hover{
-      transform: translateY(-2px) scale(1.01);
-      border-color: rgba(216,162,58,.22);
-      box-shadow: 0 14px 34px rgba(0,0,0,.30);
-      filter: brightness(1.06);
-    }
-    .btn:hover::after{ opacity:1; }
-    .btn:active{
-      transform: translateY(0px) scale(.99);
-      filter: brightness(0.98);
-    }
-
-    .btn.tiny{
-      padding:6px 9px;
-      font-size:10px;
-      border-radius:11px;
-      box-shadow:none;
-    }
-
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
-      color:#111;
-      border-color: rgba(216,162,58,.55);
-    }
-    .btn.blue{
-      background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
-      border-color: rgba(57,90,140,.55);
-    }
-    .btn.violet{
-      background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70));
-      border-color: rgba(123,79,189,.55);
-    }
-    .btn.gray{ background: rgba(255,255,255,.04); }
-
-    /* REC button (rosso, “alive”) */
-    .btn.rec{
-      background: linear-gradient(135deg, rgba(255,45,45,.95), rgba(255,45,45,.55));
-      border-color: rgba(255,45,45,.55);
-      color:#120707;
-      font-weight: 1000;
-    }
-    .btn.rec .dot{
-      width:10px; height:10px; border-radius:999px;
-      background:#ff2d2d;
-      box-shadow: 0 0 0 0 rgba(255,45,45,.45);
-      animation: pulseDot 1.15s ease-in-out infinite;
-    }
-    @keyframes pulseDot{
-      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.45); transform: scale(1); }
-      60%{ box-shadow: 0 0 0 10px rgba(255,45,45,0); transform: scale(1.06); }
-      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
-    }
-
-    .btn .ico{
-      display:inline-flex;
-      transform: translateY(0);
-      transition: transform .16s ease;
-    }
-    .btn:hover .ico{
-      transform: translateY(-1px) rotate(-2deg);
-    }
-
-    .pill{
-      font-size:10px;
-      color:var(--muted);
-      padding:6px 10px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      background:rgba(0,0,0,.18);
-      font-weight:900;
-      letter-spacing:.2px;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      white-space:nowrap;
-    }
-
-    .hintTop{
-      margin: 6px 0 10px;
-      font-size:11px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-
-    .layout{
+    .dot{width:8px; height:8px; border-radius:999px; background: var(--good); box-shadow:0 0 0 4px rgba(61,220,151,.15)}
+    main{
+      padding:18px;
       display:grid;
-      grid-template-columns: 1fr 360px;
-      gap:12px;
-      align-items:start;
-      margin-top:12px;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+      max-width: 1320px;
+      margin:0 auto;
     }
-    @media (max-width: 980px){ .layout{ grid-template-columns:1fr; } }
-
+    @media (max-width: 1050px){
+      main{grid-template-columns: 1fr; }
+    }
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      background: rgba(17,23,42,.75);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding:14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
     }
-    .section{ padding:12px; }
-    .section + .section{ border-top:1px solid rgba(255,255,255,.10); }
-
-    .h{
-      margin:0 0 8px;
-      font-size:10px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.8px;
-      font-weight:950;
+    .card h2{margin:0 0 10px; font-size:14px; letter-spacing:.2px; color: #cfe0ff}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
+    input[type="text"], textarea, select{
+      width:100%;
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding:10px 12px;
+      outline:none;
     }
-
-    .stageRow{
+    textarea{min-height:90px; resize:vertical}
+    button{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease;
+      font-weight:600;
+    }
+    button:hover{background: rgba(255,255,255,.10)}
+    button:active{transform: scale(.98)}
+    .primary{background: rgba(124,92,255,.22); border-color: rgba(124,92,255,.35)}
+    .danger{background: rgba(255,77,109,.18); border-color: rgba(255,77,109,.35)}
+    .good{background: rgba(61,220,151,.16); border-color: rgba(61,220,151,.35)}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      font-size:12px;
+      color: var(--muted);
+      user-select:none;
+    }
+    .pill strong{color:var(--text)}
+    .split{
+      display:grid; grid-template-columns: 1fr; gap:12px;
+    }
+    .previewWrap{
       display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
+      grid-template-columns: 390px 1fr;
+      gap:16px;
       align-items:start;
     }
-    @media (max-width: 980px){ .stageRow{ grid-template-columns:1fr; } }
-
-    .stageBlock{
-      width: var(--stage-w);
-      margin: 0 auto;
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
+    @media (max-width: 1050px){
+      .previewWrap{grid-template-columns: 1fr;}
     }
-
-    #stage916{
-      width: 100%;
+    .phone{
+      width: 360px; max-width: 100%;
       aspect-ratio: 9 / 16;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      overflow: hidden;
-      position: relative;
-      background:#000;
-      box-shadow: var(--shadow);
-    }
-
-    #cam{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      transform: scale(var(--zoom));
-      transform-origin: center;
-    }
-
-    #overlay{
-      position:absolute;
-      inset:0;
-      padding: 10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      pointer-events:none;
-      z-index: 2;
-    }
-
-    #questionBoxOverlay{
-      font-size: 11px;
-      font-weight: 950;
-      line-height: 1.15;
-      padding: 7px 9px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.30);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(6px);
-      white-space:pre-wrap;
-    }
-
-    #teleprompterOverlay{
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      border-radius: 12px;
-    }
-
-    #teleText{
-      position:absolute;
-      left:0; right:0;
-      white-space: pre-wrap;
-      font-size: var(--tele-font);
-      line-height: var(--tele-line);
-      font-weight: 800;
-      color: rgba(243,244,246,.94);
-      text-shadow: 0 2px 12px rgba(0,0,0,.75);
-      transform: translateY(20px);
-    }
-
-    .controlsRow{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:stretch;
-    }
-    .bar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
-    }
-    .bar.left{ justify-content:flex-start; }
-    .bar.between{ justify-content:space-between; }
-
-    .sliderRow{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:var(--muted);
-      font-size:10px;
-      font-weight:950;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-    input[type="range"]{ width:170px; accent-color: var(--gold); }
-
-    .chk{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-      color:var(--muted);
-      font-weight:950;
-      font-size:10px;
-      white-space:nowrap;
-    }
-    .check{
-      width:16px; height:16px;
-      accent-color: var(--gold);
-      cursor:pointer;
-    }
-
-    .field textarea{
-      width:100%;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:850;
-      resize: vertical;
-      min-height: 120px;
-      font-size:12px;
-      line-height:1.25;
-    }
-    .field textarea:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
-    }
-
-    .mini{
-      font-family:var(--mono);
-      font-size:12px;
-      color:var(--muted);
-      white-space:pre-wrap;
-      word-break:break-word;
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:10px;
-    }
-
-    /* Profili piccoli */
-    .profiles{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:7px;
-      margin-top:8px;
-    }
-    .profileRow{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      padding:7px 8px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      background:rgba(0,0,0,.14);
-    }
-    .profileMeta{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-      flex:1;
-    }
-    .profileMeta b{
-      font-size:11px;
-      font-weight:950;
-      white-space:nowrap;
+      border-radius: 26px;
       overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .nextBadge{
-      font-size:9px;
-      font-weight:1000;
-      padding:3px 7px;
-      border-radius:999px;
-      border:1px solid rgba(255,45,45,.55);
-      color: rgba(255,235,235,.95);
-      background: rgba(255,45,45,.18);
-      white-space:nowrap;
-      display:none;
-      pointer-events:none;
-      user-select:none;
-    }
-    .nextBadge.show{ display:inline-flex; }
-
-    #recLamp{
-      position:absolute; top:12px; right:12px;
-      padding:7px 9px; border-radius:12px;
-      background:rgba(0,0,0,.40);
-      border:1px solid rgba(255,255,255,.18);
-      font-weight:950; font-size:11px;
-      display:none; align-items:center; gap:8px;
-      backdrop-filter: blur(6px);
-      z-index: 6;
-    }
-
-    .bottomBar{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      padding: 10px 12px;
+      border: 1px solid var(--line);
       background: rgba(0,0,0,.35);
-      border-top: 1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(8px);
-      display:flex;
-      justify-content:flex-end;
-      z-index: 50;
-      gap:8px;
-      flex-wrap:wrap;
+      position: relative;
+      box-shadow: 0 20px 80px rgba(0,0,0,.35);
     }
-
-    /* Prompt accordion */
-    details{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      background: rgba(0,0,0,.14);
-      padding:10px;
+    .phone video, .phone canvas{
+      width:100%; height:100%;
+      display:block;
+      object-fit: cover;
     }
-    summary{
-      cursor:pointer;
-      list-style:none;
-      display:flex;
+    .phone .overlayHint{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(233,238,247,.75);
+      text-align:center; padding:18px;
+      background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15) 40%, rgba(0,0,0,.35));
+      pointer-events:none;
+      font-size:13px;
+    }
+    .status{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
+    }
+    .tiny{font-size:12px; color:var(--muted)}
+    .hr{height:1px; background: var(--line); margin:12px 0}
+    .list{
+      display:grid; gap:10px;
+    }
+    .item{
+      display:grid; grid-template-columns: 110px 1fr; gap:10px;
+      padding:10px; border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      user-select:none;
-      font-weight:950;
-      color: var(--text);
-      font-size:11px;
     }
-    summary::-webkit-details-marker{ display:none; }
-    .subtle{
-      font-size:11px;
-      color: var(--muted);
-      line-height:1.35;
-      margin-top:6px;
-    }
-    .codeRow{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;
-    }
-    .codeRow input{
-      flex:1;
-      min-width: 160px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:900;
+    .thumb{
+      width:110px; aspect-ratio: 9/16; border-radius: 12px;
+      background: rgba(0,0,0,.35);
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(233,238,247,.55);
       font-size:12px;
+      border:1px solid var(--line);
+      overflow:hidden;
+      position:relative;
     }
-    .codeRow input:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    .item h3{margin:0; font-size:13px}
+    .meta{font-size:12px; color:var(--muted); margin-top:4px}
+    .item .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .modal{
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.65);
+      z-index:999;
+      padding:16px;
     }
-
-    /* Right-align helpers for REC */
-    .ctrlLeft{ display:flex; gap:8px; align-items:center; }
-    .ctrlMid{ display:flex; gap:8px; align-items:center; justify-content:center; }
-    .ctrlRight{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
-
-    /* ==========================
-       ISTRUZIONI MODAL
-    ========================== */
-    .modalBackdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      padding: 14px;
-    }
-    .modalBackdrop.show{ display:flex; }
-
-    .modalCard{
-      width: min(920px, 96vw);
-      max-height: min(82vh, 760px);
-      overflow: auto;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.14);
+    .modal.open{display:flex}
+    .modal .panel{
+      width:min(1000px, 100%);
+      background: rgba(17,23,42,.92);
+      border:1px solid var(--line);
       border-radius: 18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      overflow:hidden;
+      box-shadow: 0 30px 100px rgba(0,0,0,.45);
     }
-    .modalHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 12px 12px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,.28);
-      backdrop-filter: blur(8px);
-      z-index: 2;
+    .panelHead{
+      padding:12px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid var(--line);
     }
-    .modalHeader .title{
-      font-weight: 1000;
-      letter-spacing:.2px;
-      font-size: 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .modalBody{
-      padding: 12px;
-      color: rgba(243,244,246,.95);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .modalBody h3{
-      margin: 12px 0 6px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing:.8px;
-      color: var(--muted);
-    }
-    .modalBody ol, .modalBody ul{
-      margin: 8px 0 10px 18px;
-      padding: 0;
-    }
-    .modalBody li{ margin: 6px 0; }
-    .callout{
-      border: 1px solid rgba(216,162,58,.25);
-      background: rgba(216,162,58,.10);
-      border-radius: 14px;
-      padding: 10px 12px;
-      margin: 10px 0;
-      color: rgba(243,244,246,.96);
-    }
-    .kbd{
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color: rgba(243,244,246,.92);
-      white-space: nowrap;
-    }
+    .panelBody{padding:14px; display:grid; grid-template-columns: 360px 1fr; gap:14px}
+    @media (max-width: 900px){ .panelBody{grid-template-columns:1fr} }
+    .panelBody video{width:100%; aspect-ratio: 9/16; border-radius: 16px; border:1px solid var(--line); background:black}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; font-size:11px; color: rgba(233,238,247,.8)}
   </style>
 </head>
-
 <body>
-<div class="wrap">
-
-  <!-- TOP ROW -->
-  <header>
-    <div class="row" style="flex:1;">
-      <button class="btn primary" id="btnNext" type="button">
-        <span class="ico">✨</span> Nuova domanda
-      </button>
-
-      <button class="btn blue" id="btnOpenChatGPTPasteQ" type="button" title="Copia PROMPT + domanda e apre ChatGPT">
-        <span class="ico">💬</span> Apri ChatGPT + copia domanda
-      </button>
-
-      <button class="btn violet" id="btnPasteTop" type="button" title="Incolla dagli appunti nel blocco risposta qui sotto">
-        <span class="ico">📋</span> Incolla risposta
-      </button>
-
-      <!-- NUOVO: ISTRUZIONI -->
-      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
-        <span class="ico">📘</span> Istruzioni
-      </button>
-
-      <span class="pill">
-        <span id="videoCounter">Video: 0</span>
-        <span>•</span>
-        <span id="activeProfileLabel">Prossimo: —</span>
-      </span>
+<header>
+  <div class="title">
+    <div style="width:34px;height:34px;border-radius:12px;background:rgba(124,92,255,.25);border:1px solid rgba(124,92,255,.35);display:flex;align-items:center;justify-content:center;">
+      🎬
     </div>
+    <div>
+      <div style="font-weight:800; letter-spacing:.2px">Vertical Creator Studio</div>
+      <div class="tiny">Idea → domanda → teleprompter → registrazione → libreria → download</div>
+    </div>
+  </div>
+  <div class="badge" title="Stato dispositivo">
+    <span class="dot" id="dot"></span>
+    <span id="deviceStatus">Pronto (non connesso)</span>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: Controls -->
+  <section class="card">
+    <h2>1) Setup contenuto</h2>
 
     <div class="row">
-      <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
+      <span class="pill">Canale: <strong id="channelNow">TikTok</strong></span>
+      <button id="btnRotate" title="Ruota al prossimo canale">Ruota canale</button>
+      <button id="btnResetRotation" title="Torna al primo canale">Reset</button>
     </div>
-  </header>
 
-  <!-- Didascalia breve -->
-  <div class="hintTop">
-    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT + copia domanda</b> (incolla e invia) → 3) usa <b>copia</b> su ChatGPT →
-    4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
-  </div>
+    <label>Domanda (preset / Q&A)</label>
+    <div class="row">
+      <select id="presetSelect" style="flex:1">
+        <!-- filled by JS -->
+      </select>
+      <button id="btnNewQuestion" class="primary">Genera</button>
+    </div>
 
-  <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
-  <div class="card">
-    <div class="section">
-      <p class="h">Risposta (da ChatGPT o scritta da te)</p>
-      <div class="field">
-        <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
+    <label>Domanda corrente (overlay a schermo)</label>
+    <input id="questionInput" type="text" placeholder="Es: Qual è l’errore n.1 quando si vende casa?" />
+
+    <label>Risposta (diventa teleprompter)</label>
+    <textarea id="answerInput" placeholder="Scrivi qui la tua risposta: verrà trasformata in teleprompter che scorre mentre registri."></textarea>
+
+    <div class="grid2">
+      <div>
+        <label>Durata teleprompter</label>
+        <select id="speedSelect">
+          <option value="90">90 sec</option>
+          <option value="105" selected>105 sec</option>
+          <option value="120">120 sec</option>
+        </select>
       </div>
-
-      <div class="bar left" style="margin-top:10px;">
-        <button class="btn primary" id="btnSendTele" type="button"><span class="ico">➡️</span> Invia al teleprompter</button>
-        <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
-          <span class="ico">📋</span> Copia caption
-        </button>
-      </div>
-
-      <div class="subtle">
-        “Invia al teleprompter” ti permette anche di inserire messaggi scritti da te (non solo incollati da ChatGPT).
+      <div>
+        <label>Dimensione testo</label>
+        <select id="fontSizeSelect">
+          <option value="28">Grande</option>
+          <option value="24" selected>Media</option>
+          <option value="20">Piccola</option>
+        </select>
       </div>
     </div>
-  </div>
 
-  <div class="layout">
-    <!-- MAIN -->
+    <div class="hr"></div>
+
+    <h2>2) Caption + hashtag</h2>
+    <label>Caption (auto-hashtag inclusi)</label>
+    <textarea id="captionInput" placeholder="Esempio: 3 cose che nessuno ti dice prima di comprare casa…"></textarea>
+    <div class="row">
+      <button id="btnAutoCaption">Genera hashtag</button>
+      <button id="btnCopyCaption">Copia</button>
+    </div>
+
+    <div class="hr"></div>
+
+    <h2>3) Registrazione</h2>
+    <div class="row">
+      <button id="btnConnect" class="good">Connetti webcam</button>
+      <button id="btnStart" class="primary">REC + Teleprompter</button>
+      <button id="btnStop" class="danger" disabled>Stop</button>
+    </div>
+
+    <div class="status">
+      <span class="pill">Formato: <strong>9:16</strong></span>
+      <span class="pill">Risoluzione: <strong>720×1280</strong></span>
+      <span class="pill">FPS: <strong>30</strong></span>
+      <span class="pill">Codec: <strong id="codecLabel">auto</strong></span>
+    </div>
+
+    <p class="tiny" style="margin-top:10px">
+      Suggerimento: metti il telefono/laptop a circa 60–90cm, guarda la lente e parla “sopra” il testo.
+      Shortcut: <span class="kbd">Space</span> start/stop (quando connesso).
+    </p>
+
+    <div class="hr"></div>
+
+    <h2>4) Upload manuale</h2>
+    <div class="row">
+      <input id="uploadInput" type="file" accept="video/*" />
+      <button id="btnImport">Importa in libreria</button>
+    </div>
+    <p class="tiny">Carica video già registrati e gestiscili insieme a quelli creati qui.</p>
+  </section>
+
+  <!-- RIGHT: Preview + Library -->
+  <section class="split">
     <div class="card">
-      <div class="section">
-        <p class="h">Video 9:16 + teleprompter</p>
-
-        <div class="stageRow">
-          <div class="stageBlock">
-            <div id="stage916">
-              <video id="cam" autoplay playsinline muted></video>
-
-              <div id="recLamp">
-                <span style="width:10px;height:10px;border-radius:999px;background:#ff2d2d;display:inline-block;"></span>
-                <span id="recTime">REC 00:00</span>
-              </div>
-
-              <div id="overlay">
-                <div id="questionBoxOverlay">Premi “Nuova domanda”.</div>
-                <div id="teleprompterOverlay">
-                  <div id="teleText">Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="controlsRow">
-              <!-- REC più a destra: layout a 3 blocchi -->
-              <div class="bar between" style="width:100%;">
-                <div class="ctrlLeft">
-                  <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
-                </div>
-
-                <div class="ctrlMid">
-                  <button class="btn gray" id="btnStop" type="button"><span class="ico">⏹</span> Stop</button>
-                  <button class="btn gray" id="btnRestart" type="button"><span class="ico">↻</span> Riavvia</button>
-                </div>
-
-                <div class="ctrlRight">
-                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
-                    <span class="dot"></span> Teleprompter + REC
-                  </button>
-                </div>
-              </div>
-
-              <div class="bar">
-                <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
-                <span class="pill" id="speedLabel">Vel: 105s</span>
-              </div>
-
-              <div class="sliderRow">
-                <span>Zoom</span>
-                <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
-                <span id="zoomVal">1.0x</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <p class="h">Rotazione profili (piccola)</p>
-            <div class="profiles">
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_tiktok" checked>
-                <div class="profileMeta"><b>📱 TikTok</b></div>
-                <span class="nextBadge" id="badge_tiktok">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_instagram" checked>
-                <div class="profileMeta"><b>📸 Instagram</b></div>
-                <span class="nextBadge" id="badge_instagram">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_shorts">
-                <div class="profileMeta"><b>🎥 Shorts</b></div>
-                <span class="nextBadge" id="badge_shorts">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_facebook">
-                <div class="profileMeta"><b>💼 Facebook</b></div>
-                <span class="nextBadge" id="badge_facebook">PROSSIMO</span>
-              </div>
-            </div>
-
-            <div class="subtle">
-              Seleziona i canali da includere. “PROSSIMO” è solo un indicatore (non cliccabile).
-            </div>
+      <h2>Anteprima (come verrà registrato)</h2>
+      <div class="previewWrap">
+        <div class="phone">
+          <video id="cam" playsinline muted></video>
+          <canvas id="recCanvas" width="720" height="1280" style="display:none"></canvas>
+          <div class="overlayHint" id="hint">
+            Connetti la webcam per vedere l’anteprima.<br><br>
+            Poi premi <b>REC + Teleprompter</b>.
           </div>
         </div>
 
-        <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <div class="pill">Teleprompter: <strong id="tpState">idle</strong></div>
+            <div class="pill">Tempo: <strong id="timer">00:00</strong></div>
+          </div>
+
+          <label>Preview teleprompter (testo che scorre)</label>
+          <div class="card" style="padding:12px; background: rgba(0,0,0,.22)">
+            <div id="tpPreview" style="height:280px; overflow:hidden; position:relative; border:1px dashed rgba(255,255,255,.12); border-radius:14px; padding:10px;">
+              <div id="tpPreviewInner" style="position:absolute; left:0; right:0; top:0; white-space:pre-wrap; line-height:1.25; font-size:24px; color:rgba(233,238,247,.92);"></div>
+            </div>
+            <p class="tiny" style="margin:10px 0 0">
+              Questo è solo un’anteprima: in registrazione il testo verrà sovrapposto al video.
+            </p>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="btnQuickFill">Template risposta (educational)</button>
+            <button id="btnClear">Pulisci campi</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- SIDE -->
     <div class="card">
-      <div class="section">
-        <div class="bar between">
-          <p class="h" style="margin:0;">Caption (memorizzata)</p>
-          <label class="chk" title="Memorizza la caption (senza hashtag) per il prossimo avvio">
-            <input type="checkbox" id="chkRememberCaption" class="check" checked />
-            Memorizza
-          </label>
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <h2 style="margin:0">Libreria video</h2>
+        <div class="row">
+          <button id="btnRefresh">Aggiorna</button>
+          <button id="btnWipe" class="danger" title="Cancella tutti i video salvati">Svuota</button>
         </div>
-
-        <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
-        <div class="subtle">Gli hashtag automatici vengono aggiunti solo in copia (se non già presenti).</div>
       </div>
-
-      <div class="section">
-        <p class="h">Video creati</p>
-        <div class="subtle">Seleziona un elemento (qui sotto) per rivederlo.</div>
-
-        <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
-
-        <div class="bar left" style="margin-top:10px;">
-          <button class="btn" id="btnDownloadVideo" type="button"><span class="ico">📥</span> Scarica video</button>
-
-          <!-- NUOVO: UPLOAD VIDEO -->
-          <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
-          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
-            <span class="ico">⬆️</span> Carica video
-          </button>
-
-          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
-        </div>
-
-        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
-      </div>
-
-      <!-- PROMPT BLOCCO A FONDO PAGINA -->
-      <div class="section">
-        <details id="promptDetails">
-          <summary>
-            <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
-            <span class="pill" id="promptStatePill">Bloccato</span>
-          </summary>
-
-          <div class="subtle">
-            Questo prompt viene sempre inserito <b>prima</b> della domanda quando premi “Apri ChatGPT + copia domanda”.
-          </div>
-
-          <div class="field" style="margin-top:10px;">
-            <textarea id="promptBox" readonly></textarea>
-          </div>
-
-          <div class="codeRow">
-            <input id="unlockCode" placeholder="Codice per modificare il prompt" />
-            <button class="btn tiny primary" id="btnUnlock" type="button">Sblocca</button>
-            <button class="btn tiny" id="btnSavePrompt" type="button" disabled>Salva</button>
-            <button class="btn tiny" id="btnResetPrompt" type="button" disabled>Ripristina</button>
-          </div>
-
-          <div class="subtle">Per modificare serve il codice: <b>16091979Jm</b>.</div>
-        </details>
+      <p class="tiny" style="margin-top:8px">I video vengono salvati in locale (IndexedDB). Nessun upload automatico.</p>
+      <div class="list" id="library"></div>
+      <div class="tiny" id="libraryEmpty" style="display:none; padding:12px; border:1px dashed rgba(255,255,255,.12); border-radius:14px;">
+        Nessun video ancora. Registra il primo e comparirà qui ✨
       </div>
     </div>
-  </div>
-</div>
+  </section>
+</main>
 
-<!-- Bottom bar -->
-<div class="bottomBar">
-  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
-  <button class="btn tiny gray" id="btnInstructionsBottom" type="button"><span class="ico">📘</span> Istruzioni</button>
-</div>
-
-<!-- ==========================
-     MODAL ISTRUZIONI
-========================== -->
-<div class="modalBackdrop" id="instructionsModal" aria-hidden="true">
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
-    <div class="modalHeader">
-      <div class="title" id="instrTitle">📘 Istruzioni operative – Video Creator</div>
-      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✕ Chiudi</button>
-    </div>
-
-    <div class="modalBody">
-      <div class="callout">
-        Obiettivo: creare video verticali <b>9:16</b> in serie (TikTok/Instagram/Shorts/Facebook) con <b>domanda → risposta → teleprompter → REC → caption → download</b>.
+<!-- Modal player -->
+<div class="modal" id="modal">
+  <div class="panel">
+    <div class="panelHead">
+      <div>
+        <div style="font-weight:800" id="modalTitle">Video</div>
+        <div class="tiny" id="modalMeta"></div>
       </div>
-
-      <h3>Flusso standard</h3>
-      <ol>
-        <li><b>Nuova domanda</b> → clicca <span class="kbd">✨ Nuova domanda</span> e leggi la domanda che appare sul video.</li>
-        <li><b>Risposta da ChatGPT</b> → clicca <span class="kbd">💬 Apri ChatGPT + copia domanda</span>, incolla in ChatGPT e invia. Poi copia la risposta completa.</li>
-        <li><b>Incolla risposta</b> → torna qui e clicca <span class="kbd">📋 Incolla risposta</span> (finisce nel box “Risposta”).</li>
-        <li><b>Invia al teleprompter</b> → clicca <span class="kbd">➡️ Invia al teleprompter</span> (il testo va nel teleprompter e diventa anche caption base).</li>
-        <li><b>Prepara</b> → se serve clicca <span class="kbd">📷 Camera</span>, scegli velocità (90/105/120) e regola zoom.</li>
-        <li><b>Registra</b> → clicca <span class="kbd">🔴 Teleprompter + REC</span>. Quando finisci clicca <span class="kbd">⏹ Stop</span>.</li>
-        <li><b>Rivedi/Scarica</b> → seleziona il video in “Video creati” e clicca <span class="kbd">📥 Scarica video</span>.</li>
-        <li><b>Caption</b> → clicca <span class="kbd">📋 Copia caption</span> (aggiunge hashtag automatici se mancanti).</li>
-      </ol>
-
-      <h3>Produzione in serie</h3>
-      <ul>
-        <li>Ripeti sempre: <b>Nuova domanda → ChatGPT → Incolla → Invia al teleprompter → REC → Stop</b>.</li>
-        <li>La “rotazione profili” sposta automaticamente il <b>prossimo canale</b> dopo ogni registrazione.</li>
-      </ul>
-
-      <h3>Upload video</h3>
-      <ul>
-        <li>Puoi aggiungere un video manualmente con <span class="kbd">⬆️ Carica video</span>: entra in lista, si può rivedere e scaricare.</li>
-        <li>Il video caricato resta disponibile finché la pagina è aperta (workflow perfetto per test e revisione).</li>
-      </ul>
-
-      <div class="subtle">
-        Tip: premi <span class="kbd">ESC</span> per chiudere questa finestra.
+      <div class="row">
+        <button id="modalDownload" class="primary">Scarica</button>
+        <button id="modalClose">Chiudi</button>
+      </div>
+    </div>
+    <div class="panelBody">
+      <video id="modalVideo" controls playsinline></video>
+      <div>
+        <h3 style="margin:0 0 8px; font-size:14px; color:#cfe0ff">Dati contenuto</h3>
+        <div class="card" style="background: rgba(0,0,0,.18)">
+          <div class="tiny" style="margin-bottom:6px">Domanda</div>
+          <div id="modalQ" style="white-space:pre-wrap; line-height:1.35"></div>
+          <div class="hr"></div>
+          <div class="tiny" style="margin-bottom:6px">Caption</div>
+          <div id="modalCap" style="white-space:pre-wrap; line-height:1.35"></div>
+          <div class="hr"></div>
+          <div class="row">
+            <span class="pill">Canale: <strong id="modalChan"></strong></span>
+            <span class="pill">Durata TP: <strong id="modalDur"></strong></span>
+          </div>
+          <div style="margin-top:10px" class="row">
+            <button id="modalCopyCaption">Copia caption</button>
+            <button id="modalDelete" class="danger">Elimina</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-/* ==========================
-   CONFIG
-========================== */
-const GESTIONALE_URL = "https://tuo-gestionale.com";
-const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
-
-/* Hashtag automatici (NON mostrati in preview) */
-const HIDDEN_HASHTAGS = [
-  "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
-  "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
-  "#property","#realestate","#digitalstrategist","#digitalstrategy","#marketingdigitale","#strategiamarketing",
-  "#brandstrategy","#contentstrategy","#socialmediastrategy","#growthmarketing","#personalbranding","#branding",
-  "#businessdigitale","#marketingonline"
-].join(" ");
-
-/* Prompt base (nuovo) */
-const BASE_PROMPT = `🧩 PROMPT ADATTIVO – VERSIONE FINALE (250 PAROLE + HASHTAG)
-
-Agisci come un consulente immobiliare esperto, con uno stile friendly, chiaro e professionale, adatto anche a un ragazzo di 15 anni.
-
-Rispondi alle domande che ti fornirò con testi di massimo 250 parole, semplici, scorrevoli e concreti.
-
-Adatta progressivamente il tuo stile sulla base delle domande precedenti e delle risposte già fornite, migliorando chiarezza, precisione ed efficacia comunicativa nel tempo.
-
-Usa un linguaggio:
-
-semplice e diretto
-
-privo di tecnicismi inutili
-
-arricchito da esempi pratici della vita quotidiana
-
-Se utilizzi un termine tecnico, spiegalo immediatamente in modo semplice.
-
-Mantieni sempre un tono amichevole, rassicurante e professionale, mai infantile e mai burocratico.
-
-Struttura ogni risposta in questo modo:
-
-problema che andiamo a risolvere Breve introduzione che inquadra l’argomento
-
-Spiegazione chiara, con esempi concreti
-
-Conclusione, con un consiglio pratico
-
-Al termine di ogni risposta, aggiungi una breve lista di hashtag pertinenti al tema trattato (5), e #immobiliarelasacra #josephcretorlab #realmediapro #amamy #immobiliare #realestateitalia #mercatoimmobiliare #agenziaimmobiliare #casainvendita #venditacasa #investimentiimmobiliari #property #realestate #digitalstrategist #digitalstrategy #marketingdigitale #strategiamarketing #brandstrategy #contentstrategy #socialmediastrategy #growthmarketing #personalbranding #branding #businessdigitale #marketingonline
-
-Regole fondamentali:
-
-Lunghezza massima: 250 parole non di piu'
-
-Niente linguaggio tecnico inutile`;
-
-/* Codice sblocco prompt */
-const UNLOCK_CODE = "16091979Jm";
-
-/* Archivio domande */
-const QUESTION_BANK = [
-  { q:"Perché ricevo poche chiamate anche se l'annuncio è online da settimane?" },
-  { q:"Se arrivano solo curiosi e nessuna proposta, cosa significa?" },
-  { q:"Come capisco se il prezzo sta bloccando la vendita?" },
-  { q:"Meglio partire alto e poi scendere o partire subito con il prezzo giusto?" },
-  { q:"Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?" },
-  { q:"Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?" },
-  { q:"Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?" },
-  { q:"Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?" },
-  { q:"Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?" },
-];
-
-/* Teleprompter speed */
-const TELE_SPEEDS = { s120:120, s105:105, s90:90 };
-let teleprompterSeconds = TELE_SPEEDS.s105;
-
-/* State */
-let qIdx = -1;
-let currentQuestion = "";
-let lastCaptionClean = "";
-let totalVideos = 0;
-
-/* Rotazione profili */
-let rotationIndex = 0;
-
-/* Prompt state */
-let promptText = "";
-
-/* ==========================
-   HELPERS
-========================== */
-const $ = (id) => document.getElementById(id);
-
-function pad2(n){ return String(n).padStart(2,"0"); }
-function nowStamp(){
-  const d = new Date();
-  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
-}
-function slugify(it){
-  return String(it || "")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9\s-]/g,"")
-    .trim()
-    .replace(/\s+/g,"-")
-    .replace(/-+/g,"-")
-    .slice(0, 50);
-}
-function keywordsFromQuestion(q){
-  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","agli","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
-  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
-  return words.slice(0, 4).join("-");
-}
-
-async function copyText(text){
-  const t = String(text || "");
-  if(!t.trim()) return false;
-  try{
-    await navigator.clipboard.writeText(t);
-    return true;
-  }catch(e){
-    const ta = document.createElement("textarea");
-    ta.value = t;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    return true;
-  }
-}
-async function readClipboardText(){
-  return await navigator.clipboard.readText(); // HTTPS/localhost
-}
-
-/* Caption: aggiungi hashtag solo se non già presenti */
-function captionWithHashtagsIfNeeded(clean){
-  const c = String(clean || "").trim();
-  if(!c) return "";
-
-  const lower = c.toLowerCase();
-  if (lower.includes("#immobiliarelasacra") || lower.includes("#josephcretorlab") || lower.includes("#realmediapro")){
-    return c;
-  }
-  return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
-}
-
-function setCaptionClean(clean){
-  lastCaptionClean = String(clean || "").trim();
-  $("captionPreview").textContent = lastCaptionClean || "—";
-  if ($("chkRememberCaption").checked){
-    try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
-  }
-}
-
-/* ==========================
-   PROMPT
-========================== */
-function loadPrompt(){
-  try{
-    const saved = localStorage.getItem("vc_prompt_text");
-    promptText = (saved && saved.trim()) ? saved : BASE_PROMPT;
-  }catch(e){
-    promptText = BASE_PROMPT;
-  }
-  $("promptBox").value = promptText;
-}
-function lockPromptUI(){
-  $("promptBox").readOnly = true;
-  $("btnSavePrompt").disabled = true;
-  $("btnResetPrompt").disabled = true;
-  $("promptStatePill").textContent = "Bloccato";
-}
-function unlockPromptUI(){
-  $("promptBox").readOnly = false;
-  $("btnSavePrompt").disabled = false;
-  $("btnResetPrompt").disabled = false;
-  $("promptStatePill").textContent = "Sbloccato";
-}
-function savePrompt(){
-  promptText = $("promptBox").value || BASE_PROMPT;
-  try{ localStorage.setItem("vc_prompt_text", promptText); }catch(e){}
-}
-
-/* ==========================
-   QUESTIONS
-========================== */
-function showQuestionInOverlay(q){
-  $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
-}
-function nextQuestion(){
-  qIdx = (qIdx + 1) % QUESTION_BANK.length;
-  currentQuestion = QUESTION_BANK[qIdx].q;
-  showQuestionInOverlay(currentQuestion);
-}
-function composeChatGPTInput(){
-  const q = String(currentQuestion || "").trim();
-  if(!q) return (promptText || BASE_PROMPT).trim();
-  return `${(promptText || BASE_PROMPT).trim()}\n\nInput:\n👉 ${q}`.trim();
-}
-
-/* ==========================
-   ROTAZIONE PROFILI
-========================== */
-function getRotationPlatforms(){
-  const items = [
-    { id:"rot_tiktok", platform:"tiktok" },
-    { id:"rot_instagram", platform:"instagram" },
-    { id:"rot_shorts", platform:"shorts" },
-    { id:"rot_facebook", platform:"facebook" },
+(() => {
+  // ---------- Preset domande ----------
+  const PRESETS = [
+    "Qual è l’errore n.1 che vedi fare più spesso nel tuo settore?",
+    "Se potessi dare 1 consiglio a chi inizia oggi, quale sarebbe?",
+    "Quali sono 3 falsi miti che la gente crede su questo tema?",
+    "Come si evita l’errore più comune in 30 secondi?",
+    "La tua checklist in 5 step per ottenere un risultato migliore.",
+    "Cosa avresti voluto sapere 5 anni fa su questo argomento?",
+    "Esempio pratico: racconta un caso reale (senza dati sensibili).",
+    "Domanda rapida: vale la pena fare X? Dipende: spiega quando sì/no.",
+    "Qual è la differenza tra chi ottiene risultati e chi no?",
+    "3 segnali che stai facendo bene (o male) in questo processo."
   ];
-  return items.filter(x => $(x.id).checked);
-}
-function setNextBadge(platform){
-  const map = {
-    tiktok: $("badge_tiktok"),
-    instagram: $("badge_instagram"),
-    shorts: $("badge_shorts"),
-    facebook: $("badge_facebook"),
-  };
-  Object.values(map).forEach(el => el.classList.remove("show"));
-  if(platform && map[platform]) map[platform].classList.add("show");
-}
-function getActivePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return null;
-  rotationIndex = rotationIndex % list.length;
-  return list[rotationIndex].platform;
-}
-function advancePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return;
-  rotationIndex = (rotationIndex + 1) % list.length;
-}
-function refreshProfileUI(){
-  const active = getActivePlatform();
-  setNextBadge(active);
-  $("activeProfileLabel").textContent = "Prossimo: " + (active ? active : "—");
-}
 
-/* ==========================
-   TELEPROMPTER SCROLL
-========================== */
-let startTimeSec = null;
-let isTeleprompterRunning = false;
-let teleprompterAnimationId = null;
+  const CHANNELS = ["TikTok", "Instagram", "Shorts", "Facebook"];
 
-function resetTeleprompter(){
-  $("teleText").style.transform = "translateY(20px)";
-}
-function startTeleprompter(){
-  if(isTeleprompterRunning) return;
-  isTeleprompterRunning = true;
-  startTimeSec = performance.now() / 1000;
-  animateTele();
-}
-function stopTeleprompter(){
-  isTeleprompterRunning = false;
-  if(teleprompterAnimationId) cancelAnimationFrame(teleprompterAnimationId);
-  teleprompterAnimationId = null;
-}
-function restartTeleprompter(){
-  stopTeleprompter();
-  resetTeleprompter();
-  setTimeout(()=> startTeleprompter(), 120);
-}
-function animateTele(){
-  if(!isTeleprompterRunning) return;
+  // ---------- UI refs ----------
+  const el = (id) => document.getElementById(id);
+  const presetSelect = el("presetSelect");
+  const btnNewQuestion = el("btnNewQuestion");
+  const questionInput = el("questionInput");
+  const answerInput = el("answerInput");
+  const speedSelect = el("speedSelect");
+  const fontSizeSelect = el("fontSizeSelect");
+  const captionInput = el("captionInput");
+  const btnAutoCaption = el("btnAutoCaption");
+  const btnCopyCaption = el("btnCopyCaption");
+  const btnConnect = el("btnConnect");
+  const btnStart = el("btnStart");
+  const btnStop = el("btnStop");
+  const btnRotate = el("btnRotate");
+  const btnResetRotation = el("btnResetRotation");
+  const channelNow = el("channelNow");
+  const cam = el("cam");
+  const canvas = el("recCanvas");
+  const hint = el("hint");
+  const deviceStatus = el("deviceStatus");
+  const dot = el("dot");
+  const tpPreviewInner = el("tpPreviewInner");
+  const tpState = el("tpState");
+  const timerEl = el("timer");
+  const codecLabel = el("codecLabel");
+  const library = el("library");
+  const libraryEmpty = el("libraryEmpty");
+  const btnRefresh = el("btnRefresh");
+  const btnWipe = el("btnWipe");
+  const btnQuickFill = el("btnQuickFill");
+  const btnClear = el("btnClear");
+  const uploadInput = el("uploadInput");
+  const btnImport = el("btnImport");
 
-  const teleEl = $("teleText");
-  if(!teleEl){
-    teleprompterAnimationId = requestAnimationFrame(animateTele);
-    return;
+  // Modal
+  const modal = el("modal");
+  const modalClose = el("modalClose");
+  const modalVideo = el("modalVideo");
+  const modalTitle = el("modalTitle");
+  const modalMeta = el("modalMeta");
+  const modalQ = el("modalQ");
+  const modalCap = el("modalCap");
+  const modalChan = el("modalChan");
+  const modalDur = el("modalDur");
+  const modalDownload = el("modalDownload");
+  const modalCopyCaption = el("modalCopyCaption");
+  const modalDelete = el("modalDelete");
+
+  // ---------- State ----------
+  let mediaStream = null;       // webcam stream
+  let audioStream = null;       // mic-only stream (we'll reuse same getUserMedia)
+  let recorder = null;
+  let chunks = [];
+  let recording = false;
+
+  let rafId = null;
+  let drawId = null;
+
+  // teleprompter state
+  let tpStart = 0;
+  let tpDuration = 105; // seconds
+  let tpOffsetY = 0;
+  let tpTextHeight = 0;
+  let tpRunning = false;
+
+  // channel rotation persisted
+  const ROT_KEY = "vcs_channel_index";
+  let channelIndex = parseInt(localStorage.getItem(ROT_KEY) || "0", 10);
+  if (isNaN(channelIndex) || channelIndex < 0) channelIndex = 0;
+
+  // ---------- IndexedDB ----------
+  const DB_NAME = "vertical_creator_studio";
+  const DB_VER = 1;
+  const STORE = "videos";
+
+  function openDB(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)){
+          const os = db.createObjectStore(STORE, { keyPath: "id" });
+          os.createIndex("createdAt", "createdAt", { unique:false });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
   }
 
-  const now = performance.now()/1000;
-  const elapsed = now - startTimeSec;
-  const progress = (elapsed % teleprompterSeconds) / teleprompterSeconds;
+  async function dbPut(record){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(record);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-  const th = teleEl.scrollHeight || 900;
-  const startY = 20;
-  const endY = -th - 20;
+  async function dbGetAll(){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readonly");
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
 
-  const y = startY + (endY - startY) * progress;
-  teleEl.style.transform = `translateY(${y}px)`;
+  async function dbDelete(id){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-  teleprompterAnimationId = requestAnimationFrame(animateTele);
-}
+  async function dbClear(){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-function applyAnswer(answer){
-  const a = String(answer || "").trim();
-  if(!a) return false;
-  $("teleText").textContent = a;
-  resetTeleprompter();
-  stopTeleprompter();
-  setCaptionClean(a);
-  return true;
-}
+  // ---------- Helpers ----------
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function fmtTime(sec){
+    const m = Math.floor(sec/60);
+    const s = Math.floor(sec%60);
+    return `${pad2(m)}:${pad2(s)}`;
+  }
+  function nowISO(){ return new Date().toISOString(); }
+  function niceDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+  }
 
-/* ==========================
-   SPEED UI (checkbox “radio”)
-========================== */
-function setSpeed(seconds){
-  teleprompterSeconds = seconds;
-  $("speedLabel").textContent = `Vel: ${seconds}s`;
-  $("speed120").checked = seconds === 120;
-  $("speed105").checked = seconds === 105;
-  $("speed90").checked  = seconds === 90;
-}
+  function setStatus(ok, msg){
+    deviceStatus.textContent = msg;
+    dot.style.background = ok ? "var(--good)" : "var(--warn)";
+    dot.style.boxShadow = ok ? "0 0 0 4px rgba(61,220,151,.15)" : "0 0 0 4px rgba(255,204,102,.15)";
+  }
 
-/* ==========================
-   CAMERA + REC (CANVAS CLEAN)
-========================== */
-let camStream = null;
-let chunks = [];
-let rafCanvasId = null;
+  function currentChannel(){
+    const idx = ((channelIndex % CHANNELS.length) + CHANNELS.length) % CHANNELS.length;
+    return CHANNELS[idx];
+  }
+  function updateChannelUI(){
+    channelNow.textContent = currentChannel();
+  }
 
-let zoomValue = 1.0;
-const camEl = $("cam");
-const canvas = $("recCanvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  // Basic hashtag generator: channel + keywords from question + generic set
+  function extractKeywords(text){
+    const stop = new Set(["che","per","con","senza","come","qual","quale","quali","quando","dove","cosa","perché","perche","del","della","delle","dei","degli","dello","alla","alle","agli","allo","il","lo","la","i","gli","le","un","una","uno","da","di","a","e","o","in","su","tra","fra","più","meno","oggi","sempre","mai","solo"]);
+    return (text || "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu," ")
+      .split(/\s+/)
+      .filter(w => w.length >= 4 && !stop.has(w))
+      .slice(0, 6);
+  }
 
-async function applyZoom(v){
-  zoomValue = Number(v) || 1;
-  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
-  document.documentElement.style.setProperty("--zoom", String(zoomValue));
-}
+  function makeHashtags(){
+    const chan = currentChannel().toLowerCase();
+    const q = questionInput.value || "";
+    const cap = captionInput.value || "";
+    const kws = Array.from(new Set([...extractKeywords(q), ...extractKeywords(cap)]));
+    const base = ["contentcreator","socialmedia","marketing","reels","shorts","tiktokitalia","instagramitalia","creatoritalia"];
+    const chanTags =
+      chan === "tiktok" ? ["tiktok","tiktoktips"] :
+      chan === "instagram" ? ["instagram","reels"] :
+      chan === "shorts" ? ["youtubeshorts","youtube"] :
+      ["facebook","facebookreels"];
 
-function drawFrame(){
+    const all = Array.from(new Set([...chanTags, ...kws, ...base]))
+      .slice(0, 14) // non esageriamo
+      .map(t => "#" + t.replace(/\s+/g,""));
+
+    return all.join(" ");
+  }
+
+  function autoCaption(){
+    const base = captionInput.value.trim();
+    const hash = makeHashtags();
+    if (!base) {
+      captionInput.value = `${questionInput.value.trim()}\n\n${hash}`.trim();
+    } else {
+      // evita duplicare hashtag se già presenti
+      const hasHash = /#\w+/.test(base);
+      captionInput.value = hasHash ? base : `${base}\n\n${hash}`.trim();
+    }
+  }
+
+  function copyText(text){
+    navigator.clipboard?.writeText(text).catch(() => {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    });
+  }
+
+  function pickBestMimeType(){
+    // Prefer webm vp9, then vp8, else mp4 (often unsupported for MediaRecorder)
+    const candidates = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=vp9",
+      "video/webm;codecs=vp8",
+      "video/webm",
+      "video/mp4" // last resort (may fail)
+    ];
+    for (const t of candidates){
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+    }
+    return "";
+  }
+
+  // ---------- Teleprompter preview ----------
+  function updateTpPreview(){
+    const fs = parseInt(fontSizeSelect.value, 10) || 24;
+    tpPreviewInner.style.fontSize = fs + "px";
+    tpPreviewInner.textContent = (answerInput.value || "").trim() || "Scrivi una risposta per vedere il teleprompter…";
+  }
+
+  // ---------- Canvas render & recording ----------
+  const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
-  if(camEl.readyState < 2){
-    ctx.fillStyle="black"; ctx.fillRect(0,0,W,H);
-    return;
+
+  function drawFrame(tpProgress01){
+    // Background
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0,0,W,H);
+
+    // If video ready, draw crop to 9:16
+    if (cam.readyState >= 2){
+      const vw = cam.videoWidth || 1280;
+      const vh = cam.videoHeight || 720;
+
+      // We want to fill 9:16 frame with webcam while preserving aspect ratio.
+      // Compute crop rectangle from source video.
+      const targetAR = W / H; // 0.5625
+      const srcAR = vw / vh;
+
+      let sx=0, sy=0, sw=vw, sh=vh;
+      if (srcAR > targetAR){
+        // source too wide -> crop left/right
+        sh = vh;
+        sw = Math.round(vh * targetAR);
+        sx = Math.round((vw - sw)/2);
+        sy = 0;
+      } else {
+        // source too tall -> crop top/bottom
+        sw = vw;
+        sh = Math.round(vw / targetAR);
+        sx = 0;
+        sy = Math.round((vh - sh)/2);
+      }
+      ctx.drawImage(cam, sx, sy, sw, sh, 0, 0, W, H);
+    } else {
+      // placeholder
+      ctx.fillStyle = "rgba(255,255,255,.08)";
+      ctx.fillRect(40,40,W-80,H-80);
+      ctx.fillStyle = "rgba(233,238,247,.75)";
+      ctx.font = "700 28px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Connetti la webcam", W/2, H/2);
+    }
+
+    // Overlay gradient for readability
+    const gTop = ctx.createLinearGradient(0,0,0,260);
+    gTop.addColorStop(0, "rgba(0,0,0,.65)");
+    gTop.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = gTop;
+    ctx.fillRect(0,0,W,320);
+
+    const gBottom = ctx.createLinearGradient(0,H-380,0,H);
+    gBottom.addColorStop(0, "rgba(0,0,0,0)");
+    gBottom.addColorStop(1, "rgba(0,0,0,.72)");
+    ctx.fillStyle = gBottom;
+    ctx.fillRect(0,H-420,W,420);
+
+    // Question (top)
+    const q = (questionInput.value || "").trim();
+    ctx.fillStyle = "rgba(233,238,247,.95)";
+    ctx.font = "800 34px ui-sans-serif, system-ui";
+    ctx.textAlign = "left";
+    wrapText(ctx, q ? "Q: " + q : "Q: (seleziona o scrivi una domanda)", 36, 60, W-72, 40);
+
+    // Channel pill (top right)
+    const chan = currentChannel();
+    drawPill(chan, W-36, 36);
+
+    // Teleprompter (bottom)
+    const fs = parseInt(fontSizeSelect.value, 10) || 24;
+    const lineH = Math.round(fs * 1.28);
+    const padding = 36;
+    const boxTop = 360;
+    const boxH = H - boxTop - 90;
+
+    // box bg
+    ctx.fillStyle = "rgba(0,0,0,.25)";
+    roundRect(ctx, padding, boxTop, W - padding*2, boxH, 18, true, false);
+
+    // text
+    const text = (answerInput.value || "").trim() || "Scrivi la risposta: verrà mostrata qui in scorrimento…";
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, padding, boxTop, W - padding*2, boxH, 18, false, false);
+    ctx.clip();
+
+    ctx.fillStyle = "rgba(233,238,247,.92)";
+    ctx.font = `700 ${fs}px ui-sans-serif, system-ui`;
+    ctx.textAlign = "left";
+
+    // measure total height for scroll
+    const lines = wrapLines(ctx, text, W - padding*2 - 28);
+    const totalTextH = lines.length * lineH + 20;
+    tpTextHeight = totalTextH;
+
+    // scroll offset based on progress: start below box, end above box
+    // offsetY is top of first line inside clipped box.
+    const startY = boxTop + boxH + 20;            // starts off-screen bottom
+    const endY   = boxTop - totalTextH - 20;      // ends off-screen top
+    const y = lerp(startY, endY, clamp01(tpProgress01));
+
+    let yy = y;
+    const x = padding + 14;
+    for (const ln of lines){
+      ctx.fillText(ln, x, yy);
+      yy += lineH;
+    }
+    ctx.restore();
+
+    // recording indicator
+    if (recording){
+      ctx.fillStyle = "rgba(255,77,109,.95)";
+      ctx.beginPath();
+      ctx.arc(36, 36, 10, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(233,238,247,.92)";
+      ctx.font = "700 18px ui-sans-serif, system-ui";
+      ctx.fillText("REC", 58, 42);
+    }
   }
-  const vw = camEl.videoWidth || 1280;
-  const vh = camEl.videoHeight || 720;
 
-  const z = Math.max(1, Math.min(zoomValue, 5));
-  const srcW = vw / z;
-  const srcH = vh / z;
-  const srcX = (vw - srcW)/2;
-  const srcY = (vh - srcH)/2;
-
-  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
-}
-function startCanvasLoop(){
-  function loop(){
-    drawFrame();
-    rafCanvasId = requestAnimationFrame(loop);
+  function animateDraw(){
+    const t = performance.now();
+    const elapsed = (t - tpStart) / 1000;
+    const progress = tpRunning ? (elapsed / tpDuration) : 0;
+    drawFrame(progress);
+    drawId = requestAnimationFrame(animateDraw);
   }
-  loop();
-}
 
-async function startCamera(){
-  if(camStream){
-    camStream.getTracks().forEach(t=>t.stop());
-    camStream = null;
+  function startTeleprompter(){
+    tpDuration = parseInt(speedSelect.value, 10) || 105;
+    tpStart = performance.now();
+    tpRunning = true;
+    tpState.textContent = "running";
+    startTimer();
   }
-  try{
-    camStream = await navigator.mediaDevices.getUserMedia({
-      audio:true,
-      video:{ facingMode:"user", width:{ideal:1280}, height:{ideal:720} }
-    });
-    camEl.srcObject = camStream;
-    await new Promise(res => camEl.onloadedmetadata = () => res());
-    try{ await camEl.play(); }catch(e){}
-    if(!rafCanvasId) startCanvasLoop();
-    return true;
-  }catch(err){
-    alert("Errore camera: " + err.message);
-    return false;
+
+  function stopTeleprompter(){
+    tpRunning = false;
+    tpState.textContent = "idle";
+    stopTimer();
   }
-}
-async function ensureReady(){
-  if(!camStream){
-    const ok = await startCamera();
-    if(!ok) return false;
+
+  // timer
+  let timerInterval = null;
+  function startTimer(){
+    const t0 = performance.now();
+    timerEl.textContent = "00:00";
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      const s = Math.floor((performance.now() - t0)/1000);
+      timerEl.textContent = fmtTime(s);
+    }, 250);
   }
-  if(!rafCanvasId) startCanvasLoop();
-  return true;
-}
+  function stopTimer(){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 
-/* REC lamp */
-let recStartTs = null;
-let recTimerId = null;
-let isRecording = false;
-let recorder = null;
+  // text wrapping utilities
+  function wrapLines(ctx, text, maxWidth){
+    const words = text.replace(/\r/g,"").split(/\s+/);
+    const lines = [];
+    let line = "";
+    for (const w of words){
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width <= maxWidth){
+        line = test;
+      } else {
+        if (line) lines.push(line);
+        line = w;
+      }
+    }
+    if (line) lines.push(line);
+    // also handle explicit newlines
+    const withNewlines = [];
+    for (const ln of lines.join("\n").split("\n")){
+      const parts = ln.split("\\n");
+      for (const p of parts) withNewlines.push(p);
+    }
+    return withNewlines.filter(Boolean);
+  }
 
-function fmtTime(ms){
-  const sec = Math.floor(ms/1000);
-  const m = String(Math.floor(sec/60)).padStart(2,"0");
-  const s = String(sec%60).padStart(2,"0");
-  return `${m}:${s}`;
-}
-function startRecLamp(){
-  recStartTs = Date.now();
-  $("recLamp").style.display = "flex";
-  $("recTime").textContent = "REC 00:00";
-  recTimerId = setInterval(()=> {
-    $("recTime").textContent = `REC ${fmtTime(Date.now()-recStartTs)}`;
-  }, 250);
-}
-function stopRecLamp(){
-  $("recLamp").style.display = "none";
-  if(recTimerId) clearInterval(recTimerId);
-  recTimerId = null;
-  recStartTs = null;
-}
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = (text || "").split(" ");
+    let line = "";
+    for (let n=0; n<words.length; n++){
+      const testLine = line + words[n] + " ";
+      const w = ctx.measureText(testLine).width;
+      if (w > maxWidth && n > 0){
+        ctx.fillText(line, x, y);
+        line = words[n] + " ";
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+  }
 
-function downloadBlob(blob, filename){
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 2000);
-}
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){
+    if (w < 2*r) r = w/2;
+    if (h < 2*r) r = h/2;
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
 
-/* Recordings */
-let recordings = [];
-let currentRecIndex = -1;
+  function drawPill(text, rightX, topY){
+    ctx.save();
+    ctx.font = "700 18px ui-sans-serif, system-ui";
+    const padX = 12, padY = 8;
+    const tw = ctx.measureText(text).width;
+    const w = tw + padX*2;
+    const h = 34;
+    const x = rightX - w;
+    const y = topY;
+    ctx.fillStyle = "rgba(124,92,255,.28)";
+    ctx.strokeStyle = "rgba(124,92,255,.35)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, 999, true, true);
+    ctx.fillStyle = "rgba(233,238,247,.92)";
+    ctx.textAlign = "center";
+    ctx.fillText(text, x + w/2, y + 24);
+    ctx.restore();
+  }
 
-function updateCounters(){
-  $("videoCounter").textContent = `Video: ${totalVideos}`;
-}
+  const clamp01 = (v)=> Math.max(0, Math.min(1, v));
+  const lerp = (a,b,t)=> a + (b-a)*t;
 
-function renderRecList(){
-  const box = $("recList");
-  if(!recordings.length){ box.textContent = "—"; return; }
+  // ---------- Connect webcam ----------
+  async function connect(){
+    try{
+      setStatus(false, "Richiesta permessi…");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+      mediaStream = stream;
+      cam.srcObject = stream;
+      await cam.play();
 
-  box.innerHTML = recordings.map((r,i)=>{
-    const active = i===currentRecIndex ? " style='color:#d8a23a; font-weight:950;'" : "";
-    return `
-      <div ${active} style="margin-bottom:10px;">
-        <div>
-          <a href="#" data-i="${i}" style="color:inherit; text-decoration:none;">
-            ${r.title}
-          </a>
-        </div>
-        <div style="opacity:.85; margin-top:6px;">${(r.question||"").slice(0,95)}</div>
-      </div>
-    `;
-  }).join("");
+      hint.style.display = "none";
 
-  box.querySelectorAll("a[data-i]").forEach(a => a.addEventListener("click", (e)=>{
-    e.preventDefault();
-    const i = +a.dataset.i;
-    currentRecIndex = i;
-    $("playback").src = recordings[i].url;
-    $("playback").play().catch(()=>{});
-    renderRecList();
-  }));
-}
+      setStatus(true, "Webcam connessa");
+      // start drawing loop always (preview)
+      if (!drawId) animateDraw();
 
-function buildVideoTitle(videoNum, platform, question){
-  const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
-}
-function buildFileName(videoNum, platform, question){
-  const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
-}
+    }catch(err){
+      console.error(err);
+      setStatus(false, "Permesso negato o device non disponibile");
+      alert("Non riesco ad accedere a webcam/microfono. Controlla permessi del browser e riprova.");
+    }
+  }
 
-function startRecording(){
-  if(!camStream){ alert("Attiva la camera."); return; }
-  if(recorder && recorder.state !== "inactive"){ return; }
+  // ---------- Recording (canvas + audio) ----------
+  function buildRecordStream(){
+    const fps = 30;
+    const canvasStream = canvas.captureStream(fps);
 
-  startTeleprompter();
-  chunks = [];
+    // add audio track from getUserMedia stream (same stream)
+    const audioTracks = (mediaStream?.getAudioTracks?.() || []);
+    if (audioTracks.length){
+      canvasStream.addTrack(audioTracks[0]);
+    }
+    return canvasStream;
+  }
 
-  const stream = canvas.captureStream(30);
-  const audioTrack = camStream.getAudioTracks?.()[0];
-  if(audioTrack) stream.addTrack(audioTrack);
+  async function startRecording(){
+    if (recording) return;
+    if (!mediaStream){
+      await connect();
+      if (!mediaStream) return;
+    }
 
-  const mimeCandidates = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm"
-  ];
-  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
+    const mimeType = pickBestMimeType();
+    codecLabel.textContent = mimeType || "auto";
+    const recStream = buildRecordStream();
 
-  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    chunks = [];
+    try{
+      recorder = new MediaRecorder(recStream, mimeType ? { mimeType } : undefined);
+    }catch(e){
+      console.error(e);
+      alert("MediaRecorder non supportato in questo browser con i codec disponibili. Prova Chrome/Edge.");
+      return;
+    }
 
-  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
-  recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
+    recorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+    };
 
-  const qNow = String(currentQuestion || "").trim();
-  const capNow = String(lastCaptionClean || "").trim();
-  const platformNow = getActivePlatform();
+    recorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+      const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
 
-  recorder.onstop = ()=>{
-    stopRecLamp();
-    stopTeleprompter();
-    isRecording = false;
+      const record = {
+        id,
+        createdAt: nowISO(),
+        channel: currentChannel(),
+        tpDuration: parseInt(speedSelect.value, 10) || 105,
+        question: (questionInput.value || "").trim(),
+        caption: (captionInput.value || "").trim(),
+        mime: blob.type || "video/webm",
+        blob
+      };
 
-    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-    totalVideos += 1;
+      await dbPut(record);
+      await refreshLibrary();
 
-    const title = buildVideoTitle(totalVideos, platformNow, qNow);
-    const name = buildFileName(totalVideos, platformNow, qNow);
+      // auto-rotate channel for serial production
+      channelIndex = (channelIndex + 1) % CHANNELS.length;
+      localStorage.setItem(ROT_KEY, String(channelIndex));
+      updateChannelUI();
+
+      // reset UI
+      btnStop.disabled = true;
+      btnStart.disabled = false;
+      recording = false;
+      stopTeleprompter();
+      setStatus(true, "Salvato ✅ (canale ruotato)");
+    };
+
+    recorder.start(200); // timeslice
+    recording = true;
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    setStatus(true, "REC in corso…");
+
+    startTeleprompter();
+  }
+
+  function stopRecording(){
+    if (!recording) return;
+    try{
+      recorder.stop();
+    }catch(e){
+      console.error(e);
+    }
+    btnStop.disabled = true;
+    setStatus(true, "Sto finalizzando…");
+  }
+
+  // ---------- Library UI ----------
+  function makeThumb(){
+    // simple placeholder thumb (no extraction)
+    const d = document.createElement("div");
+    d.className = "thumb";
+    d.textContent = "9:16";
+    return d;
+  }
+
+  async function refreshLibrary(){
+    const all = await dbGetAll();
+    all.sort((a,b) => (b.createdAt||"").localeCompare(a.createdAt||""));
+    library.innerHTML = "";
+    libraryEmpty.style.display = all.length ? "none" : "block";
+
+    for (const it of all){
+      const row = document.createElement("div");
+      row.className = "item";
+
+      const thumb = makeThumb();
+      row.appendChild(thumb);
+
+      const right = document.createElement("div");
+      const title = document.createElement("h3");
+      title.textContent = it.question ? it.question : "Video (senza domanda)";
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `${niceDate(it.createdAt)} • ${it.channel || "—"} • TP ${it.tpDuration || "—"}s`;
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const btnPlay = document.createElement("button");
+      btnPlay.textContent = "Rivedi";
+      btnPlay.className = "primary";
+      btnPlay.onclick = () => openModal(it);
+
+      const btnDl = document.createElement("button");
+      btnDl.textContent = "Scarica";
+      btnDl.onclick = () => downloadItem(it);
+
+      const btnDel = document.createElement("button");
+      btnDel.textContent = "Elimina";
+      btnDel.className = "danger";
+      btnDel.onclick = async () => {
+        if (confirm("Eliminare questo video dalla libreria locale?")){
+          await dbDelete(it.id);
+          await refreshLibrary();
+        }
+      };
+
+      actions.append(btnPlay, btnDl, btnDel);
+
+      right.append(title, meta, actions);
+      row.appendChild(right);
+      library.appendChild(row);
+    }
+  }
+
+  function downloadItem(it){
+    const blob = it.blob;
+    const ext = (it.mime || "").includes("mp4") ? "mp4" : "webm";
+    const name = `video_${(it.channel||"channel").toLowerCase()}_${(it.createdAt||"").slice(0,19).replace(/[:T]/g,"-")}.${ext}`;
     const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  }
 
-    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow, kind:"recorded" });
-    currentRecIndex = 0;
+  let modalCurrent = null;
+  function openModal(it){
+    modalCurrent = it;
+    modalTitle.textContent = "Video";
+    modalMeta.textContent = `${niceDate(it.createdAt)} • ${it.channel || "—"} • ${it.mime || ""}`;
+    modalQ.textContent = it.question || "—";
+    modalCap.textContent = it.caption || "—";
+    modalChan.textContent = it.channel || "—";
+    modalDur.textContent = (it.tpDuration || "—") + " sec";
 
-    $("playback").src = url;
-    $("playback").load();
-    renderRecList();
-    updateCounters();
+    const url = URL.createObjectURL(it.blob);
+    modalVideo.src = url;
+    modalVideo.onloadeddata = () => {};
+    modal.classList.add("open");
 
-    advancePlatform();
-    refreshProfileUI();
+    modalDownload.onclick = () => downloadItem(it);
+    modalCopyCaption.onclick = () => copyText(it.caption || "");
+    modalDelete.onclick = async () => {
+      if (!modalCurrent) return;
+      if (confirm("Eliminare questo video?")){
+        await dbDelete(modalCurrent.id);
+        closeModal();
+        await refreshLibrary();
+      }
+    };
+
+    // clean old object URL on close
+    modal.dataset.url = url;
+  }
+
+  function closeModal(){
+    modal.classList.remove("open");
+    try{
+      const url = modal.dataset.url;
+      if (url) URL.revokeObjectURL(url);
+    }catch{}
+    modalVideo.pause();
+    modalVideo.src = "";
+    modalCurrent = null;
+  }
+
+  // ---------- Upload import ----------
+  async function importVideo(){
+    const f = uploadInput.files?.[0];
+    if (!f){
+      alert("Seleziona prima un file video.");
+      return;
+    }
+    const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    const record = {
+      id,
+      createdAt: nowISO(),
+      channel: currentChannel(),
+      tpDuration: parseInt(speedSelect.value, 10) || 105,
+      question: (questionInput.value || "").trim(),
+      caption: (captionInput.value || "").trim(),
+      mime: f.type || "video/*",
+      blob: f
+    };
+    await dbPut(record);
+    uploadInput.value = "";
+    await refreshLibrary();
+    setStatus(true, "Import completato ✅");
+  }
+
+  // ---------- Events ----------
+  // presets dropdown
+  function initPresets(){
+    presetSelect.innerHTML = "";
+    for (let i=0; i<PRESETS.length; i++){
+      const o = document.createElement("option");
+      o.value = String(i);
+      o.textContent = PRESETS[i];
+      presetSelect.appendChild(o);
+    }
+  }
+
+  function generateQuestion(){
+    const idx = parseInt(presetSelect.value, 10);
+    const q = PRESETS[(isNaN(idx) ? 0 : idx)] || PRESETS[0];
+    questionInput.value = q;
+    // if caption is empty, prefill lightly
+    if (!captionInput.value.trim()){
+      captionInput.value = q;
+    }
+  }
+
+  btnNewQuestion.onclick = generateQuestion;
+
+  btnRotate.onclick = () => {
+    channelIndex = (channelIndex + 1) % CHANNELS.length;
+    localStorage.setItem(ROT_KEY, String(channelIndex));
+    updateChannelUI();
   };
 
-  recorder.start(1000);
-}
-function stopRecording(){
-  if(recorder && recorder.state !== "inactive") recorder.stop();
-}
+  btnResetRotation.onclick = () => {
+    channelIndex = 0;
+    localStorage.setItem(ROT_KEY, "0");
+    updateChannelUI();
+  };
 
-/* ==========================
-   NAV
-========================== */
-function goToGestionale(){
-  if(confirm("Vuoi tornare al gestionale?")){
-    if(isRecording) stopRecording();
-    setTimeout(()=> window.location.href = GESTIONALE_URL, 250);
-  }
-}
+  btnAutoCaption.onclick = autoCaption;
+  btnCopyCaption.onclick = () => copyText(captionInput.value || "");
 
-/* ==========================
-   ISTRUZIONI MODAL
-========================== */
-function openInstructions(){
-  const m = $("instructionsModal");
-  m.classList.add("show");
-  m.setAttribute("aria-hidden", "false");
-}
-function closeInstructions(){
-  const m = $("instructionsModal");
-  m.classList.remove("show");
-  m.setAttribute("aria-hidden", "true");
-}
+  btnConnect.onclick = connect;
+  btnStart.onclick = startRecording;
+  btnStop.onclick = stopRecording;
 
-/* ==========================
-   UPLOAD VIDEO
-========================== */
-function addUploadedVideo(file){
-  if(!file) return;
+  btnRefresh.onclick = refreshLibrary;
 
-  const url = URL.createObjectURL(file);
-  totalVideos += 1;
-
-  const platformNow = getActivePlatform();
-  const qNow = String(currentQuestion || "Upload video").trim();
-  const k = keywordsFromQuestion(qNow) || "upload";
-  const p = platformNow || "upload";
-  const title = `#${String(totalVideos).padStart(3,"0")} • ${p} • ${k} • UPLOAD`;
-
-  const safeName = (file.name && file.name.trim()) ? file.name.trim() : `upload_${nowStamp()}.mp4`;
-
-  const capNow = String(lastCaptionClean || "").trim();
-
-  recordings.unshift({
-    title,
-    name: safeName,
-    url,
-    blob: file,
-    question: qNow,
-    captionClean: capNow,
-    platform: platformNow,
-    kind: "uploaded"
-  });
-
-  currentRecIndex = 0;
-  $("playback").src = url;
-  $("playback").load();
-  renderRecList();
-  updateCounters();
-}
-
-/* ==========================
-   INIT
-========================== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  // prompt
-  loadPrompt();
-  lockPromptUI();
-
-  // blocco risposta: vuoto di default
-  $("answerBox").value = "";
-
-  // restore caption preview only
-  try{
-    const savedCap = localStorage.getItem("vc_caption_clean") || "";
-    if(savedCap.trim() && $("chkRememberCaption").checked){
-      setCaptionClean(savedCap);
+  btnWipe.onclick = async () => {
+    if (confirm("Vuoi davvero svuotare TUTTA la libreria locale?")){
+      await dbClear();
+      await refreshLibrary();
     }
-  }catch(e){}
+  };
 
-  // init UI
-  $("btnBackTop").addEventListener("click", goToGestionale);
-  $("btnBackBottom").addEventListener("click", goToGestionale);
+  btnQuickFill.onclick = () => {
+    const q = (questionInput.value || "").trim() || "Tema del video";
+    answerInput.value =
+`Hook (1 frase): ${q} — ecco la cosa che quasi tutti sbagliano.
 
-  // Istruzioni
-  $("btnInstructions").addEventListener("click", openInstructions);
-  $("btnInstructionsBottom").addEventListener("click", openInstructions);
-  $("btnCloseInstructions").addEventListener("click", closeInstructions);
-  $("instructionsModal").addEventListener("click", (e)=>{
-    if(e.target && e.target.id === "instructionsModal") closeInstructions();
-  });
-  document.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape") closeInstructions();
-  });
+Punto 1: (spiega in modo semplice)
+Punto 2: (fai un esempio pratico)
+Punto 3: (cosa fare subito oggi)
 
-  $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.";
-  showQuestionInOverlay("Premi “Nuova domanda”.");
-  updateCounters();
-  refreshProfileUI();
-  renderRecList();
-  resetTeleprompter();
-  applyZoom(1.0);
-  setSpeed(105);
+Chiusura + CTA: Se vuoi la checklist / template, scrivi "CHECK" nei commenti.`;
+    updateTpPreview();
+  };
 
-  // speed radio-like
-  $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
-  $("speed105").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(105); });
-  $("speed90").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(90); });
-
-  // rotation change resets index
-  ["rot_tiktok","rot_instagram","rot_shorts","rot_facebook"].forEach(id=>{
-    $(id).addEventListener("change", ()=>{
-      rotationIndex = 0;
-      refreshProfileUI();
-    });
-  });
-
-  // nuova domanda
-  $("btnNext").addEventListener("click", ()=> nextQuestion());
-
-  // apri chatgpt + copia prompt+domanda
-  $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
-    if(!currentQuestion){
-      nextQuestion();
+  btnClear.onclick = () => {
+    if (confirm("Pulire domanda/risposta/caption?")){
+      questionInput.value = "";
+      answerInput.value = "";
+      captionInput.value = "";
+      updateTpPreview();
     }
-    const payload = composeChatGPTInput();
-    await copyText(payload);
-    window.open(CHATGPT_URL, "_blank", "noopener");
-  });
+  };
 
-  // incolla risposta
-  $("btnPasteTop").addEventListener("click", async ()=>{
-    try{
-      const t = await readClipboardText();
-      $("answerBox").value = (t || "");
-    }catch(e){
-      alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
+  btnImport.onclick = importVideo;
+
+  // Live preview update
+  answerInput.addEventListener("input", updateTpPreview);
+  fontSizeSelect.addEventListener("change", updateTpPreview);
+
+  // keyboard shortcut
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && !e.repeat){
+      // don’t interfere when typing
+      const tag = (document.activeElement?.tagName || "").toLowerCase();
+      if (tag === "textarea" || tag === "input" || tag === "select") return;
+
+      e.preventDefault();
+      if (!mediaStream) return;
+      if (!recording) startRecording();
+      else stopRecording();
+    }
+    if (e.key === "Escape" && modal.classList.contains("open")){
+      closeModal();
     }
   });
 
-  // invia al teleprompter
-  $("btnSendTele").addEventListener("click", ()=>{
-    const ok = applyAnswer($("answerBox").value || "");
-    if(!ok) alert("Scrivi o incolla una risposta prima.");
-  });
+  modalClose.onclick = closeModal;
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
 
-  // camera
-  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+  // init
+  initPresets();
+  updateChannelUI();
+  updateTpPreview();
+  refreshLibrary();
 
-  // Teleprompter + REC
-  $("btnTeleRec").addEventListener("click", async ()=>{
-    const okCam = await ensureReady();
-    if(!okCam) return;
+  // draw loop starts once connected, but we also render first frame for layout
+  drawFrame(0);
 
-    if(!currentQuestion){
-      nextQuestion();
-    }
-
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
-      return;
-    }
-
-    applyAnswer(ans);
-    startRecording();
-  });
-
-  $("btnStop").addEventListener("click", ()=> stopRecording());
-  $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
-  $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
-
-  // remember caption toggle
-  $("chkRememberCaption").addEventListener("change", ()=>{
-    if(!$("chkRememberCaption").checked){
-      try{ localStorage.removeItem("vc_caption_clean"); }catch(e){}
-    }else{
-      try{ localStorage.setItem("vc_caption_clean", lastCaptionClean || ""); }catch(e){}
-    }
-  });
-
-  // copia caption
-  $("btnCopyCaption").addEventListener("click", async ()=>{
-    const out = captionWithHashtagsIfNeeded(lastCaptionClean);
-    if(!out){ alert("Niente da copiare."); return; }
-    await copyText(out);
-  });
-
-  // download selected video
-  $("btnDownloadVideo").addEventListener("click", ()=>{
-    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
-      alert("Seleziona un video dalla lista.");
-      return;
-    }
-    const r = recordings[currentRecIndex];
-    downloadBlob(r.blob, r.name);
-  });
-
-  // upload video (button -> hidden input)
-  $("btnUploadVideo").addEventListener("click", ()=>{
-    $("videoUpload").click();
-  });
-  $("videoUpload").addEventListener("change", (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    if(!String(file.type || "").startsWith("video/")){
-      alert("Seleziona un file video valido.");
-      e.target.value = "";
-      return;
-    }
-    addUploadedVideo(file);
-    e.target.value = "";
-  });
-
-  // clear list
-  $("btnClearList").addEventListener("click", ()=>{
-    if(!recordings.length) return;
-    if(confirm("Svuotare la lista?")){
-      recordings.forEach(r => { try{ URL.revokeObjectURL(r.url); }catch(e){} });
-      recordings = [];
-      currentRecIndex = -1;
-      $("playback").removeAttribute("src");
-      $("playback").load();
-      renderRecList();
-      totalVideos = 0;
-      updateCounters();
-      rotationIndex = 0;
-      refreshProfileUI();
-    }
-  });
-
-  // prompt unlock/save/reset
-  $("btnUnlock").addEventListener("click", ()=>{
-    const code = ($("unlockCode").value || "").trim();
-    if(code === UNLOCK_CODE){
-      unlockPromptUI();
-    }else{
-      alert("Codice errato.");
-      lockPromptUI();
-    }
-  });
-
-  $("btnSavePrompt").addEventListener("click", ()=>{
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
-
-  $("btnResetPrompt").addEventListener("click", ()=>{
-    $("promptBox").value = BASE_PROMPT;
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
-});
+})();
 </script>
 </body>
 </html>
