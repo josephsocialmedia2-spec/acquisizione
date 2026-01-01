@@ -1274,7 +1274,6 @@ function nextQuestion(){
   
   // reset downstream (rigid flow)
   try{ if($("answerBox")) $("answerBox").value = ""; }catch(e){}
-  try{ if($("teleText")) $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”."; }catch(e){}
   try{ setCaptionClean(""); }catch(e){}
   if(document.body.classList.contains("modeSimple")){ window.__step = 2; }
   updateWizard();
