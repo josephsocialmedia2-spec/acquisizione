@@ -786,6 +786,11 @@ body.isRecording #countdownPill{
       <p class="h">Risposta (da ChatGPT o scritta da te)</p>
       <div class="field">
         <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
+      <div class="field" style="margin-top:10px;">
+        <p class="miniLabel" style="margin:0 0 6px; opacity:.85;"><b>Testo libero (opzionale)</b> — per video senza domanda (es: “Oggi sto bene”)</p>
+        <input id="freeTextBox" class="in" type="text" placeholder="Scrivi qui un testo libero…" />
+      </div>
+
       </div>
 
       <div class="bar left" style="margin-top:10px;">
@@ -942,6 +947,11 @@ body.isRecording #countdownPill{
           <div class="section">
             <p class="h">Caption (Domanda + Risposta)</p>
             <textarea id="captionBox" class="ta" rows="4" readonly style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none; font-weight:850; resize: vertical; min-height: 120px; font-size:12px; line-height:1.25;"></textarea>
+            <div class="field" style="margin-top:10px;">
+              <p class="miniLabel" style="margin:0 0 6px; opacity:.85;"><b>Hashtag (opzionale)</b></p>
+              <textarea id="hashtagsBox" class="ta" rows="2" placeholder="#hashtag1 #hashtag2"></textarea>
+            </div>
+
             <div class="bar left" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
               <button class="btn gray" id="btnCopyCaption2" type="button"><span class="ico">📋</span> Copia caption</button>
             </div>
@@ -1251,7 +1261,7 @@ function setCurrentItem(it){
   applyAnswer(it.risposta);
 
   
-  try{ const c=$("captionBox"); if(c) c.value = buildCaptionQA(); }catch(e){}
+  try{ const c=$("captionBox"); if(c) c.value = buildCaptionFull(); }catch(e){}
 if(document.body.classList.contains("modeSimple")){
     window.__step = 5; // pronto per REC
   }
@@ -1449,18 +1459,50 @@ function setCaptionClean(clean){
   if ($("chkRememberCaption").checked){
     try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
   }
+}
+
+function getFreeText(){
+  return String($("freeTextBox")?.value || "").trim();
+}
+function getHashtags(){
+  return String($("hashtagsBox")?.value || "").trim();
+}
 
 function buildCaptionFromInputs(){
-  const q = String(currentQuestion||"").trim();
-  const a = String(($("answerBox") && $("answerBox").value) || "").trim();
+  // Caption completa (QA oppure testo libero) + hashtag
+  return buildCaptionFull();
+}
+
+function buildCaptionFull(){
+  const tags = getHashtags();
+
+  // Se c'è testo libero, usalo come contenuto principale (senza etichette Domanda/Risposta)
+  const free = getFreeText();
+  if(free){
+    return (tags ? (free + "\n\n" + tags) : free).trim();
+  }
+
+  // Altrimenti: Domanda + Risposta
+  const q = String(currentItem?.domanda || currentQuestion || "").trim();
+  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
   const parts = [];
   if(q) parts.push("Domanda: " + q);
-  if(a) parts.push("Risposta:\n" + a);
-  return parts.join("\n\n").trim();
+  if(a) parts.push("Risposta: " + a);
+  let txt = parts.join("\n");
+  if(tags) txt = (txt ? (txt + "\n\n" + tags) : tags);
+  return String(txt || "").trim();
+}
+
+function refreshCaptionBox(){
+  try{
+    const c = $("captionBox");
+    if(c) c.value = buildCaptionFull();
+  }catch(e){}
 }
 
 function buildWhatsAppMessage(){
-  return buildCaptionQA();
+  // WhatsApp deve mandare la caption completa con hashtag
+  return buildCaptionFull();
 }
 
 /* ==========================
@@ -1583,6 +1625,7 @@ function stopTeleprompter(){
 function restartTeleprompter(){
   stopTeleprompter();
   resetTeleprompter();
+      try{ refreshCaptionBox(); setCaptionClean(buildCaptionFull()); }catch(e){}
   setTimeout(()=> startTeleprompter(), 120);
 }
 function animateTele(){
@@ -1614,7 +1657,8 @@ function applyAnswer(answer){
   $("teleText").textContent = a;
   resetTeleprompter();
   stopTeleprompter();
-  setCaptionClean(a);
+  setCaptionClean(buildCaptionFull());
+  refreshCaptionBox();
   return true;
 }
 
@@ -1936,7 +1980,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(capBtn && !capBtn._bound){
     capBtn._bound=true;
     capBtn.addEventListener("click", async ()=>{
-      const text = (document.getElementById("captionBox")?.value || buildCaptionQA()).trim();
+      const text = (document.getElementById("captionBox")?.value || buildCaptionFull()).trim();
       if(!text){ try{ showToast("Niente da copiare",1400);}catch(e){} return; }
       try{ await navigator.clipboard.writeText(text); showToast("Caption copiata ✅",1400);}catch(e){
         const ta=document.getElementById("captionBox");
@@ -2122,10 +2166,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     // Se non hai ancora inviato nulla al teleprompter, prova a usare il testo nel box “Risposta”.
     // Così puoi registrare anche video “liberi” (es: “Oggi sto bene”) senza dover avere per forza una domanda.
-    const maybe = String($("answerBox")?.value || "").trim();
+    const maybe = String(getFreeText() || $("answerBox")?.value || "").trim();
     if(String($("teleText")?.textContent || "").trim() === "" && maybe){
       $("teleText").textContent = maybe;
       resetTeleprompter();
+      try{ refreshCaptionBox(); setCaptionClean(buildCaptionFull()); }catch(e){}
     }
 
     // Avvia teleprompter (anche se vuoto: in quel caso registri comunque il video)
@@ -2141,6 +2186,20 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("btnStop").addEventListener("click", ()=> stopRecording());
   $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
   $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
+
+  // Aggiorna caption completa (QA/testo libero + hashtag)
+  ["answerBox","freeTextBox","hashtagsBox"].forEach((id)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("input", ()=>{
+      refreshCaptionBox();
+      // aggiorna anche preview "caption clean" per le registrazioni future
+      try{ setCaptionClean(buildCaptionFull()); }catch(e){}
+    });
+  });
+  // init caption
+  refreshCaptionBox();
+
 
   // remember caption toggle
   $("chkRememberCaption").addEventListener("change", ()=>{
@@ -2196,7 +2255,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       showToast("Registra un video prima 👇");
       return;
     }
-    const captionText = String(r.captionClean || buildCaptionFromInputs() || "").trim();
+    const captionText = String(r.captionClean || buildCaptionFull() || "").trim();
     if(!captionText){
       showToast("Manca il testo per la caption");
       return;
