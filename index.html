@@ -1045,43 +1045,120 @@ function setMode(mode){
   $("btnModePro").classList.toggle("primary", !isSimple);
   $("btnModePro").classList.toggle("gray", isSimple);
   try{ localStorage.setItem("vc_mode", isSimple ? "simple" : "pro"); }catch(e){}
-  updateWizard();
+  if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
+    updateWizard();
 }
 
+
 function updateWizard(){
+  // In PRO mode we keep it permissive; in SIMPLE mode we enforce rigid steps.
+  const isSimple = document.body.classList.contains("modeSimple");
+
   const hasQ = !!String(currentQuestion||"").trim();
   const hasA = !!String(($("answerBox") && $("answerBox").value) || "").trim();
+  const hasRec = (typeof recordings !== "undefined") && recordings && recordings.length > 0;
   const camOk = !!camStream;
 
+  // step model (1..6) used only in SIMPLE
+  if(typeof window.__step === "undefined") window.__step = 1;
+  const setStep = (n)=>{ window.__step = Math.max(1, Math.min(6, n)); };
+
+  // Auto-correct step based on reality (useful on refresh)
+  if(isSimple){
+    if(!hasQ) setStep(1);
+    else if(hasQ && !hasA) setStep(3);
+    else if(hasQ && hasA && !hasRec) setStep(4);
+    if(hasRec) setStep(6);
+  }
+
+  // Wizard UI highlight
   const steps = Array.from(document.querySelectorAll(".wizStep"));
-  if(!steps.length) return;
-
-  let active = 1;
-  if(hasQ) active = 2;
-  if(hasQ && !hasA) active = 3;
-  if(hasQ && hasA) active = 4;
-  if(hasQ && hasA && camOk) active = 5;
-
-  steps.forEach(s=>{
-    const n = Number(s.dataset.step||0);
-    s.classList.toggle("active", n===active);
-    s.classList.toggle("done", n < active);
-  });
+  if(steps.length){
+    let active = 1;
+    if(isSimple){
+      active = window.__step;
+    }else{
+      active = !hasQ ? 1 : (!hasA ? 3 : 4);
+      if(camOk) active = 5;
+      if(hasRec) active = 6;
+    }
+    steps.forEach(s=>{
+      const n = Number(s.dataset.step||0);
+      s.classList.toggle("active", n===active);
+      s.classList.toggle("done", n < active);
+    });
+  }
 
   const hint = $("wizardHint");
   if(hint){
-    if(!hasQ) hint.innerHTML = 'Premi <b>Nuova domanda</b> per iniziare.';
-    else if(hasQ && !hasA) hint.innerHTML = 'Clicca <b>Apri ChatGPT</b>, poi <b>Incolla risposta</b>.';
-    else if(hasQ && hasA && !camOk) hint.innerHTML = 'Clicca <b>START VIDEO</b> (attiva camera + REC).';
-    else hint.innerHTML = 'Pronto: <b>START VIDEO</b> registra. Poi scarica o invia su WhatsApp.';
+    if(!hasQ) hint.innerHTML = '1) Premi <b>Nuova domanda</b>.';
+    else if(hasQ && !hasA) hint.innerHTML = '2) <b>Apri ChatGPT</b> → 3) <b>Incolla risposta</b>.';
+    else if(hasQ && hasA && !hasRec) hint.innerHTML = '4) <b>Invia al teleprompter</b> → 5) <b>START VIDEO</b>.';
+    else hint.innerHTML = '6) <b>Scarica</b> o <b>WhatsApp</b>. Poi nuova domanda.';
   }
 
-  const startBtn = $("btnStartVideo");
-  if(startBtn){
-    startBtn.disabled = hasQ && !hasA;
-    startBtn.style.opacity = startBtn.disabled ? ".55" : "1";
+  // Utility to lock/unlock
+  function lock(btnId, locked){
+    const el = $(btnId);
+    if(!el) return;
+    el.disabled = !!locked;
+    el.style.opacity = locked ? ".45" : "1";
+    el.style.pointerEvents = locked ? "none" : "auto";
+  }
+
+  if(isSimple){
+    const step = window.__step;
+
+    // Lock everything first
+    ["btnOpenChatGPTPasteQ","btnPasteTop","btnSendTele","btnStartVideo","btnTeleRec","btnCam","btnDownloadVideo","btnWhatsApp","btnCopyCaption"].forEach(id=>lock(id, true));
+    // btnNext is always allowed to restart the flow
+    lock("btnNext", false);
+
+    // Step 1: only "Nuova domanda"
+    if(step === 1){
+      // nothing else
+    }
+
+    // Step 2: "Apri ChatGPT"
+    if(step === 2){
+      lock("btnOpenChatGPTPasteQ", false);
+    }
+
+    // Step 3: "Incolla risposta"
+    if(step === 3){
+      lock("btnOpenChatGPTPasteQ", false);
+      lock("btnPasteTop", false);
+    }
+
+    // Step 4: "Invia al teleprompter"
+    if(step === 4){
+      lock("btnOpenChatGPTPasteQ", false);
+      lock("btnPasteTop", false);
+      lock("btnSendTele", false);
+    }
+
+    // Step 5: "START VIDEO" (camera+rec)
+    if(step === 5){
+      lock("btnStartVideo", false);
+      lock("btnCam", false);
+      // allow restart teleprompter in simple? keep hidden (proOnly)
+    }
+
+    // Step 6: "Scarica / WhatsApp" + caption
+    if(step === 6){
+      lock("btnDownloadVideo", false);
+      lock("btnWhatsApp", false);
+      lock("btnCopyCaption", false);
+    }
+
+    // Safety: if no question, force step 1
+    if(!hasQ) setStep(1);
+  }else{
+    // PRO: no rigid locks
+    ["btnOpenChatGPTPasteQ","btnPasteTop","btnSendTele","btnStartVideo","btnTeleRec","btnCam","btnDownloadVideo","btnWhatsApp","btnCopyCaption","btnNext"].forEach(id=>lock(id, false));
   }
 }
+
 
 
 function pad2(n){ return String(n).padStart(2,"0"); }
@@ -1194,6 +1271,12 @@ function nextQuestion(){
   qIdx = (qIdx + 1) % QUESTION_BANK.length;
   currentQuestion = QUESTION_BANK[qIdx].q;
   showQuestionInOverlay(currentQuestion);
+  
+  // reset downstream (rigid flow)
+  try{ if($("answerBox")) $("answerBox").value = ""; }catch(e){}
+  try{ if($("teleText")) $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”."; }catch(e){}
+  try{ setCaptionClean(""); }catch(e){}
+  if(document.body.classList.contains("modeSimple")){ window.__step = 2; }
   updateWizard();
 }
 function composeChatGPTInput(){
@@ -1517,6 +1600,7 @@ function startRecording(){
 
     advancePlatform();
     refreshProfileUI();
+    if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
     updateWizard();
   };
 
@@ -1673,6 +1757,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     if(!okCam){ showToast("Camera non disponibile"); return; }
     applyAnswer(ans);
     showToast("REC avviato 🔴");
+    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
     startRecording();
     updateWizard();
   });
@@ -1685,6 +1770,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const payload = composeChatGPTInput();
     await copyText(payload);
     showToast("Copiato ✅ Incolla su ChatGPT");
+    if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
     updateWizard();
     window.open(CHATGPT_URL, "_blank", "noopener");
   });
@@ -1695,6 +1781,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       const t = await readClipboardText();
       $("answerBox").value = (t || "");
       showToast("Risposta incollata ✅");
+      if(document.body.classList.contains("modeSimple")){ window.__step = ($("answerBox").value||"").trim() ? 4 : 3; }
       updateWizard();
     }catch(e){
       alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
@@ -1706,6 +1793,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const ok = applyAnswer($("answerBox").value || "");
     if(!ok){ showToast("Scrivi o incolla una risposta prima 👇"); return; }
     showToast("Teleprompter pronto ✅");
+    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
     updateWizard();
   });
 
@@ -1834,4 +1922,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 </body>
 </html>
-
