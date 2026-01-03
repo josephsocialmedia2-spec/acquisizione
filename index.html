@@ -1,6 +1,7 @@
 
 
 
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -684,6 +685,121 @@
 body.isRecording #countdownPill{
   border-color: rgba(255,59,48,.55);
   background: rgba(255,59,48,.12);
+}
+
+
+/* ==========================
+   THEME OVERRIDE: BLACK + GOLD
+   (auto-injected)
+========================== */
+:root{
+  --bg:#000000 !important;
+  --text:#f5f5f5 !important;
+  --muted:#b7bcc2 !important;
+
+  --gold:#ffd400 !important;          /* oro principale (coerente col tuo) */
+  --gold-2:#ffdf5a !important;        /* highlight */
+  --gold-ink:#120d05 !important;      /* testo su oro */
+  --border: rgba(255,212,0,.22) !important;
+  --shadow: 0 18px 70px rgba(0,0,0,.75) !important;
+}
+
+/* Background full black (override dei gradienti) */
+body{
+  background:#000 !important;
+  color:var(--text) !important;
+}
+
+/* Cards più pulite su nero */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)) !important;
+  border:1px solid rgba(255,212,0,.16) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* Pills */
+.pill{
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,212,0,.18) !important;
+  color: rgba(245,245,245,.88) !important;
+}
+
+/* Inputs */
+.field textarea, .codeRow input, .ta, .in, #captionBox, #hashtagsBox{
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,212,0,.16) !important;
+  color: var(--text) !important;
+}
+.field textarea:focus, .codeRow input:focus{
+  border-color: rgba(255,212,0,.55) !important;
+  box-shadow: 0 0 0 6px rgba(255,212,0,.14) !important;
+}
+
+/* Stage outline */
+#stage916{
+  border: 1px solid rgba(255,212,0,.20) !important;
+}
+
+/* Question overlay */
+#questionBoxOverlay{
+  background: rgba(0,0,0,.45) !important;
+  border: 1px solid rgba(255,212,0,.18) !important;
+}
+
+/* Teleprompter text (legibilità top) */
+#teleText{
+  color: rgba(245,245,245,.96) !important;
+  text-shadow: 0 2px 18px rgba(0,0,0,.92) !important;
+}
+
+/* Keyword emphasis → oro */
+.tele-strong{
+  color: rgba(255,212,0,.98) !important;
+}
+
+/* ==========================
+   BUTTONS: ORO
+========================== */
+/* Base: oro pieno (tutti i tasti) */
+.btn{
+  background: linear-gradient(135deg, rgba(255,212,0,.98), rgba(255,212,0,.72)) !important;
+  border-color: rgba(255,212,0,.55) !important;
+  color: var(--gold-ink) !important;
+  text-shadow: none !important;
+}
+
+/* Hover/active */
+.btn:hover{
+  filter: brightness(1.06) !important;
+  border-color: rgba(255,212,0,.75) !important;
+}
+.btn:active{
+  filter: brightness(.98) !important;
+}
+
+/* Tiny buttons: stessa resa */
+.btn.tiny{
+  background: linear-gradient(135deg, rgba(255,212,0,.92), rgba(255,212,0,.62)) !important;
+}
+
+/* Mantieni REC rosso (standard UX) */
+.btn.rec{
+  background: linear-gradient(135deg, rgba(255,45,45,.98), rgba(255,45,45,.60)) !important;
+  border-color: rgba(255,45,45,.60) !important;
+  color: #120707 !important;
+}
+
+/* Countdown pill oro */
+#countdownPill{
+  border-color: rgba(255,212,0,.28) !important;
+  background: rgba(255,212,0,.10) !important;
+  color: rgba(255,223,90,.95) !important;
+}
+
+/* Bottom bar */
+.bottomBar{
+  background: rgba(0,0,0,.70) !important;
+  border-top: 1px solid rgba(255,212,0,.12) !important;
 }
 
 </style>
