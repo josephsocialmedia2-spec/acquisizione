@@ -3,262 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Video Creator – Black Gold</title>
+<title>Template Caption Social</title>
 
 <style>
-/* ==========================
-   BLACK + GOLD THEME
-========================== */
-:root{
-  --bg:#000;
-  --text:#f5f5f5;
-  --muted:#a6a6a6;
-  --gold:#d8a23a;
-  --gold2:#ffd36a;
-  --ink:#120d05;
-  --border:rgba(216,162,58,.25);
-  --radius:16px;
-}
-
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui,Segoe UI,Roboto,Arial;
-  background:#000;
-  color:var(--text);
-}
-
-.wrap{max-width:1100px;margin:0 auto;padding:14px 12px 90px}
-
-.card{
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  margin-bottom:12px;
-}
-
-.section{padding:12px}
-.h{
-  font-size:11px;
-  text-transform:uppercase;
-  color:var(--muted);
-  letter-spacing:.8px;
-  margin:0 0 8px;
-  font-weight:900;
-}
-
-.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.bar.between{justify-content:space-between}
-.bar.center{justify-content:center}
-
-.btn{
-  background:#000;
-  border:1px solid var(--border);
-  color:var(--text);
-  padding:10px 14px;
-  border-radius:12px;
-  font-weight:900;
-  cursor:pointer;
-}
-.btn:hover{filter:brightness(1.15)}
-.btn.primary{
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:var(--ink);
-  border-color:var(--gold2);
-}
-.btn.rec{
-  background:linear-gradient(135deg,#ff2d2d,#ff6b6b);
-  border-color:#ff6b6b;
-  color:#120707;
-}
-
-textarea{
-  width:100%;
-  background:#000;
-  border:1px solid var(--border);
-  border-radius:12px;
-  color:var(--text);
-  padding:10px;
-  font-weight:700;
-  min-height:100px;
-}
-
-#stage{
-  aspect-ratio:9/16;
-  background:#000;
-  border:1px solid var(--border);
-  border-radius:16px;
-  position:relative;
-  overflow:hidden;
-}
-
-#teleText{
-  position:absolute;
-  inset:0;
-  padding:24px;
-  font-size:26px;
-  line-height:1.45;
-  font-weight:900;
-  color:#fff;
-  text-shadow:0 2px 18px #000;
-  transform:translateY(20px);
-}
-
-#question{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  background:rgba(0,0,0,.6);
-  border:1px solid var(--border);
-  padding:8px 10px;
-  border-radius:12px;
-  font-size:12px;
-  font-weight:900;
-}
-
-.bottomBar{
-  position:fixed;
-  left:0;right:0;bottom:0;
-  background:#000;
-  border-top:1px solid var(--border);
-  padding:10px;
-  display:flex;
-  justify-content:center;
-  gap:10px;
-}
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.4; padding: 24px; max-width: 860px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 12px; }
+.box { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 12px 0 18px; }
+label { display: block; font-weight: 600; margin: 10px 0 6px; }
+input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; }
+textarea { min-height: 170px; }
+.hint { font-size: 12px; color: #555; margin-top: 6px; }
+.caption { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space: pre-wrap; }
 </style>
 </head>
 
 <body>
-<div class="wrap">
+  <h1>Template Caption (riempibile)</h1>
 
-<div class="card">
-  <div class="section">
-    <div class="bar">
-      <button class="btn primary" id="btnQuestion">✨ Nuova domanda</button>
-      <button class="btn" id="btnCopyGPT">💬 Apri ChatGPT</button>
-    </div>
+  <div class="box">
+    <div>Istruzioni: compila i campi qui sotto, poi incolla/riscrivi gli stessi contenuti nel box “Caption pronta” (puoi farlo velocemente con copia/incolla).</div>
+    <div class="hint">Nota: questo template è statico (senza automazioni). Se vuoi che i campi si inseriscano da soli nella caption, te lo preparo con un mini form + pulsante “Genera”.</div>
   </div>
-</div>
 
-<div class="card">
-  <div class="section">
-    <p class="h">Risposta</p>
-    <textarea id="answerBox" placeholder="Incolla qui la risposta…"></textarea>
-    <div class="bar" style="margin-top:10px">
-      <button class="btn primary" id="btnSendTele">➡️ Invia al teleprompter</button>
-      <button class="btn" id="btnWhatsApp">🟢 WhatsApp</button>
-    </div>
+  <div class="box">
+    <label for="data">Data</label>
+    <input id="data" placeholder="Es. 15 Marzo 2026">
+
+    <label for="titolo">Titolo</label>
+    <input id="titolo" placeholder="Es. Workshop di Fotografia Urbana">
+
+    <label for="descrizione">Descrizione evento/prodotto</label>
+    <textarea id="descrizione" placeholder="Scrivi qui la descrizione (punti chiave, benefit, CTA, ecc.)"></textarea>
+
+    <label for="prezzo">Prezzo</label>
+    <input id="prezzo" placeholder="Es. €49 / Gratuito / Da €29">
+
+    <label for="luogo">Luogo</label>
+    <input id="luogo" placeholder="Es. Milano / Online / Roma (Centro)">
   </div>
-</div>
 
-<div class="card">
-  <div class="section">
-    <p class="h">Video + Teleprompter</p>
-    <div id="stage">
-      <div id="question">Premi “Nuova domanda”</div>
-      <div id="teleText">Testo teleprompter…</div>
-    </div>
-    <div class="bar center" style="margin-top:10px">
-      <button class="btn rec" id="btnTeleRec">🔴 Teleprompter + REC</button>
-      <button class="btn" id="btnStop">⏹ Stop</button>
-    </div>
+  <div class="box">
+    <label for="caption">Caption pronta (modifica i campi tra parentesi)</label>
+    <textarea id="caption" class="caption">📅 [inserisci data]
+🎯 [inserisci titolo]
+📝 [inserisci caption: testo coinvolgente, chiaro e orientato all’azione]
+💰 [inserisci prezzo]
+📍 [inserisci luogo]
+🔗 Link in bio</textarea>
+    <div class="hint">Regole rispettate: ordine fisso, nessuna voce rimossa, emoji solo a inizio riga.</div>
   </div>
-</div>
-
-</div>
-
-<div class="bottomBar">
-  <button class="btn" id="btnDownload">📥 Scarica video</button>
-</div>
-
-<script>
-/* ==========================
-   CONFIG
-========================== */
-const WHATSAPP_NUMBER = "393331234567"; // <-- CAMBIA QUESTO
-const QUESTIONS = [
-  "Perché ricevo poche chiamate?",
-  "Meglio partire alto col prezzo?",
-  "Vendere da privato conviene?"
-];
-
-let qIndex = -1;
-let teleRunning = false;
-let startTs = null;
-let rafId = null;
-
-/* ==========================
-   HELPERS
-========================== */
-const $ = id => document.getElementById(id);
-
-/* ==========================
-   DOMANDE
-========================== */
-$("btnQuestion").onclick = ()=>{
-  qIndex = (qIndex+1)%QUESTIONS.length;
-  $("question").textContent = QUESTIONS[qIndex];
-};
-
-$("btnCopyGPT").onclick = ()=>{
-  const txt = $("question").textContent;
-  if(!txt) return;
-  navigator.clipboard.writeText(txt);
-  window.open("https://chatgpt.com","_blank");
-};
-
-/* ==========================
-   TELEPROMPTER
-========================== */
-function startTele(){
-  teleRunning = true;
-  startTs = performance.now()/1000;
-  animate();
-}
-function stopTele(){
-  teleRunning = false;
-  if(rafId) cancelAnimationFrame(rafId);
-}
-function animate(){
-  if(!teleRunning) return;
-  const t = performance.now()/1000 - startTs;
-  const y = 20 - t*40;
-  $("teleText").style.transform = `translateY(${y}px)`;
-  rafId = requestAnimationFrame(animate);
-}
-
-$("btnSendTele").onclick = ()=>{
-  $("teleText").textContent = $("answerBox").value || "";
-  $("teleText").style.transform = "translateY(20px)";
-};
-
-$("btnTeleRec").onclick = ()=>{
-  stopTele();
-  startTele();
-};
-
-$("btnStop").onclick = ()=>{
-  stopTele();
-};
-
-/* ==========================
-   WHATSAPP
-========================== */
-$("btnWhatsApp").onclick = ()=>{
-  const msg = $("answerBox").value;
-  if(!msg) return alert("Nessun testo");
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  window.open(url,"_blank");
-};
-
-/* ==========================
-   DOWNLOAD (placeholder)
-========================== */
-$("btnDownload").onclick = ()=>{
-  alert("Download video: collegare MediaRecorder se serve");
-};
-</script>
 </body>
 </html>
