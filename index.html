@@ -1,28 +1,1409 @@
-let zoomValue = 1.1;
 
-const zoomSel = document.getElementById("zoomLevel");
-if (zoomSel) {
-  zoomValue = Number(zoomSel.value) || 1.1;
-  zoomSel.addEventListener("change", (e) => {
-    zoomValue = Number(e.target.value) || 1.0;
-  });
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video Prompt Recorder — Specifiche</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --panel:#12141b;
+      --muted:#9aa3b2;
+      --text:#e9eef8;
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --border:#232838;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(34,197,94,.18), transparent 60%),
+                  radial-gradient(1000px 500px at 90% 0%, rgba(239,68,68,.12), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    header{
+      padding:18px 20px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(to bottom, rgba(18,20,27,.85), rgba(18,20,27,.55));
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+    }
+    header .left{ display:flex; align-items:center; gap:10px;}
+    header h1{ font-size:14px; margin:0; letter-spacing:.3px; font-weight:700; color:#dfe6f6;}
+    header .badge{
+      font-size:12px; color:#0b0c10; background:rgba(34,197,94,.9);
+      padding:6px 10px; border-radius:999px; font-weight:800;
+    }
+    header .meta{ display:flex; gap:10px; align-items:center; color:var(--muted); font-size:12px;}
+    header .meta code{ color:#cbd5e1; background:rgba(255,255,255,.06); padding:3px 6px; border-radius:8px; border:1px solid rgba(255,255,255,.08);}
+    main{ padding:18px 16px 30px; max-width:1200px; margin:0 auto; }
+    .grid{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns:1fr; }
+    }
+
+    .card{
+      background:rgba(18,20,27,.78);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .card .hd h2{ font-size:13px; margin:0; color:#dfe6f6; letter-spacing:.2px;}
+    .card .bd{ padding:14px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .col{ flex:1; min-width: 180px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    textarea, input, select{
+      width:100%;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+      font-size:13px;
+    }
+    textarea{ min-height:110px; resize:vertical; line-height:1.35; }
+    textarea[readonly]{ opacity:.9; }
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      user-select:none;
+    }
+    .btn:hover{ background:rgba(255,255,255,.11); border-color:rgba(255,255,255,.14); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ background:rgba(34,197,94,.18); border-color:rgba(34,197,94,.35); }
+    .btn.primary:hover{ background:rgba(34,197,94,.22); }
+    .btn.danger{ background:rgba(239,68,68,.18); border-color:rgba(239,68,68,.35); }
+    .btn.danger:hover{ background:rgba(239,68,68,.22); }
+    .btn.warn{ background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.35); }
+    .btn.warn:hover{ background:rgba(245,158,11,.22); }
+    .btn.icon{ width:44px; height:44px; border-radius:14px; padding:0; font-size:18px; }
+    .muted{ color:var(--muted); font-size:12px; line-height:1.35; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      padding:8px 10px; border-radius:999px;
+      font-size:12px; color:#cbd5e1;
+    }
+    .pill strong{ color:#e5e7eb; }
+    .sep{ height:1px; background:rgba(255,255,255,.06); margin:12px 0; }
+
+    /* Preview / Canvas */
+    .stage{
+      display:grid;
+      grid-template-columns: 1fr 280px;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .stage{ grid-template-columns:1fr; }
+    }
+    .previewWrap{
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .previewBox{
+      position:relative;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      background:#000;
+      box-shadow: var(--shadow);
+      aspect-ratio: 9/16;
+      max-height: 78vh;
+    }
+    video#cameraPreview{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      opacity:.0; /* preview UI is the canvas below */
+      pointer-events:none;
+    }
+    canvas#recCanvas{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      display:block;
+    }
+    .recHud{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .recLamp{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(18,20,27,.55);
+      font-size:12px; color:#cbd5e1;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px; background:rgba(255,255,255,.18);
+      box-shadow: 0 0 0 0 rgba(239,68,68,.0);
+    }
+    .dot.rec{
+      background: var(--danger);
+      box-shadow: 0 0 0 6px rgba(239,68,68,.12);
+      animation: pulse 1.1s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); box-shadow: 0 0 0 6px rgba(239,68,68,.12); }
+      50%{ transform:scale(1.08); box-shadow: 0 0 0 10px rgba(239,68,68,.06); }
+    }
+    .bigCircle{
+      width:64px; height:64px; border-radius:999px;
+      border:2px solid rgba(255,255,255,.16);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      background:rgba(18,20,27,.55);
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      font-size:22px;
+    }
+    .bigCircle:active{ transform: translateY(1px); }
+    .bigCircle.red{ border-color: rgba(239,68,68,.65); }
+    .bigCircle.green{ border-color: rgba(34,197,94,.65); }
+    .bigCircle span{
+      width:18px; height:18px; border-radius:999px; display:block;
+      background: var(--danger);
+      box-shadow: 0 0 0 9px rgba(239,68,68,.14);
+    }
+    .bigCircle.green span{ background: var(--accent); box-shadow: 0 0 0 9px rgba(34,197,94,.14); }
+
+    /* Teleprompter drawer */
+    .drawer{
+      position:fixed;
+      top:0; left:0;
+      width:min(420px, 92vw);
+      height:100vh;
+      transform: translateX(-105%);
+      transition: transform .25s ease;
+      z-index:50;
+      padding:14px;
+    }
+    .drawer.open{ transform: translateX(0); }
+    .drawer .card{ height:100%; }
+    .teleArea{
+      height: calc(100vh - 150px);
+      overflow:hidden;
+      position:relative;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+    }
+    .teleText{
+      position:absolute;
+      left:0; right:0;
+      padding:18px 16px 60px;
+      line-height:1.45;
+      font-size:18px;
+      white-space:pre-wrap;
+      will-change: transform;
+    }
+    .drawerBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:40;
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease;
+    }
+    .drawerBackdrop.open{ opacity:1; pointer-events:auto; }
+
+    /* Video list */
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+      max-height: 520px;
+      overflow:auto;
+      padding-right:6px;
+    }
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      padding:10px;
+      display:grid;
+      grid-template-columns: 86px 1fr;
+      gap:10px;
+      align-items:center;
+      cursor:pointer;
+    }
+    .item.selected{ border-color: rgba(34,197,94,.35); background:rgba(34,197,94,.07); }
+    .thumb{
+      width:86px; height:153px; border-radius:12px;
+      background:#000;
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(255,255,255,.35);
+      font-size:12px;
+    }
+    .item h3{ margin:0 0 4px; font-size:13px; }
+    .item .meta2{ font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+    .k{
+      padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+    }
+    .player{
+      width:100%;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#000;
+      box-shadow: var(--shadow);
+      aspect-ratio: 9/16;
+    }
+    .small{ font-size:11px; color:var(--muted); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="left">
+    <div class="pill"><strong>Batch</strong> <span id="weekCount">0</span>/36</div>
+    <h1>Video Prompt Recorder — flow disciplinato (Camera+Mic auto, overlay domanda+sottotitoli, codici slot)</h1>
+  </div>
+  <div class="meta">
+    <span>Chat fissa:</span>
+    <code id="chatUrlCode">chatgpt.com/c/6959202a-b844-8329-afd9-4d709e081835</code>
+  </div>
+</header>
+
+<div class="drawerBackdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="teleDrawer" aria-hidden="true">
+  <div class="card">
+    <div class="hd">
+      <h2>📜 Teleprompter</h2>
+      <div class="row" style="gap:8px">
+        <button class="btn icon" id="btnCloseDrawer" title="Chiudi">✕</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="row">
+        <div class="col">
+          <label>Durata scorrimento</label>
+          <select id="teleDuration">
+            <option value="90">90s</option>
+            <option value="105" selected>105s</option>
+            <option value="120">120s</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Zoom (1.0× – 2.5×)</label>
+          <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1.1" />
+          <div class="muted">Valore: <span id="zoomVal">1.1×</span></div>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="teleArea" id="teleArea">
+        <div class="teleText" id="teleText"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="muted">
+        Scorrimento sincronizzato solo sul tempo (requestAnimationFrame). Il testo mostrato nei sottotitoli segue l’avanzamento del teleprompter.
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div class="grid">
+    <!-- Left: Controls -->
+    <section class="card">
+      <div class="hd">
+        <h2>Controlli</h2>
+        <div class="row" style="gap:8px">
+          <button class="btn icon" id="btnCamera" title="🎥 Camera (attiva/riattiva)">🎥</button>
+          <button class="btn icon" id="btnDrawer" title="📜 Teleprompter (toggle)">📜</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="col">
+            <label>PROMPT BASE (readonly)</label>
+            <textarea id="basePrompt" readonly></textarea>
+            <div class="small">Questo prompt viene sempre anteposto alla domanda quando invii a ChatGPT.</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn primary" id="btnNewQuestion">1) ✨ Nuova domanda → apri ChatGPT + copia</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Domanda corrente (overlay alto)</label>
+            <textarea id="questionBox" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn" id="btnCopyAnswer">2) 📋 Copia risposta (da ChatGPT)</button>
+          <button class="btn" id="btnToTeleprompter">3) ➜ Invia al teleprompter</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Risposta (answerBox)</label>
+            <textarea id="answerBox" placeholder="Qui arriva la risposta da clipboard (o incolla a mano se richiesto)."></textarea>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn warn" id="btnWhatsApp">📤 Invia su WhatsApp Mobile</button>
+          <button class="btn" id="btnCopyCaption">🏷️ Copia caption (pulita)</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Caption pulita (salvata)</label>
+            <textarea id="captionBox" placeholder="Viene salvata dalla risposta quando invii al teleprompter."></textarea>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input type="file" id="fileUpload" accept="video/*" style="display:none" />
+          <button class="btn" id="btnUpload">⬆️ Carica video</button>
+          <button class="btn danger" id="btnClear">🗑️ Svuota lista</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div class="pill"><strong>PROSSIMO</strong> <span id="nextProfile">—</span></div>
+          <div class="pill"><strong>Codice prossimo</strong> <span id="nextCode">—</span></div>
+        </div>
+        <div class="muted" style="margin-top:10px">
+          Rotazione profili = promemoria mentale. Codice video = giorno + slot (1–6) + orario.
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Preview + list -->
+    <section class="stage">
+      <div class="previewWrap">
+        <div class="previewBox" aria-label="Anteprima canvas (registrazione pulita con overlay)">
+          <video id="cameraPreview" playsinline muted></video>
+          <canvas id="recCanvas" width="1080" height="1920"></canvas>
+        </div>
+
+        <div class="recHud">
+          <div class="recLamp">
+            <div class="dot" id="recDot"></div>
+            <div><strong id="recLabel">PRONTO</strong> · <span id="recTimer">00:00</span></div>
+          </div>
+
+          <!-- Circle toggle -->
+          <div class="bigCircle red" id="recCircle" title="🔴 Avvia / 🟢 Ferma">
+            <span></span>
+          </div>
+
+          <div class="row" style="gap:8px">
+            <button class="btn icon" id="btnEmojiSave" title="💾 Export/Download ultimo selezionato">💾</button>
+          </div>
+        </div>
+
+        <video class="player" id="player" controls playsinline></video>
+        <div class="muted">
+          Il player mostra il video selezionato dalla lista (registrato o caricato).
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+          <h2>Video (lista)</h2>
+          <div class="pill"><strong>Totale</strong> <span id="totalCount">0</span></div>
+        </div>
+        <div class="bd">
+          <div class="list" id="videoList"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+/** =========================
+ *  CONFIG
+ *  ========================= */
+const FIXED_CHAT_URL = "https://chatgpt.com/c/6959202a-b844-8329-afd9-4d709e081835";
+
+// TODO: incolla qui il tuo prompt completo "Archivio Immobiliare Avanzato..."
+const BASE_PROMPT_TEXT =
+`Ruolo e identità
+Agisci come Archivio Immobiliare Avanzato e Consigliere Esperto del Settore Immobiliare…
+(INCOLLA QUI IL TESTO COMPLETO IDENTICO)`;
+
+const QUESTION_BANK = [
+  "Quali sono i 3 errori più comuni quando si compra la prima casa?",
+  "Come capire se il prezzo di un immobile è davvero in linea col mercato?",
+  "Meglio ristrutturare o comprare già ristrutturato? Pro e contro.",
+  "Cosa guardare in una planimetria per evitare sorprese?",
+  "Quali documenti chiedere prima di fare una proposta d’acquisto?"
+];
+
+const PROFILE_ROTATION = ["Instagram", "TikTok", "YouTube Shorts", "LinkedIn", "Facebook Reels"];
+let activeProfiles = [...PROFILE_ROTATION]; // qui puoi aggiungere toggle canali (non implementato nella UI base)
+
+/** =========================
+ *  STATE (localStorage keys)
+ *  ========================= */
+const LS = {
+  prompt: "vpr_base_prompt",
+  lastCaption: "vpr_last_caption",
+  weekly: "vpr_weekly_state",
+  videos: "vpr_video_items",
+  profileIdx: "vpr_profile_idx",
+  qIdx: "vpr_q_idx"
+};
+
+const TZ = "Europe/Rome";
+
+/** weekly_state shape:
+ * {
+ *   weekKey: "YYYY-Www",
+ *   daySlots: { "LUN": [bool x6], ... "SAB": [bool x6] },
+ *   producedCount: number
+ * }
+ */
+
+/** =========================
+ *  DOM
+ *  ========================= */
+const el = {
+  basePrompt: document.getElementById("basePrompt"),
+  questionBox: document.getElementById("questionBox"),
+  answerBox: document.getElementById("answerBox"),
+  captionBox: document.getElementById("captionBox"),
+  btnNewQuestion: document.getElementById("btnNewQuestion"),
+  btnCopyAnswer: document.getElementById("btnCopyAnswer"),
+  btnToTeleprompter: document.getElementById("btnToTeleprompter"),
+  btnCamera: document.getElementById("btnCamera"),
+  btnDrawer: document.getElementById("btnDrawer"),
+  btnCloseDrawer: document.getElementById("btnCloseDrawer"),
+  drawer: document.getElementById("teleDrawer"),
+  backdrop: document.getElementById("drawerBackdrop"),
+  teleText: document.getElementById("teleText"),
+  teleArea: document.getElementById("teleArea"),
+  teleDuration: document.getElementById("teleDuration"),  zoom: document.getElementById("zoom"),
+  zoomVal: document.getElementById("zoomVal"),
+  canvas: document.getElementById("recCanvas"),
+  ctx: document.getElementById("recCanvas").getContext("2d"),
+  cameraPreview: document.getElementById("cameraPreview"),
+  recDot: document.getElementById("recDot"),
+  recLabel: document.getElementById("recLabel"),
+  recTimer: document.getElementById("recTimer"),
+  recCircle: document.getElementById("recCircle"),
+  player: document.getElementById("player"),
+  videoList: document.getElementById("videoList"),
+  totalCount: document.getElementById("totalCount"),
+  weekCount: document.getElementById("weekCount"),
+  nextProfile: document.getElementById("nextProfile"),
+  nextCode: document.getElementById("nextCode"),
+  btnWhatsApp: document.getElementById("btnWhatsApp"),
+  btnCopyCaption: document.getElementById("btnCopyCaption"),
+  fileUpload: document.getElementById("fileUpload"),
+  btnUpload: document.getElementById("btnUpload"),
+  btnClear: document.getElementById("btnClear"),
+  btnEmojiSave: document.getElementById("btnEmojiSave")
+};
+
+/** =========================
+ *  UTIL — date/time (Europe/Rome)
+ *  ========================= */
+function nowInRome() {
+  // Creates a Date representing "now", but we’ll extract weekday using Intl in Rome TZ.
+  return new Date();
 }
 
-// dentro al tuo loop di disegno canvas:
-function drawVideoZoomed(videoEl, ctx, W, H) {
-  if (!videoEl || videoEl.readyState < 2) {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, W, H);
+function getRomeParts(d = new Date()) {
+  const fmt = new Intl.DateTimeFormat("it-IT", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "long"
+  });
+  const parts = fmt.formatToParts(d);
+  const obj = {};
+  for (const p of parts) obj[p.type] = p.value;
+  // weekday is in Italian (e.g. "lunedì")
+  return obj;
+}
+
+function getDayAbbrevRome(d = new Date()) {
+  const wd = new Intl.DateTimeFormat("it-IT", { timeZone: TZ, weekday: "short" }).format(d).toLowerCase();
+  // it-IT short often: "lun", "mar", "mer", "gio", "ven", "sab", "dom"
+  const map = { lun: "LUN", mar: "MAR", mer: "MER", gio: "GIO", ven: "VEN", sab: "SAB", dom: "DOM" };
+  const key = wd.slice(0,3);
+  return map[key] || "LUN";
+}
+
+function getISOWeekKeyRome(d = new Date()) {
+  // compute ISO week based on Europe/Rome local date (approx by converting to Rome parts)
+  const p = getRomeParts(d);
+  const y = parseInt(p.year, 10);
+  const m = parseInt(p.month, 10);
+  const day = parseInt(p.day, 10);
+
+  // Build a Date at noon UTC for stability using the Rome calendar date
+  const date = new Date(Date.UTC(y, m - 1, day, 12, 0, 0));
+  // ISO week
+  const tmp = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = (tmp.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  tmp.setUTCDate(tmp.getUTCDate() - dayNum + 3); // Thursday
+  const firstThu = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 4));
+  const firstDayNum = (firstThu.getUTCDay() + 6) % 7;
+  firstThu.setUTCDate(firstThu.getUTCDate() - firstDayNum + 3);
+  const week = 1 + Math.round((tmp - firstThu) / (7 * 24 * 3600 * 1000));
+  const ww = String(week).padStart(2, "0");
+  return `${tmp.getUTCFullYear()}-W${ww}`;
+}
+
+/** =========================
+ *  WEEKLY SLOT LOGIC (36 weekly, Mon–Sat, reset Sunday)
+ *  ========================= */
+const DAY_KEYS = ["LUN","MAR","MER","GIO","VEN","SAB"]; // 6 giorni = 36 slot
+const SLOT_HOURS = {1:"08",2:"10",3:"12",4:"15",5:"18",6:"21"};
+
+function defaultWeeklyState() {
+  const daySlots = {};
+  for (const d of DAY_KEYS) daySlots[d] = [false,false,false,false,false,false];
+  return {
+    weekKey: getISOWeekKeyRome(),
+    daySlots,
+    producedCount: 0
+  };
+}
+
+function loadWeekly() {
+  const raw = localStorage.getItem(LS.weekly);
+  let st = raw ? JSON.parse(raw) : defaultWeeklyState();
+
+  // reset if week changed OR today is Sunday in Rome
+  const todayAbbrev = getDayAbbrevRome();
+  const wk = getISOWeekKeyRome();
+  if (st.weekKey !== wk || todayAbbrev === "DOM") {
+    st = defaultWeeklyState();
+    // Sunday reset: we keep it reset and prevent slot assignment on Sunday (spec says 6 days)
+    saveWeekly(st);
+  }
+  return st;
+}
+
+function saveWeekly(st){ localStorage.setItem(LS.weekly, JSON.stringify(st)); }
+
+function getNextSlotCode(weeklyState, d = new Date()) {
+  const day = getDayAbbrevRome(d);
+  if (day === "DOM") {
+    return { ok:false, reason:"Oggi è DOM: reset settimanale. Sequenza slot prevista LUN–SAB.", code:null };
+  }
+  if (!DAY_KEYS.includes(day)) {
+    return { ok:false, reason:"Giorno non gestito nella sequenza LUN–SAB.", code:null };
+  }
+  const slots = weeklyState.daySlots[day] || [false,false,false,false,false,false];
+  const idx = slots.findIndex(v => v === false);
+  if (idx === -1) {
+    return { ok:false, reason:`Slot finiti per ${day} (1–6).`, code:null };
+  }
+  const slotNum = idx + 1;
+  const hour = SLOT_HOURS[slotNum];
+  return { ok:true, day, slotNum, hour, code:`${day}-${slotNum}-${hour}` };
+}
+
+function occupyNextSlot(weeklyState, d = new Date()) {
+  const info = getNextSlotCode(weeklyState, d);
+  if (!info.ok) return info;
+
+  weeklyState.daySlots[info.day][info.slotNum - 1] = true;
+  weeklyState.producedCount = (weeklyState.producedCount || 0) + 1;
+  saveWeekly(weeklyState);
+  return info;
+}
+
+/** =========================
+ *  VIDEO ITEMS
+ *  ========================= */
+function loadVideos(){
+  const raw = localStorage.getItem(LS.videos);
+  return raw ? JSON.parse(raw) : [];
+}
+function saveVideos(items){
+  localStorage.setItem(LS.videos, JSON.stringify(items));
+}
+let videos = loadVideos();
+let selectedVideoId = videos.length ? videos[videos.length-1].id : null;
+
+/** =========================
+ *  CAMERA / CANVAS DRAW + OVERLAYS
+ *  ========================= */
+let mediaStream = null;
+let animId = null;
+
+let teleState = {
+  running: false,
+  startTs: 0,
+  durationMs: 105000,
+  text: "",
+  words: [],
+  wordsPerMs: 0
+};
+
+let currentQuestion = "";
+let captionClean = "";
+
+function safeText(s){ return (s || "").toString(); }
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  const words = text.split(/\s+/);
+  let line = "";
+  const lines = [];
+  for (const w of words){
+    const test = line ? (line + " " + w) : w;
+    if (ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = w;
+      if (maxLines && lines.length >= maxLines) break;
+    } else {
+      line = test;
+    }
+  }
+  if ((!maxLines || lines.length < maxLines) && line) lines.push(line);
+
+  // if overflow: add ellipsis
+  if (maxLines && lines.length > maxLines){
+    lines.length = maxLines;
+  }
+  if (maxLines && lines.length === maxLines){
+    // try ellipsis on last line if still too long
+    let last = lines[maxLines-1];
+    while (ctx.measureText(last + "…").width > maxWidth && last.length > 0){
+      last = last.slice(0, -1);
+    }
+    lines[maxLines-1] = last + (text.length ? "…" : "");
+  }
+
+  for (let i=0;i<lines.length;i++){
+    ctx.fillText(lines[i], x, y + i*lineHeight);
+  }
+  return lines.length;
+}
+
+function getSubtitleChunk(){
+  if (!teleState.running || !teleState.words.length) return "";
+  const elapsed = performance.now() - teleState.startTs;
+  const wordIndex = Math.floor(elapsed * teleState.wordsPerMs);
+  const start = Math.max(0, wordIndex);
+  const windowSize = 14; // ~leggibile su social
+  const chunk = teleState.words.slice(start, start + windowSize).join(" ");
+  return chunk;
+}
+
+function drawFrame(){
+  const ctx = el.ctx;
+  const W = el.canvas.width;
+  const H = el.canvas.height;
+
+  // background
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,W,H);
+
+  // camera frame (zoom on canvas)
+  if (el.cameraPreview.readyState >= 2){
+    const z = parseFloat(el.zoom.value || "1.1");
+    const srcW = el.cameraPreview.videoWidth;
+    const srcH = el.cameraPreview.videoHeight;
+    if (srcW && srcH){
+      // cover -> compute cropping
+      const targetAR = W/H;
+      const srcAR = srcW/srcH;
+      let cropW, cropH;
+      if (srcAR > targetAR){
+        cropH = srcH;
+        cropW = cropH * targetAR;
+      } else {
+        cropW = srcW;
+        cropH = cropW / targetAR;
+      }
+      // zoom
+      cropW = cropW / z;
+      cropH = cropH / z;
+
+      const sx = (srcW - cropW) / 2;
+      const sy = (srcH - cropH) / 2;
+      ctx.drawImage(el.cameraPreview, sx, sy, cropW, cropH, 0, 0, W, H);
+    }
+  }
+
+  // overlay: question top
+  const q = safeText(currentQuestion).trim();
+  if (q){
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    ctx.fillStyle = "rgba(0,0,0,.52)";
+    const pad = 42;
+    const boxH = 220;
+    ctx.fillRect(0, 0, W, boxH);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 46px ui-sans-serif, system-ui";
+    const maxW = W - pad*2;
+    wrapText(ctx, q, pad, 78, maxW, 56, 3);
+    ctx.restore();
+  }
+
+  // subtitles band bottom
+  const subtitle = teleState.running ? getSubtitleChunk() : safeText(captionClean).trim();
+  if (subtitle){
+    ctx.save();
+    const bandH = 300;
+    ctx.fillStyle = "rgba(0,0,0,.78)";
+    ctx.fillRect(0, H - bandH, W, bandH);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 52px ui-sans-serif, system-ui";
+    const padX = 56;
+    wrapText(ctx, subtitle, padX, H - bandH + 88, W - padX*2, 62, 3);
+    ctx.restore();
+  }
+
+  // teleprompter scroll state
+  if (teleState.running){
+    const elapsed = performance.now() - teleState.startTs;
+    const t = Math.min(1, elapsed / teleState.durationMs);
+
+    // Move teleText upward smoothly; we base it on its rendered height
+    const teleHeight = el.teleText.scrollHeight || 1000;
+    const viewH = el.teleArea.clientHeight || 600;
+    const startY = viewH * 0.65;
+    const endY = -(teleHeight + 40);
+    const y = startY + (endY - startY) * t;
+    el.teleText.style.transform = `translateY(${y}px)`;
+
+    if (t >= 1){
+      teleState.running = false;
+      el.recLabel.textContent = "PRONTO";
+      el.recDot.classList.remove("rec");
+    }
+  }
+
+  animId = requestAnimationFrame(drawFrame);
+}
+
+/** =========================
+ *  MEDIA RECORDER (canvas stream + mic)
+ *  ========================= */
+let recorder = null;
+let recordedChunks = [];
+let recording = false;
+let recStartTs = 0;
+let recTimerId = null;
+
+function fmtTime(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const mm = String(Math.floor(s/60)).padStart(2,"0");
+  const ss = String(s%60).padStart(2,"0");
+  return `${mm}:${ss}`;
+}
+
+function startTimer(){
+  el.recTimer.textContent = "00:00";
+  recStartTs = performance.now();
+  clearInterval(recTimerId);
+  recTimerId = setInterval(() => {
+    el.recTimer.textContent = fmtTime(performance.now() - recStartTs);
+  }, 250);
+}
+
+function stopTimer(){
+  clearInterval(recTimerId);
+  recTimerId = null;
+}
+
+async function ensureCamera(){
+  try{
+    if (mediaStream && mediaStream.getTracks().some(t => t.readyState === "live")) return true;
+
+    const constraints = {
+      audio: true,
+      video: {
+        facingMode: "user",
+        width: { ideal: 1080 },
+        height: { ideal: 1920 }
+      }
+    };
+    mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    el.cameraPreview.srcObject = mediaStream;
+    await el.cameraPreview.play();
+    return true;
+  } catch(err){
+    console.error(err);
+    alert("Permessi Camera/Microfono non concessi o non disponibili.");
+    return false;
+  }
+}
+
+function buildCompositeStream(){
+  // Canvas stream at 30fps + mic audio track
+  const canvasStream = el.canvas.captureStream(30);
+  const audioTracks = mediaStream ? mediaStream.getAudioTracks() : [];
+  const tracks = [
+    ...canvasStream.getVideoTracks(),
+    ...audioTracks
+  ];
+  return new MediaStream(tracks);
+}
+
+function startTeleprompterRun(text){
+  teleState.text = safeText(text).trim();
+  el.teleText.textContent = teleState.text || "";
+  teleState.words = teleState.text ? teleState.text.split(/\s+/).filter(Boolean) : [];
+  teleState.durationMs = parseInt(el.teleDuration.value, 10) * 1000;
+  teleState.startTs = performance.now();
+  teleState.running = true;
+  teleState.wordsPerMs = teleState.words.length ? (teleState.words.length / teleState.durationMs) : 0;
+  // reset transform
+  el.teleText.style.transform = "translateY(0px)";
+}
+
+async function startRecording(){
+  // Guards
+  const weekly = loadWeekly();
+  const next = getNextSlotCode(weekly);
+  if (!next.ok){
+    alert(next.reason);
     return;
   }
-  const vw = videoEl.videoWidth || 1280;
-  const vh = videoEl.videoHeight || 720;
 
-  const z = Math.max(1, Math.min(zoomValue, 3)); // clamp
-  const srcW = vw / z;
-  const srcH = vh / z;
-  const srcX = (vw - srcW) / 2;
-  const srcY = (vh - srcH) / 2;
+  const hasCam = await ensureCamera();
+  if (!hasCam) return;
 
-  ctx.drawImage(videoEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
+  const answer = safeText(el.answerBox.value).trim();
+  if (!answer){
+    alert("Manca la risposta. Copia la risposta da ChatGPT (o incollala) prima di registrare.");
+    return;
+  }
+
+  // occupy slot NOW (counts as produced)
+  const occupied = occupyNextSlot(weekly);
+  if (!occupied.ok){
+    alert(occupied.reason);
+    return;
+  }
+
+  // Save caption clean and keep for subtitles fallback
+  captionClean = answer;
+  el.captionBox.value = captionClean;
+  localStorage.setItem(LS.lastCaption, captionClean);
+
+  // Teleprompter start
+  startTeleprompterRun(answer);
+
+  // Recorder
+  recordedChunks = [];
+  const stream = buildCompositeStream();
+  const mimeCandidates = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm"
+  ];
+  let mimeType = "";
+  for (const m of mimeCandidates){
+    if (MediaRecorder.isTypeSupported(m)){ mimeType = m; break; }
+  }
+  recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: recorder.mimeType || "video/webm" });
+    const url = URL.createObjectURL(blob);
+
+    const id = crypto.randomUUID();
+    const item = {
+      id,
+      kind: "recorded",
+      url,
+      blobType: blob.type,
+      size: blob.size,
+      createdAt: new Date().toISOString(),
+      code: occupied.code,
+      platformNext: getNextProfileLabel(),
+      question: currentQuestion || "",
+      caption: captionClean || ""
+    };
+    videos.push(item);
+    saveVideos(videos);
+    selectedVideoId = id;
+
+    // rotation profiles after each recording (mental indicator)
+    advanceProfile();
+
+    renderVideos();
+    selectVideo(id);
+
+    recording = false;
+    el.recLabel.textContent = "PRONTO";
+    el.recDot.classList.remove("rec");
+    el.recCircle.classList.remove("green");
+    el.recCircle.classList.add("red");
+    stopTimer();
+  // init zoom display
+  if (el.zoomVal && el.zoom) el.zoomVal.textContent = `${parseFloat(el.zoom.value||"1").toFixed(1)}×`;
+  updateHUD();
+  };
+
+  recorder.start(250);
+  recording = true;
+  el.recLabel.textContent = "REC";
+  el.recDot.classList.add("rec");
+  el.recCircle.classList.add("green");
+  el.recCircle.classList.remove("red");
+  startTimer();
+  updateHUD();
 }
+
+function stopRecording(){
+  if (!recorder || recorder.state !== "recording") return;
+  recorder.stop();
+}
+
+function toggleRecording(){
+  if (recording) stopRecording();
+  else startRecording();
+}
+
+/** =========================
+ *  QUESTIONS → fixed chat + clipboard
+ *  ========================= */
+function loadPrompt(){
+  const saved = localStorage.getItem(LS.prompt);
+  return saved || BASE_PROMPT_TEXT;
+}
+
+function savePrompt(text){
+  localStorage.setItem(LS.prompt, text);
+}
+
+function pickQuestion(){
+  let idx = parseInt(localStorage.getItem(LS.qIdx) || "0", 10);
+  idx = (idx + 1) % QUESTION_BANK.length;
+  localStorage.setItem(LS.qIdx, String(idx));
+  return QUESTION_BANK[idx];
+}
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch(err){
+    console.warn("clipboard blocked", err);
+    return false;
+  }
+}
+
+async function readClipboard(){
+  try{
+    return await navigator.clipboard.readText();
+  } catch(err){
+    console.warn("clipboard read blocked", err);
+    return null;
+  }
+}
+
+async function onNewQuestion(){
+  const q = pickQuestion();
+  currentQuestion = q;
+  el.questionBox.value = q;
+
+  const prompt = loadPrompt();
+  const combined = `${prompt}\n\nDOMANDA:\n${q}\n\nISTRUZIONI OUTPUT:\nRispondi in modo pronto per essere letto in video (ritmo naturale, frasi brevi, zero fluff).`;
+
+  const copied = await copyToClipboard(combined);
+  window.open(FIXED_CHAT_URL, "_blank", "noopener,noreferrer");
+
+  if (!copied){
+    alert("Clipboard bloccata: copia manualmente il testo (lo trovi nel prompt+domanda).");
+  } else {
+    // micro feedback
+    el.btnNewQuestion.textContent = "✅ Domanda copiata + chat aperta";
+    setTimeout(() => el.btnNewQuestion.textContent = "1) ✨ Nuova domanda → apri ChatGPT + copia", 1200);
+  }
+
+  updateHUD();
+}
+
+/** =========================
+ *  ANSWER → clipboard to answerBox
+ *  ========================= */
+async function onCopyAnswer(){
+  const txt = await readClipboard();
+  if (txt === null){
+    alert("Impossibile leggere la clipboard. Incolla la risposta manualmente in answerBox.");
+    return;
+  }
+  el.answerBox.value = txt.trim();
+}
+
+/** =========================
+ *  To Teleprompter (also caption clean)
+ *  ========================= */
+function onToTeleprompter(){
+  const answer = safeText(el.answerBox.value).trim();
+  if (!answer){
+    alert("Nessuna risposta presente.");
+    return;
+  }
+  captionClean = answer;
+  el.captionBox.value = captionClean;
+  localStorage.setItem(LS.lastCaption, captionClean);
+
+  startTeleprompterRun(answer);
+  openDrawer(true);
+}
+
+/** =========================
+ *  WhatsApp deep link
+ *  ========================= */
+function getSelectedOrNextCode(){
+  const v = videos.find(x => x.id === selectedVideoId);
+  if (v?.code) return v.code;
+  const weekly = loadWeekly();
+  const next = getNextSlotCode(weekly);
+  return next.ok ? next.code : "—";
+}
+
+function onWhatsApp(){
+  const code = getSelectedOrNextCode();
+  const text = (safeText(el.captionBox.value).trim() || "")
+    + (code && code !== "—" ? `\n\nCodice: ${code}` : "")
+    + (currentQuestion ? `\n\nDomanda: ${currentQuestion}` : "");
+
+  const phone = "393717308294"; // +39 371 730 8294
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(text.slice(0, 3800))}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/** =========================
+ *  Caption copy (clean)
+ *  ========================= */
+async function onCopyCaption(){
+  const txt = safeText(el.captionBox.value).trim();
+  if (!txt){
+    alert("Caption vuota.");
+    return;
+  }
+  const ok = await copyToClipboard(txt);
+  if (!ok) alert("Clipboard bloccata: copia manualmente la caption.");
+}
+
+/** =========================
+ *  Profile rotation (mental)
+ *  ========================= */
+function loadProfileIdx(){
+  return parseInt(localStorage.getItem(LS.profileIdx) || "0", 10) || 0;
+}
+function saveProfileIdx(i){ localStorage.setItem(LS.profileIdx, String(i)); }
+function getNextProfileLabel(){
+  const i = loadProfileIdx() % activeProfiles.length;
+  return activeProfiles[i] || "—";
+}
+function advanceProfile(){
+  let i = loadProfileIdx();
+  i = (i + 1) % activeProfiles.length;
+  saveProfileIdx(i);
+}
+
+/** =========================
+ *  Upload video
+ *  ========================= */
+function onUploadClick(){
+  el.fileUpload.value = "";
+  el.fileUpload.click();
+}
+function onUploadFile(file){
+  if (!file) return;
+
+  const weekly = loadWeekly();
+  const occupied = occupyNextSlot(weekly);
+  if (!occupied.ok){
+    alert(occupied.reason);
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  const id = crypto.randomUUID();
+  const item = {
+    id,
+    kind: "uploaded",
+    url,
+    blobType: file.type || "video/*",
+    size: file.size || 0,
+    createdAt: new Date().toISOString(),
+    code: occupied.code,
+    platformNext: getNextProfileLabel(),
+    question: currentQuestion || "",
+    caption: safeText(el.captionBox.value).trim() || ""
+  };
+  videos.push(item);
+  saveVideos(videos);
+  selectedVideoId = id;
+
+  advanceProfile();
+  renderVideos();
+  selectVideo(id);
+  updateHUD();
+}
+
+/** =========================
+ *  Clear list (no weekly reset)
+ *  ========================= */
+function onClear(){
+  if (!confirm("Vuoi svuotare la lista video? (Le regole settimanali NON vengono resettate)")) return;
+  // revoke object URLs
+  for (const v of videos){
+    try{ URL.revokeObjectURL(v.url); } catch {}
+  }
+  videos = [];
+  saveVideos(videos);
+  selectedVideoId = null;
+  el.player.removeAttribute("src");
+  el.player.load();
+  renderVideos();
+  updateHUD();
+}
+
+/** =========================
+ *  Render list + selection
+ *  ========================= */
+function bytesToSize(b){
+  if (!b) return "—";
+  const u = ["B","KB","MB","GB"];
+  let i=0, n=b;
+  while (n>=1024 && i<u.length-1){ n/=1024; i++; }
+  return `${n.toFixed(i?1:0)} ${u[i]}`;
+}
+
+function renderVideos(){
+  el.videoList.innerHTML = "";
+  el.totalCount.textContent = String(videos.length);
+
+  for (const v of videos){
+    const div = document.createElement("div");
+    div.className = "item" + (v.id === selectedVideoId ? " selected" : "");
+    div.onclick = () => selectVideo(v.id);
+
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    thumb.textContent = "9:16";
+
+    const info = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = `${v.code || "—"} · ${v.kind === "recorded" ? "Registrato" : "Caricato"}`;
+
+    const meta = document.createElement("div");
+    meta.className = "meta2";
+    meta.innerHTML = `
+      <span class="k">${v.platformNext || "—"}</span>
+      <span class="k">${bytesToSize(v.size)}</span>
+      <span class="k">${new Date(v.createdAt).toLocaleString("it-IT")}</span>
+    `;
+
+    const row = document.createElement("div");
+    row.className = "row";
+    row.style.marginTop = "8px";
+    row.style.gap = "8px";
+
+    const dl = document.createElement("button");
+    dl.className = "btn icon";
+    dl.title = "💾 Download";
+    dl.textContent = "💾";
+    dl.onclick = (e) => { e.stopPropagation(); downloadVideo(v); };
+
+    row.appendChild(dl);
+
+    info.appendChild(h3);
+    info.appendChild(meta);
+    info.appendChild(row);
+
+    div.appendChild(thumb);
+    div.appendChild(info);
+    el.videoList.appendChild(div);
+  }
+}
+
+function selectVideo(id){
+  selectedVideoId = id;
+  const v = videos.find(x => x.id === id);
+  if (!v) return;
+  el.player.src = v.url;
+  el.player.load();
+  renderVideos();
+  updateHUD();
+}
+
+function downloadVideo(v){
+  const a = document.createElement("a");
+  const safeCode = (v.code || "VIDEO").replace(/[^\w\-]/g, "_");
+  a.href = v.url;
+  a.download = `${safeCode}.webm`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/** =========================
+ *  Drawer
+ *  ========================= */
+function openDrawer(open){
+  const isOpen = open ?? !el.drawer.classList.contains("open");
+  el.drawer.classList.toggle("open", isOpen);
+  el.backdrop.classList.toggle("open", isOpen);
+  el.drawer.setAttribute("aria-hidden", String(!isOpen));
+}
+el.backdrop.addEventListener("click", () => openDrawer(false));
+
+/** =========================
+ *  HUD
+ *  ========================= */
+function updateHUD(){
+  const weekly = loadWeekly();
+  el.weekCount.textContent = String(weekly.producedCount || 0);
+
+  el.nextProfile.textContent = getNextProfileLabel();
+
+  const next = getNextSlotCode(weekly);
+  el.nextCode.textContent = next.ok ? next.code : "—";
+
+  // badge in header: if Sunday show reset note
+  const day = getDayAbbrevRome();
+  const badge = document.querySelector("header .badge");
+  // (optional) keep it simple: not using badge node; header has pill already
+
+  // keep prompt readonly but persisted
+  const p = loadPrompt();
+  el.basePrompt.value = p;
+
+  // restore caption if exists
+  const lastCap = localStorage.getItem(LS.lastCaption);
+  if (lastCap && !el.captionBox.value.trim()) el.captionBox.value = lastCap;
+
+  // if question exists keep textarea
+  el.questionBox.value = currentQuestion || el.questionBox.value || "";
+}
+
+/** =========================
+ *  INIT
+ *  ========================= */
+async function init(){
+  // Prompt base locked + persisted
+  const p = loadPrompt();
+  el.basePrompt.value = p;
+  // (readonly per spec)
+  el.basePrompt.setAttribute("readonly", "readonly");
+  savePrompt(p);
+
+  // caption restore if any
+  const lastCap = localStorage.getItem(LS.lastCaption);
+  if (lastCap) el.captionBox.value = lastCap;
+
+  // ensure weekly reset rules applied
+  loadWeekly();
+
+  // init profile
+  el.nextProfile.textContent = getNextProfileLabel();
+
+  // start camera+mic automatically
+  await ensureCamera();
+
+  // start canvas draw loop
+  cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(drawFrame);
+
+  // initial selection
+  renderVideos();
+  if (selectedVideoId) selectVideo(selectedVideoId);
+
+  updateHUD();
+}
+
+/** =========================
+ *  EVENTS
+ *  ========================= */
+el.btnNewQuestion.addEventListener("click", onNewQuestion);
+el.btnCopyAnswer.addEventListener("click", onCopyAnswer);
+el.btnToTeleprompter.addEventListener("click", onToTeleprompter);
+
+el.btnCamera.addEventListener("click", async () => {
+  const ok = await ensureCamera();
+  if (ok) alert("Camera/Microfono attivi.");
+});
+
+el.btnDrawer.addEventListener("click", () => openDrawer());
+el.btnCloseDrawer.addEventListener("click", () => openDrawer(false));
+
+el.recCircle.addEventListener("click", toggleRecording);
+
+el.btnWhatsApp.addEventListener("click", onWhatsApp);
+el.btnCopyCaption.addEventListener("click", onCopyCaption);
+
+el.btnUpload.addEventListener("click", onUploadClick);
+el.fileUpload.addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  onUploadFile(f);
+});
+
+el.btnClear.addEventListener("click", onClear);
+
+el.btnEmojiSave.addEventListener("click", () => {
+  const v = videos.find(x => x.id === selectedVideoId);
+  if (!v) return alert("Nessun video selezionato.");
+  downloadVideo(v);
+});
+
+// close drawer on ESC
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") openDrawer(false);
+});
+
+// keep HUD updated when duration/zoom changes
+el.teleDuration.addEventListener("change", updateHUD);
+el.zoom.addEventListener("input", () => { if (el.zoomVal) el.zoomVal.textContent = `${parseFloat(el.zoom.value||"1").toFixed(1)}×`; updateHUD(); });
+el.zoom.addEventListener("change", () => { if (el.zoomVal) el.zoomVal.textContent = `${parseFloat(el.zoom.value||"1").toFixed(1)}×`; updateHUD(); });
+
+// boot
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
