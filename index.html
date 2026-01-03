@@ -1,264 +1,244 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Video Creator – Black Gold</title>
+<meta charset="UTF-8">
+<title>Archivio Domande & Risposte</title>
 
 <style>
-/* ==========================
-   BLACK + GOLD THEME
-========================== */
-:root{
-  --bg:#000;
-  --text:#f5f5f5;
-  --muted:#a6a6a6;
-  --gold:#d8a23a;
-  --gold2:#ffd36a;
-  --ink:#120d05;
-  --border:rgba(216,162,58,.25);
-  --radius:16px;
-}
-
-*{box-sizing:border-box}
+/* ======================
+   DARK MODE
+====================== */
 body{
   margin:0;
-  font-family:system-ui,Segoe UI,Roboto,Arial;
-  background:#000;
-  color:var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:#0e0e0e;
+  color:#eaeaea;
 }
 
-.wrap{max-width:1100px;margin:0 auto;padding:14px 12px 90px}
+h1,h2,h3{ margin-top:0; }
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
 
 .card{
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  margin-bottom:12px;
+  background:#161616;
+  border:1px solid #2a2a2a;
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
 }
 
-.section{padding:12px}
-.h{
-  font-size:11px;
-  text-transform:uppercase;
-  color:var(--muted);
-  letter-spacing:.8px;
-  margin:0 0 8px;
-  font-weight:900;
-}
-
-.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.bar.between{justify-content:space-between}
-.bar.center{justify-content:center}
-
-.btn{
-  background:#000;
-  border:1px solid var(--border);
-  color:var(--text);
-  padding:10px 14px;
-  border-radius:12px;
-  font-weight:900;
+button{
+  background:#1f1f1f;
+  color:#fff;
+  border:1px solid #333;
+  border-radius:6px;
+  padding:8px 12px;
   cursor:pointer;
 }
-.btn:hover{filter:brightness(1.15)}
-.btn.primary{
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:var(--ink);
-  border-color:var(--gold2);
-}
-.btn.rec{
-  background:linear-gradient(135deg,#ff2d2d,#ff6b6b);
-  border-color:#ff6b6b;
-  color:#120707;
-}
 
-textarea{
+button:hover{ background:#2a2a2a; }
+
+input,select,textarea{
   width:100%;
-  background:#000;
-  border:1px solid var(--border);
-  border-radius:12px;
-  color:var(--text);
-  padding:10px;
-  font-weight:700;
-  min-height:100px;
-}
-
-#stage{
-  aspect-ratio:9/16;
-  background:#000;
-  border:1px solid var(--border);
-  border-radius:16px;
-  position:relative;
-  overflow:hidden;
-}
-
-#teleText{
-  position:absolute;
-  inset:0;
-  padding:24px;
-  font-size:26px;
-  line-height:1.45;
-  font-weight:900;
+  background:#111;
   color:#fff;
-  text-shadow:0 2px 18px #000;
-  transform:translateY(20px);
+  border:1px solid #333;
+  border-radius:6px;
+  padding:8px;
+  margin-top:6px;
 }
 
-#question{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  background:rgba(0,0,0,.6);
-  border:1px solid var(--border);
-  padding:8px 10px;
-  border-radius:12px;
-  font-size:12px;
-  font-weight:900;
-}
-
-.bottomBar{
-  position:fixed;
-  left:0;right:0;bottom:0;
-  background:#000;
-  border-top:1px solid var(--border);
-  padding:10px;
+.row{
   display:flex;
-  justify-content:center;
   gap:10px;
+  flex-wrap:wrap;
+}
+
+.row button{ flex:1; }
+
+.small{ font-size:13px; opacity:.8 }
+
+.highlight{
+  color:#4da3ff;
+  font-weight:600;
+}
+
+#outputDomanda{
+  font-size:22px;
+  font-weight:600;
+  margin-bottom:10px;
+}
+
+#outputRisposta{
+  font-size:18px;
+  line-height:1.4;
+}
+
+/* toast */
+#toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#222;
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid #333;
+  display:none;
 }
 </style>
 </head>
 
 <body>
-<div class="wrap">
+<div class="container">
 
+<h1>🎥 Archivio Domande & Risposte</h1>
+
+<!-- ================= ARCHIVIO ================= -->
 <div class="card">
-  <div class="section">
-    <div class="bar">
-      <button class="btn primary" id="btnQuestion">✨ Nuova domanda</button>
-      <button class="btn" id="btnCopyGPT">💬 Apri ChatGPT</button>
-    </div>
+  <h2>📂 Archivio</h2>
+
+  <input type="file" id="csvFile" accept=".csv">
+
+  <div class="row" style="margin-top:10px">
+    <button id="btnGenerate">🎲 Genera domanda</button>
+    <button id="btnClear">🧹 Reset domande</button>
   </div>
+
+  <p class="small">
+    Le domande non si ripetono finché non finiscono tutte.
+  </p>
 </div>
 
+<!-- ================= OUTPUT ================= -->
 <div class="card">
-  <div class="section">
-    <p class="h">Risposta</p>
-    <textarea id="answerBox" placeholder="Incolla qui la risposta…"></textarea>
-    <div class="bar" style="margin-top:10px">
-      <button class="btn primary" id="btnSendTele">➡️ Invia al teleprompter</button>
-      <button class="btn" id="btnWhatsApp">🟢 WhatsApp</button>
-    </div>
-  </div>
-</div>
+  <h2>🎤 Output</h2>
 
-<div class="card">
-  <div class="section">
-    <p class="h">Video + Teleprompter</p>
-    <div id="stage">
-      <div id="question">Premi “Nuova domanda”</div>
-      <div id="teleText">Testo teleprompter…</div>
-    </div>
-    <div class="bar center" style="margin-top:10px">
-      <button class="btn rec" id="btnTeleRec">🔴 Teleprompter + REC</button>
-      <button class="btn" id="btnStop">⏹ Stop</button>
-    </div>
-  </div>
+  <div id="outputDomanda"></div>
+  <div id="outputRisposta"></div>
 </div>
 
 </div>
 
-<div class="bottomBar">
-  <button class="btn" id="btnDownload">📥 Scarica video</button>
-</div>
+<div id="toast"></div>
 
 <script>
-/* ==========================
-   CONFIG
-========================== */
-const WHATSAPP_NUMBER = "393331234567"; // <-- CAMBIA QUESTO
-const QUESTIONS = [
-  "Perché ricevo poche chiamate?",
-  "Meglio partire alto col prezzo?",
-  "Vendere da privato conviene?"
+/* ======================
+   ARCHIVIO
+====================== */
+let ARCHIVIO = [];
+let USATE = [];
+
+const STORAGE_KEY = "archivio_locale_v1";
+const USED_KEY = "archivio_usate_v1";
+
+/* ======================
+   DEFAULT (fallback)
+====================== */
+const ARCHIVIO_DEFAULT = [
+  {id:1, area:"Prezzo", domanda:"Come capisco se il prezzo è troppo alto?",
+   risposta:"Se ricevi visite ma nessuna proposta, il prezzo è spesso fuori mercato. Il mercato parla sempre."},
+  {id:2, area:"Visite", domanda:"Perché le visite non portano offerte?",
+   risposta:"Spesso il problema è una discrepanza tra annuncio e realtà: foto, spazi o aspettative."}
 ];
 
-let qIndex = -1;
-let teleRunning = false;
-let startTs = null;
-let rafId = null;
-
-/* ==========================
-   HELPERS
-========================== */
-const $ = id => document.getElementById(id);
-
-/* ==========================
-   DOMANDE
-========================== */
-$("btnQuestion").onclick = ()=>{
-  qIndex = (qIndex+1)%QUESTIONS.length;
-  $("question").textContent = QUESTIONS[qIndex];
-};
-
-$("btnCopyGPT").onclick = ()=>{
-  const txt = $("question").textContent;
-  if(!txt) return;
-  navigator.clipboard.writeText(txt);
-  window.open("https://chatgpt.com","_blank");
-};
-
-/* ==========================
-   TELEPROMPTER
-========================== */
-function startTele(){
-  teleRunning = true;
-  startTs = performance.now()/1000;
-  animate();
-}
-function stopTele(){
-  teleRunning = false;
-  if(rafId) cancelAnimationFrame(rafId);
-}
-function animate(){
-  if(!teleRunning) return;
-  const t = performance.now()/1000 - startTs;
-  const y = 20 - t*40;
-  $("teleText").style.transform = `translateY(${y}px)`;
-  rafId = requestAnimationFrame(animate);
+/* ======================
+   UTILS
+====================== */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(()=>t.style.display="none",1800);
 }
 
-$("btnSendTele").onclick = ()=>{
-  $("teleText").textContent = $("answerBox").value || "";
-  $("teleText").style.transform = "translateY(20px)";
-};
+function saveLocal(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ARCHIVIO));
+  localStorage.setItem(USED_KEY, JSON.stringify(USATE));
+}
 
-$("btnTeleRec").onclick = ()=>{
-  stopTele();
-  startTele();
-};
+function loadLocal(){
+  const a = localStorage.getItem(STORAGE_KEY);
+  const u = localStorage.getItem(USED_KEY);
+  if(a){
+    ARCHIVIO = JSON.parse(a);
+    USATE = u ? JSON.parse(u) : [];
+    toast("Archivio caricato dal device");
+  }else{
+    ARCHIVIO = ARCHIVIO_DEFAULT;
+  }
+}
 
-$("btnStop").onclick = ()=>{
-  stopTele();
-};
+/* ======================
+   CSV LOADER
+====================== */
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  const header = lines.shift().split(";");
+  const idxD = header.indexOf("domanda");
+  const idxR = header.indexOf("risposta");
+  const idxA = header.indexOf("area");
 
-/* ==========================
-   WHATSAPP
-========================== */
-$("btnWhatsApp").onclick = ()=>{
-  const msg = $("answerBox").value;
-  if(!msg) return alert("Nessun testo");
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  window.open(url,"_blank");
-};
+  return lines.map((l,i)=>{
+    const c = l.split(";");
+    return {
+      id:i+1,
+      area: idxA>=0 ? c[idxA] : "",
+      domanda:c[idxD],
+      risposta:c[idxR]
+    };
+  });
+}
 
-/* ==========================
-   DOWNLOAD (placeholder)
-========================== */
-$("btnDownload").onclick = ()=>{
-  alert("Download video: collegare MediaRecorder se serve");
-};
+document.getElementById("csvFile").addEventListener("change",async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const txt = await file.text();
+  ARCHIVIO = parseCSV(txt);
+  USATE = [];
+  saveLocal();
+  toast("Archivio CSV caricato");
+});
+
+/* ======================
+   GENERA (NO REPEAT)
+====================== */
+document.getElementById("btnGenerate").addEventListener("click",()=>{
+  if(ARCHIVIO.length===0) return;
+
+  const disponibili = ARCHIVIO.filter(d=>!USATE.includes(d.id));
+
+  if(disponibili.length===0){
+    USATE = [];
+    toast("Finite! Riparto da capo 🔁");
+    return;
+  }
+
+  const pick = disponibili[Math.floor(Math.random()*disponibili.length)];
+  USATE.push(pick.id);
+  saveLocal();
+
+  document.getElementById("outputDomanda").textContent = pick.domanda;
+  document.getElementById("outputRisposta").textContent = pick.risposta;
+});
+
+/* ======================
+   RESET
+====================== */
+document.getElementById("btnClear").addEventListener("click",()=>{
+  if(!confirm("Reset domande usate?")) return;
+  USATE = [];
+  saveLocal();
+  toast("Reset completato");
+});
+
+/* ======================
+   INIT
+====================== */
+loadLocal();
 </script>
 </body>
 </html>
