@@ -2,1613 +2,1408 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Video Creator – Teleprompter</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video Prompt Recorder — Specifiche</title>
   <style>
     :root{
-      --bg:#0b1120;
-      --text:#f3f4f6;
-      --muted:#a0adb8;
-      --gold:#d8a23a;
-      --border: rgba(225,225,225,0.18);
-      --shadow: 0 14px 50px rgba(0,0,0,0.45);
-      --radius: 18px;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-
-      --tele-font: 12px;
-      --tele-line: 1.22;
-      --stage-w: min(420px, 92vw);
-      --zoom: 1;
+      --bg:#0b0c10;
+      --panel:#12141b;
+      --muted:#9aa3b2;
+      --text:#e9eef8;
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --border:#232838;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
     }
-
     *{ box-sizing:border-box; }
     body{
-      margin:0;
-      font-family:var(--sans);
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(34,197,94,.18), transparent 60%),
+                  radial-gradient(1000px 500px at 90% 0%, rgba(239,68,68,.12), transparent 60%),
+                  var(--bg);
       color:var(--text);
-      background:
-        radial-gradient(900px 500px at 15% 10%, rgba(216,162,58,.18), transparent 60%),
-        radial-gradient(900px 600px at 85% 30%, rgba(123,79,189,.14), transparent 55%),
-        radial-gradient(900px 600px at 70% 85%, rgba(74,143,114,.14), transparent 55%),
-        var(--bg);
+      overflow-x:hidden;
     }
-
-    .wrap{ max-width:1150px; margin:0 auto; padding:14px 12px 84px; }
-
     header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
+      padding:18px 20px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(to bottom, rgba(18,20,27,.85), rgba(18,20,27,.55));
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
     }
-
-    .row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
+    header .left{ display:flex; align-items:center; gap:10px;}
+    header h1{ font-size:14px; margin:0; letter-spacing:.3px; font-weight:700; color:#dfe6f6;}
+    header .badge{
+      font-size:12px; color:#0b0c10; background:rgba(34,197,94,.9);
+      padding:6px 10px; border-radius:999px; font-weight:800;
     }
-
-    /* ---------- Buttons (friendly + animazioni) ---------- */
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
-      padding:8px 10px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:950;
-      letter-spacing:.2px;
-      font-size:11px;
-      line-height:1;
-      white-space:nowrap;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-      position:relative;
-
-      transform: translateY(0) scale(1);
-      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
-      box-shadow: 0 10px 22px rgba(0,0,0,.18);
-      overflow:hidden;
-    }
-    .btn::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background: radial-gradient(500px 140px at 20% 0%, rgba(255,255,255,.14), transparent 60%),
-                  radial-gradient(500px 140px at 80% 100%, rgba(255,255,255,.10), transparent 55%);
-      opacity:0;
-      transition: opacity .18s ease;
-      pointer-events:none;
-    }
-    .btn:hover{
-      transform: translateY(-2px) scale(1.01);
-      border-color: rgba(216,162,58,.22);
-      box-shadow: 0 14px 34px rgba(0,0,0,.30);
-      filter: brightness(1.06);
-    }
-    .btn:hover::after{ opacity:1; }
-    .btn:active{
-      transform: translateY(0px) scale(.99);
-      filter: brightness(0.98);
-    }
-
-    .btn.tiny{
-      padding:6px 9px;
-      font-size:10px;
-      border-radius:11px;
-      box-shadow:none;
-    }
-
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
-      color:#111;
-      border-color: rgba(216,162,58,.55);
-    }
-    .btn.blue{
-      background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
-      border-color: rgba(57,90,140,.55);
-    }
-    .btn.violet{
-      background: linear-gradient(135deg, rgba(123,79,189,.95), rgba(123,79,189,.70));
-      border-color: rgba(123,79,189,.55);
-    }
-    .btn.gray{ background: rgba(255,255,255,.04); }
-
-    /* REC button (rosso, “alive”) */
-    .btn.rec{
-      background: linear-gradient(135deg, rgba(255,45,45,.95), rgba(255,45,45,.55));
-      border-color: rgba(255,45,45,.55);
-      color:#120707;
-      font-weight: 1000;
-    }
-    .btn.rec .dot{
-      width:10px; height:10px; border-radius:999px;
-      background:#ff2d2d;
-      box-shadow: 0 0 0 0 rgba(255,45,45,.45);
-      animation: pulseDot 1.15s ease-in-out infinite;
-    }
-    @keyframes pulseDot{
-      0%{ box-shadow: 0 0 0 0 rgba(255,45,45,.45); transform: scale(1); }
-      60%{ box-shadow: 0 0 0 10px rgba(255,45,45,0); transform: scale(1.06); }
-      100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0); transform: scale(1); }
-    }
-
-    .btn .ico{
-      display:inline-flex;
-      transform: translateY(0);
-      transition: transform .16s ease;
-    }
-    .btn:hover .ico{
-      transform: translateY(-1px) rotate(-2deg);
-    }
-
-    .pill{
-      font-size:10px;
-      color:var(--muted);
-      padding:6px 10px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      background:rgba(0,0,0,.18);
-      font-weight:900;
-      letter-spacing:.2px;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      white-space:nowrap;
-    }
-
-    .hintTop{
-      margin: 6px 0 10px;
-      font-size:11px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-
-    .layout{
+    header .meta{ display:flex; gap:10px; align-items:center; color:var(--muted); font-size:12px;}
+    header .meta code{ color:#cbd5e1; background:rgba(255,255,255,.06); padding:3px 6px; border-radius:8px; border:1px solid rgba(255,255,255,.08);}
+    main{ padding:18px 16px 30px; max-width:1200px; margin:0 auto; }
+    .grid{
       display:grid;
-      grid-template-columns: 1fr 360px;
-      gap:12px;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
       align-items:start;
-      margin-top:12px;
     }
-    @media (max-width: 980px){ .layout{ grid-template-columns:1fr; } }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns:1fr; }
+    }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      background:rgba(18,20,27,.78);
       border:1px solid var(--border);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .section{ padding:12px; }
-    .section + .section{ border-top:1px solid rgba(255,255,255,.10); }
-
-    .h{
-      margin:0 0 8px;
-      font-size:10px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.8px;
-      font-weight:950;
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
     }
+    .card .hd h2{ font-size:13px; margin:0; color:#dfe6f6; letter-spacing:.2px;}
+    .card .bd{ padding:14px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .col{ flex:1; min-width: 180px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    textarea, input, select{
+      width:100%;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+      font-size:13px;
+    }
+    textarea{ min-height:110px; resize:vertical; line-height:1.35; }
+    textarea[readonly]{ opacity:.9; }
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      user-select:none;
+    }
+    .btn:hover{ background:rgba(255,255,255,.11); border-color:rgba(255,255,255,.14); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ background:rgba(34,197,94,.18); border-color:rgba(34,197,94,.35); }
+    .btn.primary:hover{ background:rgba(34,197,94,.22); }
+    .btn.danger{ background:rgba(239,68,68,.18); border-color:rgba(239,68,68,.35); }
+    .btn.danger:hover{ background:rgba(239,68,68,.22); }
+    .btn.warn{ background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.35); }
+    .btn.warn:hover{ background:rgba(245,158,11,.22); }
+    .btn.icon{ width:44px; height:44px; border-radius:14px; padding:0; font-size:18px; }
+    .muted{ color:var(--muted); font-size:12px; line-height:1.35; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      padding:8px 10px; border-radius:999px;
+      font-size:12px; color:#cbd5e1;
+    }
+    .pill strong{ color:#e5e7eb; }
+    .sep{ height:1px; background:rgba(255,255,255,.06); margin:12px 0; }
 
-    .stageRow{
+    /* Preview / Canvas */
+    .stage{
       display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
+      grid-template-columns: 1fr 280px;
+      gap:14px;
       align-items:start;
     }
-    @media (max-width: 980px){ .stageRow{ grid-template-columns:1fr; } }
-
-    .stageBlock{
-      width: var(--stage-w);
-      margin: 0 auto;
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
+    @media (max-width: 980px){
+      .stage{ grid-template-columns:1fr; }
     }
-
-    #stage916{
-      width: 100%;
-      aspect-ratio: 9 / 16;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      overflow: hidden;
-      position: relative;
+    .previewWrap{
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .previewBox{
+      position:relative;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
       background:#000;
       box-shadow: var(--shadow);
+      aspect-ratio: 9/16;
+      max-height: 78vh;
     }
-
-    #cam{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      transform: scale(var(--zoom));
-      transform-origin: center;
-    }
-
-    #overlay{
-      position:absolute;
-      inset:0;
-      padding: 10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+    video#cameraPreview{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      opacity:.0; /* preview UI is the canvas below */
       pointer-events:none;
-      z-index: 2;
     }
-
-    #questionBoxOverlay{
-      font-size: 11px;
-      font-weight: 950;
-      line-height: 1.15;
-      padding: 7px 9px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.30);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(6px);
-      white-space:pre-wrap;
+    canvas#recCanvas{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      display:block;
     }
-
-    #teleprompterOverlay{
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      border-radius: 12px;
+    .recHud{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
     }
+    .recLamp{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(18,20,27,.55);
+      font-size:12px; color:#cbd5e1;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px; background:rgba(255,255,255,.18);
+      box-shadow: 0 0 0 0 rgba(239,68,68,.0);
+    }
+    .dot.rec{
+      background: var(--danger);
+      box-shadow: 0 0 0 6px rgba(239,68,68,.12);
+      animation: pulse 1.1s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); box-shadow: 0 0 0 6px rgba(239,68,68,.12); }
+      50%{ transform:scale(1.08); box-shadow: 0 0 0 10px rgba(239,68,68,.06); }
+    }
+    .bigCircle{
+      width:64px; height:64px; border-radius:999px;
+      border:2px solid rgba(255,255,255,.16);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      background:rgba(18,20,27,.55);
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      font-size:22px;
+    }
+    .bigCircle:active{ transform: translateY(1px); }
+    .bigCircle.red{ border-color: rgba(239,68,68,.65); }
+    .bigCircle.green{ border-color: rgba(34,197,94,.65); }
+    .bigCircle span{
+      width:18px; height:18px; border-radius:999px; display:block;
+      background: var(--danger);
+      box-shadow: 0 0 0 9px rgba(239,68,68,.14);
+    }
+    .bigCircle.green span{ background: var(--accent); box-shadow: 0 0 0 9px rgba(34,197,94,.14); }
 
-    #teleText{
+    /* Teleprompter drawer */
+    .drawer{
+      position:fixed;
+      top:0; left:0;
+      width:min(420px, 92vw);
+      height:100vh;
+      transform: translateX(-105%);
+      transition: transform .25s ease;
+      z-index:50;
+      padding:14px;
+    }
+    .drawer.open{ transform: translateX(0); }
+    .drawer .card{ height:100%; }
+    .teleArea{
+      height: calc(100vh - 150px);
+      overflow:hidden;
+      position:relative;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+    }
+    .teleText{
       position:absolute;
       left:0; right:0;
-      white-space: pre-wrap;
-      font-size: var(--tele-font);
-      line-height: var(--tele-line);
-      font-weight: 800;
-      color: rgba(243,244,246,.94);
-      text-shadow: 0 2px 12px rgba(0,0,0,.75);
-      transform: translateY(20px);
-    }
-
-    .controlsRow{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:stretch;
-    }
-    .bar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
-    }
-    .bar.left{ justify-content:flex-start; }
-    .bar.between{ justify-content:space-between; }
-
-    .sliderRow{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:var(--muted);
-      font-size:10px;
-      font-weight:950;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-    input[type="range"]{ width:170px; accent-color: var(--gold); }
-
-    .chk{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-      color:var(--muted);
-      font-weight:950;
-      font-size:10px;
-      white-space:nowrap;
-    }
-    .check{
-      width:16px; height:16px;
-      accent-color: var(--gold);
-      cursor:pointer;
-    }
-
-    .field textarea{
-      width:100%;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:850;
-      resize: vertical;
-      min-height: 120px;
-      font-size:12px;
-      line-height:1.25;
-    }
-    .field textarea:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
-    }
-
-    .mini{
-      font-family:var(--mono);
-      font-size:12px;
-      color:var(--muted);
+      padding:18px 16px 60px;
+      line-height:1.45;
+      font-size:18px;
       white-space:pre-wrap;
-      word-break:break-word;
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:10px;
+      will-change: transform;
     }
+    .drawerBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:40;
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease;
+    }
+    .drawerBackdrop.open{ opacity:1; pointer-events:auto; }
 
-    /* Profili piccoli */
-    .profiles{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:7px;
-      margin-top:8px;
+    /* Video list */
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+      max-height: 520px;
+      overflow:auto;
+      padding-right:6px;
     }
-    .profileRow{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      padding:7px 8px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      background:rgba(0,0,0,.14);
-    }
-    .profileMeta{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-      flex:1;
-    }
-    .profileMeta b{
-      font-size:11px;
-      font-weight:950;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .nextBadge{
-      font-size:9px;
-      font-weight:1000;
-      padding:3px 7px;
-      border-radius:999px;
-      border:1px solid rgba(255,45,45,.55);
-      color: rgba(255,235,235,.95);
-      background: rgba(255,45,45,.18);
-      white-space:nowrap;
-      display:none;
-      pointer-events:none;
-      user-select:none;
-    }
-    .nextBadge.show{ display:inline-flex; }
-
-    #recLamp{
-      position:absolute; top:12px; right:12px;
-      padding:7px 9px; border-radius:12px;
-      background:rgba(0,0,0,.40);
-      border:1px solid rgba(255,255,255,.18);
-      font-weight:950; font-size:11px;
-      display:none; align-items:center; gap:8px;
-      backdrop-filter: blur(6px);
-      z-index: 6;
-    }
-
-    .bottomBar{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      padding: 10px 12px;
-      background: rgba(0,0,0,.35);
-      border-top: 1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(8px);
-      display:flex;
-      justify-content:flex-end;
-      z-index: 50;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    /* Prompt accordion */
-    details{
+    .item{
       border:1px solid rgba(255,255,255,.10);
       border-radius:14px;
-      background: rgba(0,0,0,.14);
+      background:rgba(255,255,255,.05);
       padding:10px;
-    }
-    summary{
-      cursor:pointer;
-      list-style:none;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns: 86px 1fr;
       gap:10px;
-      user-select:none;
-      font-weight:950;
-      color: var(--text);
-      font-size:11px;
+      align-items:center;
+      cursor:pointer;
     }
-    summary::-webkit-details-marker{ display:none; }
-    .subtle{
-      font-size:11px;
-      color: var(--muted);
-      line-height:1.35;
-      margin-top:6px;
-    }
-    .codeRow{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;
-    }
-    .codeRow input{
-      flex:1;
-      min-width: 160px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      font-weight:900;
+    .item.selected{ border-color: rgba(34,197,94,.35); background:rgba(34,197,94,.07); }
+    .thumb{
+      width:86px; height:153px; border-radius:12px;
+      background:#000;
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(255,255,255,.35);
       font-size:12px;
     }
-    .codeRow input:focus{
-      border-color: rgba(216,162,58,.45);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.12);
+    .item h3{ margin:0 0 4px; font-size:13px; }
+    .item .meta2{ font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+    .k{
+      padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
     }
-
-    /* Right-align helpers for REC */
-    .ctrlLeft{ display:flex; gap:8px; align-items:center; }
-    .ctrlMid{ display:flex; gap:8px; align-items:center; justify-content:center; }
-    .ctrlRight{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
-
-    /* ==========================
-       ISTRUZIONI MODAL
-    ========================== */
-    .modalBackdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      padding: 14px;
+    .player{
+      width:100%;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#000;
+      box-shadow: var(--shadow);
+      aspect-ratio: 9/16;
     }
-    .modalBackdrop.show{ display:flex; }
-
-    .modalCard{
-      width: min(920px, 96vw);
-      max-height: min(82vh, 760px);
-      overflow: auto;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-    }
-    .modalHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 12px 12px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,.28);
-      backdrop-filter: blur(8px);
-      z-index: 2;
-    }
-    .modalHeader .title{
-      font-weight: 1000;
-      letter-spacing:.2px;
-      font-size: 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .modalBody{
-      padding: 12px;
-      color: rgba(243,244,246,.95);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .modalBody h3{
-      margin: 12px 0 6px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing:.8px;
-      color: var(--muted);
-    }
-    .modalBody ol, .modalBody ul{
-      margin: 8px 0 10px 18px;
-      padding: 0;
-    }
-    .modalBody li{ margin: 6px 0; }
-    .callout{
-      border: 1px solid rgba(216,162,58,.25);
-      background: rgba(216,162,58,.10);
-      border-radius: 14px;
-      padding: 10px 12px;
-      margin: 10px 0;
-      color: rgba(243,244,246,.96);
-    }
-    .kbd{
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color: rgba(243,244,246,.92);
-      white-space: nowrap;
-    }
+    .small{ font-size:11px; color:var(--muted); }
   </style>
 </head>
-
 <body>
-<div class="wrap">
-
-  <!-- TOP ROW -->
-  <header>
-    <div class="row" style="flex:1;">
-      <button class="btn primary" id="btnNext" type="button">
-        <span class="ico">✨</span> Nuova domanda
-      </button>
-
-      <button class="btn blue" id="btnOpenChatGPTPasteQ" type="button" title="Copia PROMPT + domanda e apre ChatGPT">
-        <span class="ico">💬</span> Apri ChatGPT + copia domanda
-      </button>
-
-      <button class="btn violet" id="btnPasteTop" type="button" title="Incolla dagli appunti nel blocco risposta qui sotto">
-        <span class="ico">📋</span> Incolla risposta
-      </button>
-
-      <!-- NUOVO: ISTRUZIONI -->
-      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
-        <span class="ico">📘</span> Istruzioni
-      </button>
-
-      <span class="pill">
-        <span id="videoCounter">Video: 0</span>
-        <span>•</span>
-        <span id="activeProfileLabel">Prossimo: —</span>
-      </span>
-    </div>
-
-    <div class="row">
-      <button class="btn tiny gray" id="btnBackTop" type="button">← Gestionale</button>
-    </div>
-  </header>
-
-  <!-- Didascalia breve -->
-  <div class="hintTop">
-    1) <b>Nuova domanda</b> → 2) <b>Apri ChatGPT + copia domanda</b> (incolla e invia) → 3) usa <b>copia</b> su ChatGPT →
-    4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
+<header>
+  <div class="left">
+    <div class="pill"><strong>Batch</strong> <span id="weekCount">0</span>/36</div>
+    <h1>Video Prompt Recorder — flow disciplinato (Camera+Mic auto, overlay domanda+sottotitoli, codici slot)</h1>
   </div>
+  <div class="meta">
+    <span>Chat fissa:</span>
+    <code id="chatUrlCode">chatgpt.com/c/6959202a-b844-8329-afd9-4d709e081835</code>
+  </div>
+</header>
 
-  <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
+<div class="drawerBackdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="teleDrawer" aria-hidden="true">
   <div class="card">
-    <div class="section">
-      <p class="h">Risposta (da ChatGPT o scritta da te)</p>
-      <div class="field">
-        <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
+    <div class="hd">
+      <h2>📜 Teleprompter</h2>
+      <div class="row" style="gap:8px">
+        <button class="btn icon" id="btnCloseDrawer" title="Chiudi">✕</button>
       </div>
-
-      <div class="bar left" style="margin-top:10px;">
-        <button class="btn primary" id="btnSendTele" type="button"><span class="ico">➡️</span> Invia al teleprompter</button>
-        <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
-          <span class="ico">📋</span> Copia caption
-        </button>
+    </div>
+    <div class="bd">
+      <div class="row">
+        <div class="col">
+          <label>Durata scorrimento</label>
+          <select id="teleDuration">
+            <option value="90">90s</option>
+            <option value="105" selected>105s</option>
+            <option value="120">120s</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Zoom (canvas)</label>
+          <select id="zoomLevel">
+            <option value="1.0">1.0×</option>
+            <option value="1.1" selected>1.1×</option>
+            <option value="1.2">1.2×</option>
+            <option value="1.3">1.3×</option>
+          </select>
+        </div>
       </div>
-
-      <div class="subtle">
-        “Invia al teleprompter” ti permette anche di inserire messaggi scritti da te (non solo incollati da ChatGPT).
+      <div class="sep"></div>
+      <div class="teleArea" id="teleArea">
+        <div class="teleText" id="teleText"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="muted">
+        Scorrimento sincronizzato solo sul tempo (requestAnimationFrame). Il testo mostrato nei sottotitoli segue l’avanzamento del teleprompter.
       </div>
     </div>
   </div>
+</aside>
 
-  <div class="layout">
-    <!-- MAIN -->
-    <div class="card">
-      <div class="section">
-        <p class="h">Video 9:16 + teleprompter</p>
-
-        <div class="stageRow">
-          <div class="stageBlock">
-            <div id="stage916">
-              <video id="cam" autoplay playsinline muted></video>
-
-              <div id="recLamp">
-                <span style="width:10px;height:10px;border-radius:999px;background:#ff2d2d;display:inline-block;"></span>
-                <span id="recTime">REC 00:00</span>
-              </div>
-
-              <div id="overlay">
-                <div id="questionBoxOverlay">Premi “Nuova domanda”.</div>
-                <div id="teleprompterOverlay">
-                  <div id="teleText">Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="controlsRow">
-              <!-- REC più a destra: layout a 3 blocchi -->
-              <div class="bar between" style="width:100%;">
-                <div class="ctrlLeft">
-                  <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
-                </div>
-
-                <div class="ctrlMid">
-                  <button class="btn gray" id="btnStop" type="button"><span class="ico">⏹</span> Stop</button>
-                  <button class="btn gray" id="btnRestart" type="button"><span class="ico">↻</span> Riavvia</button>
-                </div>
-
-                <div class="ctrlRight">
-                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
-                    <span class="dot"></span> Teleprompter + REC
-                  </button>
-                </div>
-              </div>
-
-              <div class="bar">
-                <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
-                <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
-                <span class="pill" id="speedLabel">Vel: 105s</span>
-              </div>
-
-              <div class="sliderRow">
-                <span>Zoom</span>
-                <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
-                <span id="zoomVal">1.0x</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <p class="h">Rotazione profili (piccola)</p>
-            <div class="profiles">
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_tiktok" checked>
-                <div class="profileMeta"><b>📱 TikTok</b></div>
-                <span class="nextBadge" id="badge_tiktok">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_instagram" checked>
-                <div class="profileMeta"><b>📸 Instagram</b></div>
-                <span class="nextBadge" id="badge_instagram">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_shorts">
-                <div class="profileMeta"><b>🎥 Shorts</b></div>
-                <span class="nextBadge" id="badge_shorts">PROSSIMO</span>
-              </div>
-              <div class="profileRow">
-                <input class="check" type="checkbox" id="rot_facebook">
-                <div class="profileMeta"><b>💼 Facebook</b></div>
-                <span class="nextBadge" id="badge_facebook">PROSSIMO</span>
-              </div>
-            </div>
-
-            <div class="subtle">
-              Seleziona i canali da includere. “PROSSIMO” è solo un indicatore (non cliccabile).
-            </div>
+<main>
+  <div class="grid">
+    <!-- Left: Controls -->
+    <section class="card">
+      <div class="hd">
+        <h2>Controlli</h2>
+        <div class="row" style="gap:8px">
+          <button class="btn icon" id="btnCamera" title="🎥 Camera (attiva/riattiva)">🎥</button>
+          <button class="btn icon" id="btnDrawer" title="📜 Teleprompter (toggle)">📜</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="col">
+            <label>PROMPT BASE (readonly)</label>
+            <textarea id="basePrompt" readonly></textarea>
+            <div class="small">Questo prompt viene sempre anteposto alla domanda quando invii a ChatGPT.</div>
           </div>
         </div>
 
-        <canvas id="recCanvas" width="1080" height="1920" style="display:none;"></canvas>
-      </div>
-    </div>
+        <div class="sep"></div>
 
-    <!-- SIDE -->
-    <div class="card">
-      <div class="section">
-        <div class="bar between">
-          <p class="h" style="margin:0;">Caption (memorizzata)</p>
-          <label class="chk" title="Memorizza la caption (senza hashtag) per il prossimo avvio">
-            <input type="checkbox" id="chkRememberCaption" class="check" checked />
-            Memorizza
-          </label>
+        <div class="row">
+          <button class="btn primary" id="btnNewQuestion">1) ✨ Nuova domanda → apri ChatGPT + copia</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Domanda corrente (overlay alto)</label>
+            <textarea id="questionBox" readonly></textarea>
+          </div>
         </div>
 
-        <div class="mini" id="captionPreview" style="margin-top:10px;">—</div>
-        <div class="subtle">Gli hashtag automatici vengono aggiunti solo in copia (se non già presenti).</div>
-      </div>
+        <div class="sep"></div>
 
-      <div class="section">
-        <p class="h">Video creati</p>
-        <div class="subtle">Seleziona un elemento (qui sotto) per rivederlo.</div>
-
-        <video id="playback" controls style="width:100%; border-radius:14px; background:#000; margin-top:10px;"></video>
-
-        <div class="bar left" style="margin-top:10px;">
-          <button class="btn" id="btnDownloadVideo" type="button"><span class="ico">📥</span> Scarica video</button>
-
-          <!-- NUOVO: UPLOAD VIDEO -->
-          <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
-          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
-            <span class="ico">⬆️</span> Carica video
-          </button>
-
-          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
+        <div class="row">
+          <button class="btn" id="btnCopyAnswer">2) 📋 Copia risposta (da ChatGPT)</button>
+          <button class="btn" id="btnToTeleprompter">3) ➜ Invia al teleprompter</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Risposta (answerBox)</label>
+            <textarea id="answerBox" placeholder="Qui arriva la risposta da clipboard (o incolla a mano se richiesto)."></textarea>
+          </div>
         </div>
 
-        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn warn" id="btnWhatsApp">📤 Invia su WhatsApp Mobile</button>
+          <button class="btn" id="btnCopyCaption">🏷️ Copia caption (pulita)</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Caption pulita (salvata)</label>
+            <textarea id="captionBox" placeholder="Viene salvata dalla risposta quando invii al teleprompter."></textarea>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input type="file" id="fileUpload" accept="video/*" style="display:none" />
+          <button class="btn" id="btnUpload">⬆️ Carica video</button>
+          <button class="btn danger" id="btnClear">🗑️ Svuota lista</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div class="pill"><strong>PROSSIMO</strong> <span id="nextProfile">—</span></div>
+          <div class="pill"><strong>Codice prossimo</strong> <span id="nextCode">—</span></div>
+        </div>
+        <div class="muted" style="margin-top:10px">
+          Rotazione profili = promemoria mentale. Codice video = giorno + slot (1–6) + orario.
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Preview + list -->
+    <section class="stage">
+      <div class="previewWrap">
+        <div class="previewBox" aria-label="Anteprima canvas (registrazione pulita con overlay)">
+          <video id="cameraPreview" playsinline muted></video>
+          <canvas id="recCanvas" width="1080" height="1920"></canvas>
+        </div>
+
+        <div class="recHud">
+          <div class="recLamp">
+            <div class="dot" id="recDot"></div>
+            <div><strong id="recLabel">PRONTO</strong> · <span id="recTimer">00:00</span></div>
+          </div>
+
+          <!-- Circle toggle -->
+          <div class="bigCircle red" id="recCircle" title="🔴 Avvia / 🟢 Ferma">
+            <span></span>
+          </div>
+
+          <div class="row" style="gap:8px">
+            <button class="btn icon" id="btnEmojiSave" title="💾 Export/Download ultimo selezionato">💾</button>
+          </div>
+        </div>
+
+        <video class="player" id="player" controls playsinline></video>
+        <div class="muted">
+          Il player mostra il video selezionato dalla lista (registrato o caricato).
+        </div>
       </div>
 
-      <!-- PROMPT BLOCCO A FONDO PAGINA -->
-      <div class="section">
-        <details id="promptDetails">
-          <summary>
-            <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
-            <span class="pill" id="promptStatePill">Bloccato</span>
-          </summary>
-
-          <div class="subtle">
-            Questo prompt viene sempre inserito <b>prima</b> della domanda quando premi “Apri ChatGPT + copia domanda”.
-          </div>
-
-          <div class="field" style="margin-top:10px;">
-            <textarea id="promptBox" readonly></textarea>
-          </div>
-
-          <div class="codeRow">
-            <input id="unlockCode" placeholder="Codice per modificare il prompt" />
-            <button class="btn tiny primary" id="btnUnlock" type="button">Sblocca</button>
-            <button class="btn tiny" id="btnSavePrompt" type="button" disabled>Salva</button>
-            <button class="btn tiny" id="btnResetPrompt" type="button" disabled>Ripristina</button>
-          </div>
-
-          <div class="subtle">Per modificare serve il codice: <b>16091979Jm</b>.</div>
-        </details>
+      <div class="card">
+        <div class="hd">
+          <h2>Video (lista)</h2>
+          <div class="pill"><strong>Totale</strong> <span id="totalCount">0</span></div>
+        </div>
+        <div class="bd">
+          <div class="list" id="videoList"></div>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
-</div>
-
-<!-- Bottom bar -->
-<div class="bottomBar">
-  <button class="btn tiny gray" id="btnBackBottom" type="button">← Gestionale</button>
-  <button class="btn tiny gray" id="btnInstructionsBottom" type="button"><span class="ico">📘</span> Istruzioni</button>
-</div>
-
-<!-- ==========================
-     MODAL ISTRUZIONI
-========================== -->
-<div class="modalBackdrop" id="instructionsModal" aria-hidden="true">
-  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="instrTitle">
-    <div class="modalHeader">
-      <div class="title" id="instrTitle">📘 Istruzioni operative – Video Creator</div>
-      <button class="btn tiny gray" id="btnCloseInstructions" type="button">✕ Chiudi</button>
-    </div>
-
-    <div class="modalBody">
-      <div class="callout">
-        Obiettivo: creare video verticali <b>9:16</b> in serie (TikTok/Instagram/Shorts/Facebook) con <b>domanda → risposta → teleprompter → REC → caption → download</b>.
-      </div>
-
-      <h3>Flusso standard</h3>
-      <ol>
-        <li><b>Nuova domanda</b> → clicca <span class="kbd">✨ Nuova domanda</span> e leggi la domanda che appare sul video.</li>
-        <li><b>Risposta da ChatGPT</b> → clicca <span class="kbd">💬 Apri ChatGPT + copia domanda</span>, incolla in ChatGPT e invia. Poi copia la risposta completa.</li>
-        <li><b>Incolla risposta</b> → torna qui e clicca <span class="kbd">📋 Incolla risposta</span> (finisce nel box “Risposta”).</li>
-        <li><b>Invia al teleprompter</b> → clicca <span class="kbd">➡️ Invia al teleprompter</span> (il testo va nel teleprompter e diventa anche caption base).</li>
-        <li><b>Prepara</b> → se serve clicca <span class="kbd">📷 Camera</span>, scegli velocità (90/105/120) e regola zoom.</li>
-        <li><b>Registra</b> → clicca <span class="kbd">🔴 Teleprompter + REC</span>. Quando finisci clicca <span class="kbd">⏹ Stop</span>.</li>
-        <li><b>Rivedi/Scarica</b> → seleziona il video in “Video creati” e clicca <span class="kbd">📥 Scarica video</span>.</li>
-        <li><b>Caption</b> → clicca <span class="kbd">📋 Copia caption</span> (aggiunge hashtag automatici se mancanti).</li>
-      </ol>
-
-      <h3>Produzione in serie</h3>
-      <ul>
-        <li>Ripeti sempre: <b>Nuova domanda → ChatGPT → Incolla → Invia al teleprompter → REC → Stop</b>.</li>
-        <li>La “rotazione profili” sposta automaticamente il <b>prossimo canale</b> dopo ogni registrazione.</li>
-      </ul>
-
-      <h3>Upload video</h3>
-      <ul>
-        <li>Puoi aggiungere un video manualmente con <span class="kbd">⬆️ Carica video</span>: entra in lista, si può rivedere e scaricare.</li>
-        <li>Il video caricato resta disponibile finché la pagina è aperta (workflow perfetto per test e revisione).</li>
-      </ul>
-
-      <div class="subtle">
-        Tip: premi <span class="kbd">ESC</span> per chiudere questa finestra.
-      </div>
-    </div>
-  </div>
-</div>
+</main>
 
 <script>
-/* ==========================
-   CONFIG
-========================== */
-const GESTIONALE_URL = "https://tuo-gestionale.com";
-const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
+/** =========================
+ *  CONFIG
+ *  ========================= */
+const FIXED_CHAT_URL = "https://chatgpt.com/c/6959202a-b844-8329-afd9-4d709e081835";
 
-/* Hashtag automatici (NON mostrati in preview) */
-const HIDDEN_HASHTAGS = [
-  "#immobiliarelasacra","#josephcretorlab","#realmediapro","#amamy","#immobiliare","#realestateitalia",
-  "#mercatoimmobiliare","#agenziaimmobiliare","#casainvendita","#venditacasa","#investimentiimmobiliari",
-  "#property","#realestate","#digitalstrategist","#digitalstrategy","#marketingdigitale","#strategiamarketing",
-  "#brandstrategy","#contentstrategy","#socialmediastrategy","#growthmarketing","#personalbranding","#branding",
-  "#businessdigitale","#marketingonline"
-].join(" ");
+// TODO: incolla qui il tuo prompt completo "Archivio Immobiliare Avanzato..."
+const BASE_PROMPT_TEXT =
+`Ruolo e identità
+Agisci come Archivio Immobiliare Avanzato e Consigliere Esperto del Settore Immobiliare…
+(INCOLLA QUI IL TESTO COMPLETO IDENTICO)`;
 
-/* Prompt base (nuovo) */
-const BASE_PROMPT = `🧩 PROMPT ADATTIVO – VERSIONE FINALE (250 PAROLE + HASHTAG)
-
-Agisci come un consulente immobiliare esperto, con uno stile friendly, chiaro e professionale, adatto anche a un ragazzo di 15 anni.
-
-Rispondi alle domande che ti fornirò con testi di massimo 250 parole, semplici, scorrevoli e concreti.
-
-Adatta progressivamente il tuo stile sulla base delle domande precedenti e delle risposte già fornite, migliorando chiarezza, precisione ed efficacia comunicativa nel tempo.
-
-Usa un linguaggio:
-
-semplice e diretto
-
-privo di tecnicismi inutili
-
-arricchito da esempi pratici della vita quotidiana
-
-Se utilizzi un termine tecnico, spiegalo immediatamente in modo semplice.
-
-Mantieni sempre un tono amichevole, rassicurante e professionale, mai infantile e mai burocratico.
-
-Struttura ogni risposta in questo modo:
-
-problema che andiamo a risolvere Breve introduzione che inquadra l’argomento
-
-Spiegazione chiara, con esempi concreti
-
-Conclusione, con un consiglio pratico
-
-Al termine di ogni risposta, aggiungi una breve lista di hashtag pertinenti al tema trattato (5), e #immobiliarelasacra #josephcretorlab #realmediapro #amamy #immobiliare #realestateitalia #mercatoimmobiliare #agenziaimmobiliare #casainvendita #venditacasa #investimentiimmobiliari #property #realestate #digitalstrategist #digitalstrategy #marketingdigitale #strategiamarketing #brandstrategy #contentstrategy #socialmediastrategy #growthmarketing #personalbranding #branding #businessdigitale #marketingonline
-
-Regole fondamentali:
-
-Lunghezza massima: 250 parole non di piu'
-
-Niente linguaggio tecnico inutile`;
-
-/* Codice sblocco prompt */
-const UNLOCK_CODE = "16091979Jm";
-
-/* Archivio domande */
 const QUESTION_BANK = [
-  { q:"Perché ricevo poche chiamate anche se l'annuncio è online da settimane?" },
-  { q:"Se arrivano solo curiosi e nessuna proposta, cosa significa?" },
-  { q:"Come capisco se il prezzo sta bloccando la vendita?" },
-  { q:"Meglio partire alto e poi scendere o partire subito con il prezzo giusto?" },
-  { q:"Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?" },
-  { q:"Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?" },
-  { q:"Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?" },
-  { q:"Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?" },
-  { q:"Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?" },
+  "Quali sono i 3 errori più comuni quando si compra la prima casa?",
+  "Come capire se il prezzo di un immobile è davvero in linea col mercato?",
+  "Meglio ristrutturare o comprare già ristrutturato? Pro e contro.",
+  "Cosa guardare in una planimetria per evitare sorprese?",
+  "Quali documenti chiedere prima di fare una proposta d’acquisto?"
 ];
 
-/* Teleprompter speed */
-const TELE_SPEEDS = { s120:120, s105:105, s90:90 };
-let teleprompterSeconds = TELE_SPEEDS.s105;
+const PROFILE_ROTATION = ["Instagram", "TikTok", "YouTube Shorts", "LinkedIn", "Facebook Reels"];
+let activeProfiles = [...PROFILE_ROTATION]; // qui puoi aggiungere toggle canali (non implementato nella UI base)
 
-/* State */
-let qIdx = -1;
-let currentQuestion = "";
-let lastCaptionClean = "";
-let totalVideos = 0;
+/** =========================
+ *  STATE (localStorage keys)
+ *  ========================= */
+const LS = {
+  prompt: "vpr_base_prompt",
+  lastCaption: "vpr_last_caption",
+  weekly: "vpr_weekly_state",
+  videos: "vpr_video_items",
+  profileIdx: "vpr_profile_idx",
+  qIdx: "vpr_q_idx"
+};
 
-/* Rotazione profili */
-let rotationIndex = 0;
+const TZ = "Europe/Rome";
 
-/* Prompt state */
-let promptText = "";
+/** weekly_state shape:
+ * {
+ *   weekKey: "YYYY-Www",
+ *   daySlots: { "LUN": [bool x6], ... "SAB": [bool x6] },
+ *   producedCount: number
+ * }
+ */
 
-/* ==========================
-   HELPERS
-========================== */
-const $ = (id) => document.getElementById(id);
+/** =========================
+ *  DOM
+ *  ========================= */
+const el = {
+  basePrompt: document.getElementById("basePrompt"),
+  questionBox: document.getElementById("questionBox"),
+  answerBox: document.getElementById("answerBox"),
+  captionBox: document.getElementById("captionBox"),
+  btnNewQuestion: document.getElementById("btnNewQuestion"),
+  btnCopyAnswer: document.getElementById("btnCopyAnswer"),
+  btnToTeleprompter: document.getElementById("btnToTeleprompter"),
+  btnCamera: document.getElementById("btnCamera"),
+  btnDrawer: document.getElementById("btnDrawer"),
+  btnCloseDrawer: document.getElementById("btnCloseDrawer"),
+  drawer: document.getElementById("teleDrawer"),
+  backdrop: document.getElementById("drawerBackdrop"),
+  teleText: document.getElementById("teleText"),
+  teleArea: document.getElementById("teleArea"),
+  teleDuration: document.getElementById("teleDuration"),
+  zoomLevel: document.getElementById("zoomLevel"),
+  canvas: document.getElementById("recCanvas"),
+  ctx: document.getElementById("recCanvas").getContext("2d"),
+  cameraPreview: document.getElementById("cameraPreview"),
+  recDot: document.getElementById("recDot"),
+  recLabel: document.getElementById("recLabel"),
+  recTimer: document.getElementById("recTimer"),
+  recCircle: document.getElementById("recCircle"),
+  player: document.getElementById("player"),
+  videoList: document.getElementById("videoList"),
+  totalCount: document.getElementById("totalCount"),
+  weekCount: document.getElementById("weekCount"),
+  nextProfile: document.getElementById("nextProfile"),
+  nextCode: document.getElementById("nextCode"),
+  btnWhatsApp: document.getElementById("btnWhatsApp"),
+  btnCopyCaption: document.getElementById("btnCopyCaption"),
+  fileUpload: document.getElementById("fileUpload"),
+  btnUpload: document.getElementById("btnUpload"),
+  btnClear: document.getElementById("btnClear"),
+  btnEmojiSave: document.getElementById("btnEmojiSave")
+};
 
-function pad2(n){ return String(n).padStart(2,"0"); }
-function nowStamp(){
-  const d = new Date();
-  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}-${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`;
-}
-function slugify(it){
-  return String(it || "")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9\s-]/g,"")
-    .trim()
-    .replace(/\s+/g,"-")
-    .replace(/-+/g,"-")
-    .slice(0, 50);
-}
-function keywordsFromQuestion(q){
-  const stop = new Set(["perche","perché","che","cosa","come","se","e","o","il","lo","la","i","gli","le","un","una","da","di","del","della","delle","dei","dello","in","su","a","al","alla","alle","agli","ai","con","senza","poi","subito","solo","nessuna","nessun","meglio","ha","senso","dopo","non","piu","più","anche"]);
-  const words = slugify(q).split("-").filter(w => w && !stop.has(w));
-  return words.slice(0, 4).join("-");
-}
-
-async function copyText(text){
-  const t = String(text || "");
-  if(!t.trim()) return false;
-  try{
-    await navigator.clipboard.writeText(t);
-    return true;
-  }catch(e){
-    const ta = document.createElement("textarea");
-    ta.value = t;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    return true;
-  }
-}
-async function readClipboardText(){
-  return await navigator.clipboard.readText(); // HTTPS/localhost
-}
-
-/* Caption: aggiungi hashtag solo se non già presenti */
-function captionWithHashtagsIfNeeded(clean){
-  const c = String(clean || "").trim();
-  if(!c) return "";
-
-  const lower = c.toLowerCase();
-  if (lower.includes("#immobiliarelasacra") || lower.includes("#josephcretorlab") || lower.includes("#realmediapro")){
-    return c;
-  }
-  return `${c}\n\n${HIDDEN_HASHTAGS}`.trim();
-}
-
-function setCaptionClean(clean){
-  lastCaptionClean = String(clean || "").trim();
-  $("captionPreview").textContent = lastCaptionClean || "—";
-  if ($("chkRememberCaption").checked){
-    try{ localStorage.setItem("vc_caption_clean", lastCaptionClean); }catch(e){}
-  }
+/** =========================
+ *  UTIL — date/time (Europe/Rome)
+ *  ========================= */
+function nowInRome() {
+  // Creates a Date representing "now", but we’ll extract weekday using Intl in Rome TZ.
+  return new Date();
 }
 
-/* ==========================
-   PROMPT
-========================== */
-function loadPrompt(){
-  try{
-    const saved = localStorage.getItem("vc_prompt_text");
-    promptText = (saved && saved.trim()) ? saved : BASE_PROMPT;
-  }catch(e){
-    promptText = BASE_PROMPT;
-  }
-  $("promptBox").value = promptText;
-}
-function lockPromptUI(){
-  $("promptBox").readOnly = true;
-  $("btnSavePrompt").disabled = true;
-  $("btnResetPrompt").disabled = true;
-  $("promptStatePill").textContent = "Bloccato";
-}
-function unlockPromptUI(){
-  $("promptBox").readOnly = false;
-  $("btnSavePrompt").disabled = false;
-  $("btnResetPrompt").disabled = false;
-  $("promptStatePill").textContent = "Sbloccato";
-}
-function savePrompt(){
-  promptText = $("promptBox").value || BASE_PROMPT;
-  try{ localStorage.setItem("vc_prompt_text", promptText); }catch(e){}
+function getRomeParts(d = new Date()) {
+  const fmt = new Intl.DateTimeFormat("it-IT", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "long"
+  });
+  const parts = fmt.formatToParts(d);
+  const obj = {};
+  for (const p of parts) obj[p.type] = p.value;
+  // weekday is in Italian (e.g. "lunedì")
+  return obj;
 }
 
-/* ==========================
-   QUESTIONS
-========================== */
-function showQuestionInOverlay(q){
-  $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
-}
-function nextQuestion(){
-  qIdx = (qIdx + 1) % QUESTION_BANK.length;
-  currentQuestion = QUESTION_BANK[qIdx].q;
-  showQuestionInOverlay(currentQuestion);
-}
-function composeChatGPTInput(){
-  const q = String(currentQuestion || "").trim();
-  if(!q) return (promptText || BASE_PROMPT).trim();
-  return `${(promptText || BASE_PROMPT).trim()}\n\nInput:\n👉 ${q}`.trim();
+function getDayAbbrevRome(d = new Date()) {
+  const wd = new Intl.DateTimeFormat("it-IT", { timeZone: TZ, weekday: "short" }).format(d).toLowerCase();
+  // it-IT short often: "lun", "mar", "mer", "gio", "ven", "sab", "dom"
+  const map = { lun: "LUN", mar: "MAR", mer: "MER", gio: "GIO", ven: "VEN", sab: "SAB", dom: "DOM" };
+  const key = wd.slice(0,3);
+  return map[key] || "LUN";
 }
 
-/* ==========================
-   ROTAZIONE PROFILI
-========================== */
-function getRotationPlatforms(){
-  const items = [
-    { id:"rot_tiktok", platform:"tiktok" },
-    { id:"rot_instagram", platform:"instagram" },
-    { id:"rot_shorts", platform:"shorts" },
-    { id:"rot_facebook", platform:"facebook" },
-  ];
-  return items.filter(x => $(x.id).checked);
+function getISOWeekKeyRome(d = new Date()) {
+  // compute ISO week based on Europe/Rome local date (approx by converting to Rome parts)
+  const p = getRomeParts(d);
+  const y = parseInt(p.year, 10);
+  const m = parseInt(p.month, 10);
+  const day = parseInt(p.day, 10);
+
+  // Build a Date at noon UTC for stability using the Rome calendar date
+  const date = new Date(Date.UTC(y, m - 1, day, 12, 0, 0));
+  // ISO week
+  const tmp = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = (tmp.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  tmp.setUTCDate(tmp.getUTCDate() - dayNum + 3); // Thursday
+  const firstThu = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 4));
+  const firstDayNum = (firstThu.getUTCDay() + 6) % 7;
+  firstThu.setUTCDate(firstThu.getUTCDate() - firstDayNum + 3);
+  const week = 1 + Math.round((tmp - firstThu) / (7 * 24 * 3600 * 1000));
+  const ww = String(week).padStart(2, "0");
+  return `${tmp.getUTCFullYear()}-W${ww}`;
 }
-function setNextBadge(platform){
-  const map = {
-    tiktok: $("badge_tiktok"),
-    instagram: $("badge_instagram"),
-    shorts: $("badge_shorts"),
-    facebook: $("badge_facebook"),
+
+/** =========================
+ *  WEEKLY SLOT LOGIC (36 weekly, Mon–Sat, reset Sunday)
+ *  ========================= */
+const DAY_KEYS = ["LUN","MAR","MER","GIO","VEN","SAB"]; // 6 giorni = 36 slot
+const SLOT_HOURS = {1:"08",2:"10",3:"12",4:"15",5:"18",6:"21"};
+
+function defaultWeeklyState() {
+  const daySlots = {};
+  for (const d of DAY_KEYS) daySlots[d] = [false,false,false,false,false,false];
+  return {
+    weekKey: getISOWeekKeyRome(),
+    daySlots,
+    producedCount: 0
   };
-  Object.values(map).forEach(el => el.classList.remove("show"));
-  if(platform && map[platform]) map[platform].classList.add("show");
-}
-function getActivePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return null;
-  rotationIndex = rotationIndex % list.length;
-  return list[rotationIndex].platform;
-}
-function advancePlatform(){
-  const list = getRotationPlatforms();
-  if(list.length === 0) return;
-  rotationIndex = (rotationIndex + 1) % list.length;
-}
-function refreshProfileUI(){
-  const active = getActivePlatform();
-  setNextBadge(active);
-  $("activeProfileLabel").textContent = "Prossimo: " + (active ? active : "—");
 }
 
-/* ==========================
-   TELEPROMPTER SCROLL
-========================== */
-let startTimeSec = null;
-let isTeleprompterRunning = false;
-let teleprompterAnimationId = null;
+function loadWeekly() {
+  const raw = localStorage.getItem(LS.weekly);
+  let st = raw ? JSON.parse(raw) : defaultWeeklyState();
 
-function resetTeleprompter(){
-  $("teleText").style.transform = "translateY(20px)";
+  // reset if week changed OR today is Sunday in Rome
+  const todayAbbrev = getDayAbbrevRome();
+  const wk = getISOWeekKeyRome();
+  if (st.weekKey !== wk || todayAbbrev === "DOM") {
+    st = defaultWeeklyState();
+    // Sunday reset: we keep it reset and prevent slot assignment on Sunday (spec says 6 days)
+    saveWeekly(st);
+  }
+  return st;
 }
-function startTeleprompter(){
-  if(isTeleprompterRunning) return;
-  isTeleprompterRunning = true;
-  startTimeSec = performance.now() / 1000;
-  animateTele();
-}
-function stopTeleprompter(){
-  isTeleprompterRunning = false;
-  if(teleprompterAnimationId) cancelAnimationFrame(teleprompterAnimationId);
-  teleprompterAnimationId = null;
-}
-function restartTeleprompter(){
-  stopTeleprompter();
-  resetTeleprompter();
-  setTimeout(()=> startTeleprompter(), 120);
-}
-function animateTele(){
-  if(!isTeleprompterRunning) return;
 
-  const teleEl = $("teleText");
-  if(!teleEl){
-    teleprompterAnimationId = requestAnimationFrame(animateTele);
-    return;
+function saveWeekly(st){ localStorage.setItem(LS.weekly, JSON.stringify(st)); }
+
+function getNextSlotCode(weeklyState, d = new Date()) {
+  const day = getDayAbbrevRome(d);
+  if (day === "DOM") {
+    return { ok:false, reason:"Oggi è DOM: reset settimanale. Sequenza slot prevista LUN–SAB.", code:null };
+  }
+  if (!DAY_KEYS.includes(day)) {
+    return { ok:false, reason:"Giorno non gestito nella sequenza LUN–SAB.", code:null };
+  }
+  const slots = weeklyState.daySlots[day] || [false,false,false,false,false,false];
+  const idx = slots.findIndex(v => v === false);
+  if (idx === -1) {
+    return { ok:false, reason:`Slot finiti per ${day} (1–6).`, code:null };
+  }
+  const slotNum = idx + 1;
+  const hour = SLOT_HOURS[slotNum];
+  return { ok:true, day, slotNum, hour, code:`${day}-${slotNum}-${hour}` };
+}
+
+function occupyNextSlot(weeklyState, d = new Date()) {
+  const info = getNextSlotCode(weeklyState, d);
+  if (!info.ok) return info;
+
+  weeklyState.daySlots[info.day][info.slotNum - 1] = true;
+  weeklyState.producedCount = (weeklyState.producedCount || 0) + 1;
+  saveWeekly(weeklyState);
+  return info;
+}
+
+/** =========================
+ *  VIDEO ITEMS
+ *  ========================= */
+function loadVideos(){
+  const raw = localStorage.getItem(LS.videos);
+  return raw ? JSON.parse(raw) : [];
+}
+function saveVideos(items){
+  localStorage.setItem(LS.videos, JSON.stringify(items));
+}
+let videos = loadVideos();
+let selectedVideoId = videos.length ? videos[videos.length-1].id : null;
+
+/** =========================
+ *  CAMERA / CANVAS DRAW + OVERLAYS
+ *  ========================= */
+let mediaStream = null;
+let animId = null;
+
+let teleState = {
+  running: false,
+  startTs: 0,
+  durationMs: 105000,
+  text: "",
+  words: [],
+  wordsPerMs: 0
+};
+
+let currentQuestion = "";
+let captionClean = "";
+
+function safeText(s){ return (s || "").toString(); }
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  const words = text.split(/\s+/);
+  let line = "";
+  const lines = [];
+  for (const w of words){
+    const test = line ? (line + " " + w) : w;
+    if (ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = w;
+      if (maxLines && lines.length >= maxLines) break;
+    } else {
+      line = test;
+    }
+  }
+  if ((!maxLines || lines.length < maxLines) && line) lines.push(line);
+
+  // if overflow: add ellipsis
+  if (maxLines && lines.length > maxLines){
+    lines.length = maxLines;
+  }
+  if (maxLines && lines.length === maxLines){
+    // try ellipsis on last line if still too long
+    let last = lines[maxLines-1];
+    while (ctx.measureText(last + "…").width > maxWidth && last.length > 0){
+      last = last.slice(0, -1);
+    }
+    lines[maxLines-1] = last + (text.length ? "…" : "");
   }
 
-  const now = performance.now()/1000;
-  const elapsed = now - startTimeSec;
-  const progress = (elapsed % teleprompterSeconds) / teleprompterSeconds;
-
-  const th = teleEl.scrollHeight || 900;
-  const startY = 20;
-  const endY = -th - 20;
-
-  const y = startY + (endY - startY) * progress;
-  teleEl.style.transform = `translateY(${y}px)`;
-
-  teleprompterAnimationId = requestAnimationFrame(animateTele);
+  for (let i=0;i<lines.length;i++){
+    ctx.fillText(lines[i], x, y + i*lineHeight);
+  }
+  return lines.length;
 }
 
-function applyAnswer(answer){
-  const a = String(answer || "").trim();
-  if(!a) return false;
-  $("teleText").textContent = a;
-  resetTeleprompter();
-  stopTeleprompter();
-  setCaptionClean(a);
-  return true;
-}
-
-/* ==========================
-   SPEED UI (checkbox “radio”)
-========================== */
-function setSpeed(seconds){
-  teleprompterSeconds = seconds;
-  $("speedLabel").textContent = `Vel: ${seconds}s`;
-  $("speed120").checked = seconds === 120;
-  $("speed105").checked = seconds === 105;
-  $("speed90").checked  = seconds === 90;
-}
-
-/* ==========================
-   CAMERA + REC (CANVAS CLEAN)
-========================== */
-let camStream = null;
-let chunks = [];
-let rafCanvasId = null;
-
-let zoomValue = 1.0;
-const camEl = $("cam");
-const canvas = $("recCanvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
-async function applyZoom(v){
-  zoomValue = Number(v) || 1;
-  $("zoomVal").textContent = `${zoomValue.toFixed(1)}x`;
-  document.documentElement.style.setProperty("--zoom", String(zoomValue));
+function getSubtitleChunk(){
+  if (!teleState.running || !teleState.words.length) return "";
+  const elapsed = performance.now() - teleState.startTs;
+  const wordIndex = Math.floor(elapsed * teleState.wordsPerMs);
+  const start = Math.max(0, wordIndex);
+  const windowSize = 14; // ~leggibile su social
+  const chunk = teleState.words.slice(start, start + windowSize).join(" ");
+  return chunk;
 }
 
 function drawFrame(){
-  const W = canvas.width, H = canvas.height;
-  if(camEl.readyState < 2){
-    ctx.fillStyle="black"; ctx.fillRect(0,0,W,H);
-    return;
+  const ctx = el.ctx;
+  const W = el.canvas.width;
+  const H = el.canvas.height;
+
+  // background
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,W,H);
+
+  // camera frame (zoom on canvas)
+  if (el.cameraPreview.readyState >= 2){
+    const z = parseFloat(el.zoomLevel.value || "1.1");
+    const srcW = el.cameraPreview.videoWidth;
+    const srcH = el.cameraPreview.videoHeight;
+    if (srcW && srcH){
+      // cover -> compute cropping
+      const targetAR = W/H;
+      const srcAR = srcW/srcH;
+      let cropW, cropH;
+      if (srcAR > targetAR){
+        cropH = srcH;
+        cropW = cropH * targetAR;
+      } else {
+        cropW = srcW;
+        cropH = cropW / targetAR;
+      }
+      // zoom
+      cropW = cropW / z;
+      cropH = cropH / z;
+
+      const sx = (srcW - cropW) / 2;
+      const sy = (srcH - cropH) / 2;
+      ctx.drawImage(el.cameraPreview, sx, sy, cropW, cropH, 0, 0, W, H);
+    }
   }
-  const vw = camEl.videoWidth || 1280;
-  const vh = camEl.videoHeight || 720;
 
-  const z = Math.max(1, Math.min(zoomValue, 5));
-  const srcW = vw / z;
-  const srcH = vh / z;
-  const srcX = (vw - srcW)/2;
-  const srcY = (vh - srcH)/2;
+  // overlay: question top
+  const q = safeText(currentQuestion).trim();
+  if (q){
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    ctx.fillStyle = "rgba(0,0,0,.52)";
+    const pad = 42;
+    const boxH = 220;
+    ctx.fillRect(0, 0, W, boxH);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 46px ui-sans-serif, system-ui";
+    const maxW = W - pad*2;
+    wrapText(ctx, q, pad, 78, maxW, 56, 3);
+    ctx.restore();
+  }
 
-  ctx.drawImage(camEl, srcX, srcY, srcW, srcH, 0, 0, W, H);
+  // subtitles band bottom
+  const subtitle = teleState.running ? getSubtitleChunk() : safeText(captionClean).trim();
+  if (subtitle){
+    ctx.save();
+    const bandH = 300;
+    ctx.fillStyle = "rgba(0,0,0,.78)";
+    ctx.fillRect(0, H - bandH, W, bandH);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 52px ui-sans-serif, system-ui";
+    const padX = 56;
+    wrapText(ctx, subtitle, padX, H - bandH + 88, W - padX*2, 62, 3);
+    ctx.restore();
+  }
+
+  // teleprompter scroll state
+  if (teleState.running){
+    const elapsed = performance.now() - teleState.startTs;
+    const t = Math.min(1, elapsed / teleState.durationMs);
+
+    // Move teleText upward smoothly; we base it on its rendered height
+    const teleHeight = el.teleText.scrollHeight || 1000;
+    const viewH = el.teleArea.clientHeight || 600;
+    const startY = viewH * 0.65;
+    const endY = -(teleHeight + 40);
+    const y = startY + (endY - startY) * t;
+    el.teleText.style.transform = `translateY(${y}px)`;
+
+    if (t >= 1){
+      teleState.running = false;
+      el.recLabel.textContent = "PRONTO";
+      el.recDot.classList.remove("rec");
+    }
+  }
+
+  animId = requestAnimationFrame(drawFrame);
 }
-function startCanvasLoop(){
-  function loop(){
-    drawFrame();
-    rafCanvasId = requestAnimationFrame(loop);
-  }
-  loop();
+
+/** =========================
+ *  MEDIA RECORDER (canvas stream + mic)
+ *  ========================= */
+let recorder = null;
+let recordedChunks = [];
+let recording = false;
+let recStartTs = 0;
+let recTimerId = null;
+
+function fmtTime(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const mm = String(Math.floor(s/60)).padStart(2,"0");
+  const ss = String(s%60).padStart(2,"0");
+  return `${mm}:${ss}`;
 }
 
-async function startCamera(){
-  if(camStream){
-    camStream.getTracks().forEach(t=>t.stop());
-    camStream = null;
-  }
+function startTimer(){
+  el.recTimer.textContent = "00:00";
+  recStartTs = performance.now();
+  clearInterval(recTimerId);
+  recTimerId = setInterval(() => {
+    el.recTimer.textContent = fmtTime(performance.now() - recStartTs);
+  }, 250);
+}
+
+function stopTimer(){
+  clearInterval(recTimerId);
+  recTimerId = null;
+}
+
+async function ensureCamera(){
   try{
-    camStream = await navigator.mediaDevices.getUserMedia({
-      audio:true,
-      video:{ facingMode:"user", width:{ideal:1280}, height:{ideal:720} }
-    });
-    camEl.srcObject = camStream;
-    await new Promise(res => camEl.onloadedmetadata = () => res());
-    try{ await camEl.play(); }catch(e){}
-    if(!rafCanvasId) startCanvasLoop();
+    if (mediaStream && mediaStream.getTracks().some(t => t.readyState === "live")) return true;
+
+    const constraints = {
+      audio: true,
+      video: {
+        facingMode: "user",
+        width: { ideal: 1080 },
+        height: { ideal: 1920 }
+      }
+    };
+    mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    el.cameraPreview.srcObject = mediaStream;
+    await el.cameraPreview.play();
     return true;
-  }catch(err){
-    alert("Errore camera: " + err.message);
+  } catch(err){
+    console.error(err);
+    alert("Permessi Camera/Microfono non concessi o non disponibili.");
     return false;
   }
 }
-async function ensureReady(){
-  if(!camStream){
-    const ok = await startCamera();
-    if(!ok) return false;
+
+function buildCompositeStream(){
+  // Canvas stream at 30fps + mic audio track
+  const canvasStream = el.canvas.captureStream(30);
+  const audioTracks = mediaStream ? mediaStream.getAudioTracks() : [];
+  const tracks = [
+    ...canvasStream.getVideoTracks(),
+    ...audioTracks
+  ];
+  return new MediaStream(tracks);
+}
+
+function startTeleprompterRun(text){
+  teleState.text = safeText(text).trim();
+  el.teleText.textContent = teleState.text || "";
+  teleState.words = teleState.text ? teleState.text.split(/\s+/).filter(Boolean) : [];
+  teleState.durationMs = parseInt(el.teleDuration.value, 10) * 1000;
+  teleState.startTs = performance.now();
+  teleState.running = true;
+  teleState.wordsPerMs = teleState.words.length ? (teleState.words.length / teleState.durationMs) : 0;
+  // reset transform
+  el.teleText.style.transform = "translateY(0px)";
+}
+
+async function startRecording(){
+  // Guards
+  const weekly = loadWeekly();
+  const next = getNextSlotCode(weekly);
+  if (!next.ok){
+    alert(next.reason);
+    return;
   }
-  if(!rafCanvasId) startCanvasLoop();
-  return true;
-}
 
-/* REC lamp */
-let recStartTs = null;
-let recTimerId = null;
-let isRecording = false;
-let recorder = null;
+  const hasCam = await ensureCamera();
+  if (!hasCam) return;
 
-function fmtTime(ms){
-  const sec = Math.floor(ms/1000);
-  const m = String(Math.floor(sec/60)).padStart(2,"0");
-  const s = String(sec%60).padStart(2,"0");
-  return `${m}:${s}`;
-}
-function startRecLamp(){
-  recStartTs = Date.now();
-  $("recLamp").style.display = "flex";
-  $("recTime").textContent = "REC 00:00";
-  recTimerId = setInterval(()=> {
-    $("recTime").textContent = `REC ${fmtTime(Date.now()-recStartTs)}`;
-  }, 250);
-}
-function stopRecLamp(){
-  $("recLamp").style.display = "none";
-  if(recTimerId) clearInterval(recTimerId);
-  recTimerId = null;
-  recStartTs = null;
-}
+  const answer = safeText(el.answerBox.value).trim();
+  if (!answer){
+    alert("Manca la risposta. Copia la risposta da ChatGPT (o incollala) prima di registrare.");
+    return;
+  }
 
-function downloadBlob(blob, filename){
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 2000);
-}
+  // occupy slot NOW (counts as produced)
+  const occupied = occupyNextSlot(weekly);
+  if (!occupied.ok){
+    alert(occupied.reason);
+    return;
+  }
 
-/* Recordings */
-let recordings = [];
-let currentRecIndex = -1;
+  // Save caption clean and keep for subtitles fallback
+  captionClean = answer;
+  el.captionBox.value = captionClean;
+  localStorage.setItem(LS.lastCaption, captionClean);
 
-function updateCounters(){
-  $("videoCounter").textContent = `Video: ${totalVideos}`;
-}
+  // Teleprompter start
+  startTeleprompterRun(answer);
 
-function renderRecList(){
-  const box = $("recList");
-  if(!recordings.length){ box.textContent = "—"; return; }
-
-  box.innerHTML = recordings.map((r,i)=>{
-    const active = i===currentRecIndex ? " style='color:#d8a23a; font-weight:950;'" : "";
-    return `
-      <div ${active} style="margin-bottom:10px;">
-        <div>
-          <a href="#" data-i="${i}" style="color:inherit; text-decoration:none;">
-            ${r.title}
-          </a>
-        </div>
-        <div style="opacity:.85; margin-top:6px;">${(r.question||"").slice(0,95)}</div>
-      </div>
-    `;
-  }).join("");
-
-  box.querySelectorAll("a[data-i]").forEach(a => a.addEventListener("click", (e)=>{
-    e.preventDefault();
-    const i = +a.dataset.i;
-    currentRecIndex = i;
-    $("playback").src = recordings[i].url;
-    $("playback").play().catch(()=>{});
-    renderRecList();
-  }));
-}
-
-function buildVideoTitle(videoNum, platform, question){
-  const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `#${String(videoNum).padStart(3,"0")} • ${p} • ${k}`;
-}
-function buildFileName(videoNum, platform, question){
-  const k = keywordsFromQuestion(question) || "video";
-  const p = platform || "noplatform";
-  return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
-}
-
-function startRecording(){
-  if(!camStream){ alert("Attiva la camera."); return; }
-  if(recorder && recorder.state !== "inactive"){ return; }
-
-  startTeleprompter();
-  chunks = [];
-
-  const stream = canvas.captureStream(30);
-  const audioTrack = camStream.getAudioTracks?.()[0];
-  if(audioTrack) stream.addTrack(audioTrack);
-
+  // Recorder
+  recordedChunks = [];
+  const stream = buildCompositeStream();
   const mimeCandidates = [
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm"
   ];
-  const mimeType = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || "";
-
+  let mimeType = "";
+  for (const m of mimeCandidates){
+    if (MediaRecorder.isTypeSupported(m)){ mimeType = m; break; }
+  }
   recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
 
-  recorder.ondataavailable = (e)=>{ if(e.data.size) chunks.push(e.data); };
-  recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
-
-  const qNow = String(currentQuestion || "").trim();
-  const capNow = String(lastCaptionClean || "").trim();
-  const platformNow = getActivePlatform();
-
-  recorder.onstop = ()=>{
-    stopRecLamp();
-    stopTeleprompter();
-    isRecording = false;
-
-    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-    totalVideos += 1;
-
-    const title = buildVideoTitle(totalVideos, platformNow, qNow);
-    const name = buildFileName(totalVideos, platformNow, qNow);
-    const url = URL.createObjectURL(blob);
-
-    recordings.unshift({ title, name, url, blob, question: qNow, captionClean: capNow, platform: platformNow, kind:"recorded" });
-    currentRecIndex = 0;
-
-    $("playback").src = url;
-    $("playback").load();
-    renderRecList();
-    updateCounters();
-
-    advancePlatform();
-    refreshProfileUI();
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
   };
 
-  recorder.start(1000);
-}
-function stopRecording(){
-  if(recorder && recorder.state !== "inactive") recorder.stop();
+  recorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: recorder.mimeType || "video/webm" });
+    const url = URL.createObjectURL(blob);
+
+    const id = crypto.randomUUID();
+    const item = {
+      id,
+      kind: "recorded",
+      url,
+      blobType: blob.type,
+      size: blob.size,
+      createdAt: new Date().toISOString(),
+      code: occupied.code,
+      platformNext: getNextProfileLabel(),
+      question: currentQuestion || "",
+      caption: captionClean || ""
+    };
+    videos.push(item);
+    saveVideos(videos);
+    selectedVideoId = id;
+
+    // rotation profiles after each recording (mental indicator)
+    advanceProfile();
+
+    renderVideos();
+    selectVideo(id);
+
+    recording = false;
+    el.recLabel.textContent = "PRONTO";
+    el.recDot.classList.remove("rec");
+    el.recCircle.classList.remove("green");
+    el.recCircle.classList.add("red");
+    stopTimer();
+    updateHUD();
+  };
+
+  recorder.start(250);
+  recording = true;
+  el.recLabel.textContent = "REC";
+  el.recDot.classList.add("rec");
+  el.recCircle.classList.add("green");
+  el.recCircle.classList.remove("red");
+  startTimer();
+  updateHUD();
 }
 
-/* ==========================
-   NAV
-========================== */
-function goToGestionale(){
-  if(confirm("Vuoi tornare al gestionale?")){
-    if(isRecording) stopRecording();
-    setTimeout(()=> window.location.href = GESTIONALE_URL, 250);
+function stopRecording(){
+  if (!recorder || recorder.state !== "recording") return;
+  recorder.stop();
+}
+
+function toggleRecording(){
+  if (recording) stopRecording();
+  else startRecording();
+}
+
+/** =========================
+ *  QUESTIONS → fixed chat + clipboard
+ *  ========================= */
+function loadPrompt(){
+  const saved = localStorage.getItem(LS.prompt);
+  return saved || BASE_PROMPT_TEXT;
+}
+
+function savePrompt(text){
+  localStorage.setItem(LS.prompt, text);
+}
+
+function pickQuestion(){
+  let idx = parseInt(localStorage.getItem(LS.qIdx) || "0", 10);
+  idx = (idx + 1) % QUESTION_BANK.length;
+  localStorage.setItem(LS.qIdx, String(idx));
+  return QUESTION_BANK[idx];
+}
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch(err){
+    console.warn("clipboard blocked", err);
+    return false;
   }
 }
 
-/* ==========================
-   ISTRUZIONI MODAL
-========================== */
-function openInstructions(){
-  const m = $("instructionsModal");
-  m.classList.add("show");
-  m.setAttribute("aria-hidden", "false");
-}
-function closeInstructions(){
-  const m = $("instructionsModal");
-  m.classList.remove("show");
-  m.setAttribute("aria-hidden", "true");
+async function readClipboard(){
+  try{
+    return await navigator.clipboard.readText();
+  } catch(err){
+    console.warn("clipboard read blocked", err);
+    return null;
+  }
 }
 
-/* ==========================
-   UPLOAD VIDEO
-========================== */
-function addUploadedVideo(file){
-  if(!file) return;
+async function onNewQuestion(){
+  const q = pickQuestion();
+  currentQuestion = q;
+  el.questionBox.value = q;
+
+  const prompt = loadPrompt();
+  const combined = `${prompt}\n\nDOMANDA:\n${q}\n\nISTRUZIONI OUTPUT:\nRispondi in modo pronto per essere letto in video (ritmo naturale, frasi brevi, zero fluff).`;
+
+  const copied = await copyToClipboard(combined);
+  window.open(FIXED_CHAT_URL, "_blank", "noopener,noreferrer");
+
+  if (!copied){
+    alert("Clipboard bloccata: copia manualmente il testo (lo trovi nel prompt+domanda).");
+  } else {
+    // micro feedback
+    el.btnNewQuestion.textContent = "✅ Domanda copiata + chat aperta";
+    setTimeout(() => el.btnNewQuestion.textContent = "1) ✨ Nuova domanda → apri ChatGPT + copia", 1200);
+  }
+
+  updateHUD();
+}
+
+/** =========================
+ *  ANSWER → clipboard to answerBox
+ *  ========================= */
+async function onCopyAnswer(){
+  const txt = await readClipboard();
+  if (txt === null){
+    alert("Impossibile leggere la clipboard. Incolla la risposta manualmente in answerBox.");
+    return;
+  }
+  el.answerBox.value = txt.trim();
+}
+
+/** =========================
+ *  To Teleprompter (also caption clean)
+ *  ========================= */
+function onToTeleprompter(){
+  const answer = safeText(el.answerBox.value).trim();
+  if (!answer){
+    alert("Nessuna risposta presente.");
+    return;
+  }
+  captionClean = answer;
+  el.captionBox.value = captionClean;
+  localStorage.setItem(LS.lastCaption, captionClean);
+
+  startTeleprompterRun(answer);
+  openDrawer(true);
+}
+
+/** =========================
+ *  WhatsApp deep link
+ *  ========================= */
+function getSelectedOrNextCode(){
+  const v = videos.find(x => x.id === selectedVideoId);
+  if (v?.code) return v.code;
+  const weekly = loadWeekly();
+  const next = getNextSlotCode(weekly);
+  return next.ok ? next.code : "—";
+}
+
+function onWhatsApp(){
+  const code = getSelectedOrNextCode();
+  const text = (safeText(el.captionBox.value).trim() || "")
+    + (code && code !== "—" ? `\n\nCodice: ${code}` : "")
+    + (currentQuestion ? `\n\nDomanda: ${currentQuestion}` : "");
+
+  const phone = "393717308294"; // +39 371 730 8294
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(text.slice(0, 3800))}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/** =========================
+ *  Caption copy (clean)
+ *  ========================= */
+async function onCopyCaption(){
+  const txt = safeText(el.captionBox.value).trim();
+  if (!txt){
+    alert("Caption vuota.");
+    return;
+  }
+  const ok = await copyToClipboard(txt);
+  if (!ok) alert("Clipboard bloccata: copia manualmente la caption.");
+}
+
+/** =========================
+ *  Profile rotation (mental)
+ *  ========================= */
+function loadProfileIdx(){
+  return parseInt(localStorage.getItem(LS.profileIdx) || "0", 10) || 0;
+}
+function saveProfileIdx(i){ localStorage.setItem(LS.profileIdx, String(i)); }
+function getNextProfileLabel(){
+  const i = loadProfileIdx() % activeProfiles.length;
+  return activeProfiles[i] || "—";
+}
+function advanceProfile(){
+  let i = loadProfileIdx();
+  i = (i + 1) % activeProfiles.length;
+  saveProfileIdx(i);
+}
+
+/** =========================
+ *  Upload video
+ *  ========================= */
+function onUploadClick(){
+  el.fileUpload.value = "";
+  el.fileUpload.click();
+}
+function onUploadFile(file){
+  if (!file) return;
+
+  const weekly = loadWeekly();
+  const occupied = occupyNextSlot(weekly);
+  if (!occupied.ok){
+    alert(occupied.reason);
+    return;
+  }
 
   const url = URL.createObjectURL(file);
-  totalVideos += 1;
-
-  const platformNow = getActivePlatform();
-  const qNow = String(currentQuestion || "Upload video").trim();
-  const k = keywordsFromQuestion(qNow) || "upload";
-  const p = platformNow || "upload";
-  const title = `#${String(totalVideos).padStart(3,"0")} • ${p} • ${k} • UPLOAD`;
-
-  const safeName = (file.name && file.name.trim()) ? file.name.trim() : `upload_${nowStamp()}.mp4`;
-
-  const capNow = String(lastCaptionClean || "").trim();
-
-  recordings.unshift({
-    title,
-    name: safeName,
+  const id = crypto.randomUUID();
+  const item = {
+    id,
+    kind: "uploaded",
     url,
-    blob: file,
-    question: qNow,
-    captionClean: capNow,
-    platform: platformNow,
-    kind: "uploaded"
-  });
+    blobType: file.type || "video/*",
+    size: file.size || 0,
+    createdAt: new Date().toISOString(),
+    code: occupied.code,
+    platformNext: getNextProfileLabel(),
+    question: currentQuestion || "",
+    caption: safeText(el.captionBox.value).trim() || ""
+  };
+  videos.push(item);
+  saveVideos(videos);
+  selectedVideoId = id;
 
-  currentRecIndex = 0;
-  $("playback").src = url;
-  $("playback").load();
-  renderRecList();
-  updateCounters();
+  advanceProfile();
+  renderVideos();
+  selectVideo(id);
+  updateHUD();
 }
 
-/* ==========================
-   INIT
-========================== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  // prompt
-  loadPrompt();
-  lockPromptUI();
+/** =========================
+ *  Clear list (no weekly reset)
+ *  ========================= */
+function onClear(){
+  if (!confirm("Vuoi svuotare la lista video? (Le regole settimanali NON vengono resettate)")) return;
+  // revoke object URLs
+  for (const v of videos){
+    try{ URL.revokeObjectURL(v.url); } catch {}
+  }
+  videos = [];
+  saveVideos(videos);
+  selectedVideoId = null;
+  el.player.removeAttribute("src");
+  el.player.load();
+  renderVideos();
+  updateHUD();
+}
 
-  // blocco risposta: vuoto di default
-  $("answerBox").value = "";
+/** =========================
+ *  Render list + selection
+ *  ========================= */
+function bytesToSize(b){
+  if (!b) return "—";
+  const u = ["B","KB","MB","GB"];
+  let i=0, n=b;
+  while (n>=1024 && i<u.length-1){ n/=1024; i++; }
+  return `${n.toFixed(i?1:0)} ${u[i]}`;
+}
 
-  // restore caption preview only
-  try{
-    const savedCap = localStorage.getItem("vc_caption_clean") || "";
-    if(savedCap.trim() && $("chkRememberCaption").checked){
-      setCaptionClean(savedCap);
-    }
-  }catch(e){}
+function renderVideos(){
+  el.videoList.innerHTML = "";
+  el.totalCount.textContent = String(videos.length);
 
-  // init UI
-  $("btnBackTop").addEventListener("click", goToGestionale);
-  $("btnBackBottom").addEventListener("click", goToGestionale);
+  for (const v of videos){
+    const div = document.createElement("div");
+    div.className = "item" + (v.id === selectedVideoId ? " selected" : "");
+    div.onclick = () => selectVideo(v.id);
 
-  // Istruzioni
-  $("btnInstructions").addEventListener("click", openInstructions);
-  $("btnInstructionsBottom").addEventListener("click", openInstructions);
-  $("btnCloseInstructions").addEventListener("click", closeInstructions);
-  $("instructionsModal").addEventListener("click", (e)=>{
-    if(e.target && e.target.id === "instructionsModal") closeInstructions();
-  });
-  document.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape") closeInstructions();
-  });
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    thumb.textContent = "9:16";
 
-  $("teleText").textContent = "Incolla/scrivi una risposta in alto → “Invia al teleprompter” → “Teleprompter + REC”.";
-  showQuestionInOverlay("Premi “Nuova domanda”.");
-  updateCounters();
-  refreshProfileUI();
-  renderRecList();
-  resetTeleprompter();
-  applyZoom(1.0);
-  setSpeed(105);
+    const info = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = `${v.code || "—"} · ${v.kind === "recorded" ? "Registrato" : "Caricato"}`;
 
-  // speed radio-like
-  $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
-  $("speed105").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(105); });
-  $("speed90").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(90); });
+    const meta = document.createElement("div");
+    meta.className = "meta2";
+    meta.innerHTML = `
+      <span class="k">${v.platformNext || "—"}</span>
+      <span class="k">${bytesToSize(v.size)}</span>
+      <span class="k">${new Date(v.createdAt).toLocaleString("it-IT")}</span>
+    `;
 
-  // rotation change resets index
-  ["rot_tiktok","rot_instagram","rot_shorts","rot_facebook"].forEach(id=>{
-    $(id).addEventListener("change", ()=>{
-      rotationIndex = 0;
-      refreshProfileUI();
-    });
-  });
+    const row = document.createElement("div");
+    row.className = "row";
+    row.style.marginTop = "8px";
+    row.style.gap = "8px";
 
-  // nuova domanda
-  $("btnNext").addEventListener("click", ()=> nextQuestion());
+    const dl = document.createElement("button");
+    dl.className = "btn icon";
+    dl.title = "💾 Download";
+    dl.textContent = "💾";
+    dl.onclick = (e) => { e.stopPropagation(); downloadVideo(v); };
 
-  // apri chatgpt + copia prompt+domanda
-  $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
-    if(!currentQuestion){
-      nextQuestion();
-    }
-    const payload = composeChatGPTInput();
-    await copyText(payload);
-    window.open(CHATGPT_URL, "_blank", "noopener");
-  });
+    row.appendChild(dl);
 
-  // incolla risposta
-  $("btnPasteTop").addEventListener("click", async ()=>{
-    try{
-      const t = await readClipboardText();
-      $("answerBox").value = (t || "");
-    }catch(e){
-      alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
-    }
-  });
+    info.appendChild(h3);
+    info.appendChild(meta);
+    info.appendChild(row);
 
-  // invia al teleprompter
-  $("btnSendTele").addEventListener("click", ()=>{
-    const ok = applyAnswer($("answerBox").value || "");
-    if(!ok) alert("Scrivi o incolla una risposta prima.");
-  });
+    div.appendChild(thumb);
+    div.appendChild(info);
+    el.videoList.appendChild(div);
+  }
+}
 
-  // camera
-  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+function selectVideo(id){
+  selectedVideoId = id;
+  const v = videos.find(x => x.id === id);
+  if (!v) return;
+  el.player.src = v.url;
+  el.player.load();
+  renderVideos();
+  updateHUD();
+}
 
-  // Teleprompter + REC
-  $("btnTeleRec").addEventListener("click", async ()=>{
-    const okCam = await ensureReady();
-    if(!okCam) return;
+function downloadVideo(v){
+  const a = document.createElement("a");
+  const safeCode = (v.code || "VIDEO").replace(/[^\w\-]/g, "_");
+  a.href = v.url;
+  a.download = `${safeCode}.webm`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
-    if(!currentQuestion){
-      nextQuestion();
-    }
+/** =========================
+ *  Drawer
+ *  ========================= */
+function openDrawer(open){
+  const isOpen = open ?? !el.drawer.classList.contains("open");
+  el.drawer.classList.toggle("open", isOpen);
+  el.backdrop.classList.toggle("open", isOpen);
+  el.drawer.setAttribute("aria-hidden", String(!isOpen));
+}
+el.backdrop.addEventListener("click", () => openDrawer(false));
 
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
-      return;
-    }
+/** =========================
+ *  HUD
+ *  ========================= */
+function updateHUD(){
+  const weekly = loadWeekly();
+  el.weekCount.textContent = String(weekly.producedCount || 0);
 
-    applyAnswer(ans);
-    startRecording();
-  });
+  el.nextProfile.textContent = getNextProfileLabel();
 
-  $("btnStop").addEventListener("click", ()=> stopRecording());
-  $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
-  $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
+  const next = getNextSlotCode(weekly);
+  el.nextCode.textContent = next.ok ? next.code : "—";
 
-  // remember caption toggle
-  $("chkRememberCaption").addEventListener("change", ()=>{
-    if(!$("chkRememberCaption").checked){
-      try{ localStorage.removeItem("vc_caption_clean"); }catch(e){}
-    }else{
-      try{ localStorage.setItem("vc_caption_clean", lastCaptionClean || ""); }catch(e){}
-    }
-  });
+  // badge in header: if Sunday show reset note
+  const day = getDayAbbrevRome();
+  const badge = document.querySelector("header .badge");
+  // (optional) keep it simple: not using badge node; header has pill already
 
-  // copia caption
-  $("btnCopyCaption").addEventListener("click", async ()=>{
-    const out = captionWithHashtagsIfNeeded(lastCaptionClean);
-    if(!out){ alert("Niente da copiare."); return; }
-    await copyText(out);
-  });
+  // keep prompt readonly but persisted
+  const p = loadPrompt();
+  el.basePrompt.value = p;
 
-  // download selected video
-  $("btnDownloadVideo").addEventListener("click", ()=>{
-    if(currentRecIndex < 0 || !recordings[currentRecIndex]){
-      alert("Seleziona un video dalla lista.");
-      return;
-    }
-    const r = recordings[currentRecIndex];
-    downloadBlob(r.blob, r.name);
-  });
+  // restore caption if exists
+  const lastCap = localStorage.getItem(LS.lastCaption);
+  if (lastCap && !el.captionBox.value.trim()) el.captionBox.value = lastCap;
 
-  // upload video (button -> hidden input)
-  $("btnUploadVideo").addEventListener("click", ()=>{
-    $("videoUpload").click();
-  });
-  $("videoUpload").addEventListener("change", (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    if(!String(file.type || "").startsWith("video/")){
-      alert("Seleziona un file video valido.");
-      e.target.value = "";
-      return;
-    }
-    addUploadedVideo(file);
-    e.target.value = "";
-  });
+  // if question exists keep textarea
+  el.questionBox.value = currentQuestion || el.questionBox.value || "";
+}
 
-  // clear list
-  $("btnClearList").addEventListener("click", ()=>{
-    if(!recordings.length) return;
-    if(confirm("Svuotare la lista?")){
-      recordings.forEach(r => { try{ URL.revokeObjectURL(r.url); }catch(e){} });
-      recordings = [];
-      currentRecIndex = -1;
-      $("playback").removeAttribute("src");
-      $("playback").load();
-      renderRecList();
-      totalVideos = 0;
-      updateCounters();
-      rotationIndex = 0;
-      refreshProfileUI();
-    }
-  });
+/** =========================
+ *  INIT
+ *  ========================= */
+async function init(){
+  // Prompt base locked + persisted
+  const p = loadPrompt();
+  el.basePrompt.value = p;
+  // (readonly per spec)
+  el.basePrompt.setAttribute("readonly", "readonly");
+  savePrompt(p);
 
-  // prompt unlock/save/reset
-  $("btnUnlock").addEventListener("click", ()=>{
-    const code = ($("unlockCode").value || "").trim();
-    if(code === UNLOCK_CODE){
-      unlockPromptUI();
-    }else{
-      alert("Codice errato.");
-      lockPromptUI();
-    }
-  });
+  // caption restore if any
+  const lastCap = localStorage.getItem(LS.lastCaption);
+  if (lastCap) el.captionBox.value = lastCap;
 
-  $("btnSavePrompt").addEventListener("click", ()=>{
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
+  // ensure weekly reset rules applied
+  loadWeekly();
 
-  $("btnResetPrompt").addEventListener("click", ()=>{
-    $("promptBox").value = BASE_PROMPT;
-    savePrompt();
-    lockPromptUI();
-    $("unlockCode").value = "";
-  });
+  // init profile
+  el.nextProfile.textContent = getNextProfileLabel();
+
+  // start camera+mic automatically
+  await ensureCamera();
+
+  // start canvas draw loop
+  cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(drawFrame);
+
+  // initial selection
+  renderVideos();
+  if (selectedVideoId) selectVideo(selectedVideoId);
+
+  updateHUD();
+}
+
+/** =========================
+ *  EVENTS
+ *  ========================= */
+el.btnNewQuestion.addEventListener("click", onNewQuestion);
+el.btnCopyAnswer.addEventListener("click", onCopyAnswer);
+el.btnToTeleprompter.addEventListener("click", onToTeleprompter);
+
+el.btnCamera.addEventListener("click", async () => {
+  const ok = await ensureCamera();
+  if (ok) alert("Camera/Microfono attivi.");
 });
+
+el.btnDrawer.addEventListener("click", () => openDrawer());
+el.btnCloseDrawer.addEventListener("click", () => openDrawer(false));
+
+el.recCircle.addEventListener("click", toggleRecording);
+
+el.btnWhatsApp.addEventListener("click", onWhatsApp);
+el.btnCopyCaption.addEventListener("click", onCopyCaption);
+
+el.btnUpload.addEventListener("click", onUploadClick);
+el.fileUpload.addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  onUploadFile(f);
+});
+
+el.btnClear.addEventListener("click", onClear);
+
+el.btnEmojiSave.addEventListener("click", () => {
+  const v = videos.find(x => x.id === selectedVideoId);
+  if (!v) return alert("Nessun video selezionato.");
+  downloadVideo(v);
+});
+
+// close drawer on ESC
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") openDrawer(false);
+});
+
+// keep HUD updated when duration/zoom changes
+el.teleDuration.addEventListener("change", updateHUD);
+el.zoomLevel.addEventListener("change", updateHUD);
+
+// boot
+document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
