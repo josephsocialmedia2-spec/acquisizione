@@ -7,10 +7,10 @@
 
   <style>
     :root{
-      --bg:#0b6b3a;
+      --bg:#0b1120;
       --text:#f3f4f6;
       --muted:#a0adb8;
-      --gold:#ffd400;
+      --gold:#d8a23a;
       --border: rgba(225,225,225,0.18);
       --shadow: 0 14px 50px rgba(0,0,0,0.45);
       --radius: 18px;
@@ -108,9 +108,9 @@
     }
 
     .btn.primary{
-      background: linear-gradient(135deg, rgba(255,212,0,.98), rgba(255,212,0,.78));
-      color:#141414;
-      border-color: rgba(255,212,0,.65);
+      background: linear-gradient(135deg, rgba(216,162,58,.95), rgba(216,162,58,.72));
+      color:#111;
+      border-color: rgba(216,162,58,.55);
     }
     .btn.blue{
       background: linear-gradient(135deg, rgba(57,90,140,.95), rgba(57,90,140,.70));
@@ -121,13 +121,6 @@
       border-color: rgba(123,79,189,.55);
     }
     .btn.gray{ background: rgba(255,255,255,.04); }
-
-    .btn.green{
-      background: linear-gradient(135deg, rgba(37,211,102,.95), rgba(37,211,102,.70));
-      border-color: rgba(37,211,102,.55);
-      color:#08140c;
-      font-weight: 1000;
-    }
 
     /* REC button (rosso, “alive”) */
     .btn.rec{
@@ -565,154 +558,11 @@
       color: rgba(243,244,246,.92);
       white-space: nowrap;
     }
-  
-    /* ==========================
-       SIMPLE / PRO UI
-    ========================== */
-    .proOnly{ display:block; }
-    .simpleOnly{ display:none; }
-    body.modeSimple .proOnly{ display:none !important; }
-    body.modeSimple .simpleOnly{ display:block !important; }
-
-    body.modeSimple .btn{ font-size:12px; padding:10px 12px; }
-    body.modeSimple .btn.tiny{ font-size:11px; padding:8px 10px; }
-    body.modeSimple .hintTop{ display:none; }
-
-    .wizard{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-    .wizStep{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      font-weight:1000;
-      font-size:11px;
-      color: rgba(243,244,246,.88);
-      user-select:none;
-    }
-    .wizStep.active{
-      border-color: rgba(216,162,58,.55);
-      box-shadow: 0 0 0 6px rgba(216,162,58,.10);
-      background: rgba(216,162,58,.12);
-      color: rgba(255,255,255,.98);
-    }
-    .wizStep.done{
-      border-color: rgba(37,211,102,.45);
-      background: rgba(37,211,102,.10);
-    }
-
-    #toast{
-      position: fixed;
-      left: 50%;
-      bottom: 84px;
-      transform: translateX(-50%);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
-      color: rgba(243,244,246,.98);
-      font-weight: 950;
-      font-size: 12px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      display:none;
-      z-index: 2000;
-      max-width: min(560px, 92vw);
-      text-align:center;
-    }
-
-
-    /* ==========================
-       MINIMAL SIMPLE UI (rigida)
-    ========================== */
-    body.modeSimple header{ display:none !important; }
-    body.modeSimple #promptDetails{ display:none !important; }
-    body.modeSimple .hintTop{ display:none !important; }
-    body.modeSimple .card.simpleOnly{ display:none !important; }
-    body.modeSimple .proOnly{ display:none !important; }
-    body.modeSimple #recList{ max-height:200px; }
-    /* Hide unused buttons/sections in simple */
-    body.modeSimple #btnOpenChatGPTPasteQ,
-    body.modeSimple #btnPasteTop,
-    body.modeSimple #btnSendTele,
-    body.modeSimple #btnCopyCaption{ display:none !important; }
-    /* Make main actions bigger */
-    body.modeSimple .btn{ font-size:14px; padding:12px 14px; }
-    body.modeSimple textarea{ font-size:14px; }
-
-
-    /* Minimal UI: nasconde spiegazioni e blocchi non più usati */
-    .hintTop, .wizard, #wizardHint, #promptDetails { display:none !important; }
-    #btnOpenChatGPTPasteQ, #btnPasteTop, #btnSendTele, #btnCopyCaption { display:none !important; }
-    /* nasconde il box risposta (usato solo come storage) */
-    #answerBox{ display:none !important; }
-
-
-/* === TELEPROMPTER UPGRADE === */
-#teleWrap{
-  height: 70vh !important;
-}
-#teleText{
-  font-size: 26px !important;
-  line-height: 1.45 !important;
-  padding: 24px !important;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
-/* keyword emphasis */
-.tele-strong{
-  color: #ffd166;
-  font-weight: 900;
-}
-
-
-/* Countdown pill */
-#countdownPill{
-  border-color: rgba(255,255,255,.18);
-  background: rgba(0,0,0,.24);
-  font-weight: 1000;
-}
-body.isRecording #countdownPill{
-  border-color: rgba(255,59,48,.55);
-  background: rgba(255,59,48,.12);
-}
-
-</style>
+  </style>
 </head>
 
 <body>
 <div class="wrap">
-  <!-- ARCHIVIO (CSV) + SELEZIONE DOMANDA -->
-  <div class="card" id="archiveCard" style="margin-top:14px;">
-    <div class="section">
-      <div class="bar between" style="width:100%; gap:10px; flex-wrap:wrap;">
-        <div class="bar left" style="gap:10px; flex-wrap:wrap;">
-          <label class="btn gray" style="cursor:pointer;">
-            <span class="ico">📁</span> Carica archivio CSV
-            <input id="csvFile" type="file" accept=".csv,text/csv" style="display:none">
-          </label>
-
-          <button class="btn blue" id="btnGenerateQuestion" type="button">
-            <span class="ico">🎲</span> Genera domanda
-          </button>
-        </div>
-
-        <div class="bar left" style="gap:10px; flex:1; min-width:260px; flex-wrap:wrap;">
-          <select id="questionSelect" class="sel" style="min-width:260px; flex:1;">
-            <option value="">Seleziona una domanda…</option>
-          </select>
-          <span class="pill" id="archiveCountPill">Archivio: 0</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
 
   <!-- TOP ROW -->
   <header>
@@ -730,18 +580,9 @@ body.isRecording #countdownPill{
       </button>
 
       <!-- NUOVO: ISTRUZIONI -->
-      <button class="btn gray proOnly" id="btnInstructions" type="button" title="Apri guida operativa">
+      <button class="btn gray" id="btnInstructions" type="button" title="Apri guida operativa">
         <span class="ico">📘</span> Istruzioni
       </button>
-
-
-      <span class="pill" style="gap:10px;">
-        <span style="display:inline-flex;align-items:center;gap:8px;">
-          <span style="font-weight:1000;font-size:10px;color:var(--muted);">Modalità</span>
-          <button class="btn tiny primary" id="btnModeSimple" type="button" title="Interfaccia semplificata">Semplice</button>
-          <button class="btn tiny gray" id="btnModePro" type="button" title="Mostra tutte le impostazioni">Pro</button>
-        </span>
-      </span>
 
       <span class="pill">
         <span id="videoCounter">Video: 0</span>
@@ -761,34 +602,12 @@ body.isRecording #countdownPill{
     4) <b>Incolla risposta</b> → 5) <b>Teleprompter + REC</b>
   </div>
 
-
-  <!-- Wizard steps (Semplice) -->
-  <div class="card simpleOnly" style="margin-top:10px;">
-    <div class="section" style="padding:10px 12px;">
-      <div class="wizard">
-        <div class="wizStep" data-step="1">1) Domanda</div>
-        <div class="wizStep" data-step="2">2) ChatGPT</div>
-        <div class="wizStep" data-step="3">3) Incolla</div>
-        <div class="wizStep" data-step="4">4) Teleprompter</div>
-        <div class="wizStep" data-step="5">5) REC</div>
-        <div class="wizStep" data-step="6">6) Scarica / WhatsApp</div>
-      </div>
-      <div class="subtle" id="wizardHint" style="margin-top:8px;">Premi <b>Nuova domanda</b> per iniziare.</div>
-    </div>
-  </div>
-
-
   <!-- BLOCCO RISPOSTA IN ALTO (vuoto di default) -->
   <div class="card">
     <div class="section">
       <p class="h">Risposta (da ChatGPT o scritta da te)</p>
       <div class="field">
         <textarea id="answerBox" placeholder="Qui verrà incollata la risposta quando premi “Incolla risposta”…"></textarea>
-      <div class="field" style="margin-top:10px;">
-        <p class="miniLabel" style="margin:0 0 6px; opacity:.85;"><b>Testo libero (opzionale)</b> — per video senza domanda (es: “Oggi sto bene”)</p>
-        <input id="freeTextBox" class="in" type="text" placeholder="Scrivi qui un testo libero…" />
-      </div>
-
       </div>
 
       <div class="bar left" style="margin-top:10px;">
@@ -796,12 +615,6 @@ body.isRecording #countdownPill{
         <button class="btn gray" id="btnCopyCaption" type="button" title="Copia caption con hashtag (se non già presenti)">
           <span class="ico">📋</span> Copia caption
         </button>
-<button class="btn green" id="btnWhatsApp" type="button" title="Invia domanda + risposta su WhatsApp">
-          <span class="ico">🟢</span> Invia WhatsApp
-        </button>
-
-        
-
       </div>
 
       <div class="subtle">
@@ -838,11 +651,6 @@ body.isRecording #countdownPill{
               <!-- REC più a destra: layout a 3 blocchi -->
               <div class="bar between" style="width:100%;">
                 <div class="ctrlLeft">
-                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
-                    <span class="dot"></span> Teleprompter + REC
-                  </button>
-      <span class="pill" id="countdownPill" style="min-width:120px; text-align:center;">⏱️ 120</span>
-
                   <button class="btn gray" id="btnCam" type="button"><span class="ico">📷</span> Camera</button>
                 </div>
 
@@ -852,18 +660,20 @@ body.isRecording #countdownPill{
                 </div>
 
                 <div class="ctrlRight">
-                  <!-- REC spostato a sinistra -->
+                  <button class="btn rec" id="btnTeleRec" type="button" title="Avvia teleprompter e registrazione">
+                    <span class="dot"></span> Teleprompter + REC
+                  </button>
                 </div>
               </div>
 
-              <div class="bar proOnly">
+              <div class="bar">
                 <label class="chk"><input class="check" type="checkbox" id="speed120"> 120</label>
                 <label class="chk"><input class="check" type="checkbox" id="speed105"> 105</label>
                 <label class="chk"><input class="check" type="checkbox" id="speed90"> 90</label>
                 <span class="pill" id="speedLabel">Vel: 105s</span>
               </div>
 
-              <div class="sliderRow proOnly">
+              <div class="sliderRow">
                 <span>Zoom</span>
                 <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1" />
                 <span id="zoomVal">1.0x</span>
@@ -871,7 +681,7 @@ body.isRecording #countdownPill{
             </div>
           </div>
 
-          <div class="proOnly">
+          <div>
             <p class="h">Rotazione profili (piccola)</p>
             <div class="profiles">
               <div class="profileRow">
@@ -932,36 +742,19 @@ body.isRecording #countdownPill{
 
           <!-- NUOVO: UPLOAD VIDEO -->
           <input id="videoUpload" type="file" accept="video/*" style="display:none;" />
-          <button class="btn proOnly" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
+          <button class="btn" id="btnUploadVideo" type="button" title="Carica un video e aggiungilo alla lista">
             <span class="ico">⬆️</span> Carica video
           </button>
 
-          <button class="btn tiny gray proOnly" id="btnClearList" type="button">🗑️ Svuota</button>
+          <button class="btn tiny gray" id="btnClearList" type="button">🗑️ Svuota</button>
         </div>
 
-        
-        <!-- CAPTION (Domanda + Risposta) -->
-        <div class="card" id="captionCard" style="margin-top:14px;">
-          <div class="section">
-            <p class="h">Caption (Domanda + Risposta)</p>
-            <textarea id="captionBox" class="ta" rows="4" readonly style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none; font-weight:850; resize: vertical; min-height: 120px; font-size:12px; line-height:1.25;"></textarea>
-            <div class="field" style="margin-top:10px;">
-              <p class="miniLabel" style="margin:0 0 6px; opacity:.85;"><b>Hashtag (opzionale)</b></p>
-              <textarea id="hashtagsBox" class="ta" rows="2" placeholder="#hashtag1 #hashtag2"></textarea>
-            </div>
-
-            <div class="bar left" style="margin-top:10px; gap:10px; flex-wrap:wrap;">
-              <button class="btn gray" id="btnCopyCaption2" type="button"><span class="ico">📋</span> Copia caption</button>
-            </div>
-          </div>
-        </div>
-
-<div id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
+        <div class="mini" id="recList" style="margin-top:10px; max-height:260px; overflow:auto;">—</div>
       </div>
 
       <!-- PROMPT BLOCCO A FONDO PAGINA -->
       <div class="section">
-        <details id="promptDetails" class="proOnly">
+        <details id="promptDetails">
           <summary>
             <span>🧠 Prompt ChatGPT (clicca per aprire)</span>
             <span class="pill" id="promptStatePill">Bloccato</span>
@@ -1046,7 +839,6 @@ body.isRecording #countdownPill{
    CONFIG
 ========================== */
 const GESTIONALE_URL = "https://tuo-gestionale.com";
-const WHATSAPP_NUMBER = "393713708294";
 const CHATGPT_URL = "https://chatgpt.com/c/6952922f-1ab4-8326-b3bb-28536c3bfab0";
 
 /* Hashtag automatici (NON mostrati in preview) */
@@ -1132,272 +924,6 @@ let promptText = "";
 ========================== */
 const $ = (id) => document.getElementById(id);
 
-function highlightKeywords(text){
-  const keywords = [
-    "io", "decido", "responsabilità", "prezzo", "trattativa",
-    "mercato", "scelte", "intervengo", "gestisco", "proteggo"
-  ];
-  let out = text;
-  keywords.forEach(k=>{
-    const re = new RegExp("\\b("+k+")\\b","gi");
-    out = out.replace(re, '<span class="tele-strong">$1</span>');
-  });
-  return out;
-}
-
-
-/* ==========================
-   ARCHIVIO CSV (domanda+risposta)
-========================== */
-let ARCHIVIO = [];        // [{id, area, domanda, risposta}]
-
-function pickRandomItem(){
-  if(!ARCHIVIO || !ARCHIVIO.length) return null;
-  if(ARCHIVIO.length === 1) return ARCHIVIO[0];
-  let it = null;
-  for(let k=0;k<10;k++){
-    const cand = ARCHIVIO[Math.floor(Math.random()*ARCHIVIO.length)];
-    if(!currentItem || cand !== currentItem){ it = cand; break; }
-  }
-  return it || ARCHIVIO[Math.floor(Math.random()*ARCHIVIO.length)];
-}
-let currentItem = null;   // item selezionato
-
-function normalizeHeader(h){
-  return String(h||"").trim().toLowerCase();
-}
-
-function detectDelimiter(text){
-  const firstLine = String(text || "").split(/\r?\n/)[0] || "";
-  const commas = (firstLine.match(/,/g) || []).length;
-  const semis  = (firstLine.match(/;/g) || []).length;
-  return semis > commas ? ";" : ",";
-}
-
-// Simple CSV parser supporting quoted fields + delimiter autodetect
-function parseCSV(text){
-  const delim = detectDelimiter(text);
-  const rows = [];
-  let row = [], cell = "", inQuotes = false;
-
-  for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    const next = text[i+1];
-
-    if(ch === '"'){
-      if(inQuotes && next === '"'){ cell += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if(ch === delim && !inQuotes){
-      row.push(cell); cell = "";
-    } else if((ch === "\n" || ch === "\r") && !inQuotes){
-      if(ch === "\r" && next === "\n") i++;
-      row.push(cell); cell = "";
-      if(row.some(v => String(v).trim().length)) rows.push(row);
-      row = [];
-    } else {
-      cell += ch;
-    }
-  }
-
-  if(cell.length || row.length){
-    row.push(cell);
-    if(row.some(v => String(v).trim().length)) rows.push(row);
-  }
-  return rows;
-}
-
-
-function loadArchiveFromCSV(csvText){
-  const rows = parseCSV(csvText);
-  if(!rows.length) return { ok:false, err:"CSV vuoto" };
-
-  const headers = rows[0].map(normalizeHeader);
-  const idxDom = headers.findIndex(h => ["domanda","question","q"].includes(h));
-  const idxRis = headers.findIndex(h => ["risposta","answer","a"].includes(h));
-  const idxArea = headers.findIndex(h => ["area","categoria","category"].includes(h));
-
-  if(idxDom === -1) return { ok:false, err:"Manca la colonna 'domanda' (o 'question')" };
-  if(idxRis === -1) return { ok:false, err:"Manca la colonna 'risposta' (o 'answer')" };
-
-  const out = [];
-  for(let i=1;i<rows.length;i++){
-    const r = rows[i];
-    const domanda = (r[idxDom]||"").trim();
-    const risposta = (r[idxRis]||"").trim();
-    const area = idxArea>-1 ? (r[idxArea]||"").trim() : "";
-    if(!domanda || !risposta) continue;
-    out.push({ id: out.length+1, area, domanda, risposta });
-  }
-  ARCHIVIO = out;
-  refreshArchiveUI();
-  return { ok:true, count: ARCHIVIO.length };
-}
-
-function refreshArchiveUI(){
-  const sel = $("questionSelect");
-  if(!sel) return;
-  sel.innerHTML = '<option value="">Seleziona una domanda…</option>';
-  ARCHIVIO.forEach((it, i)=>{
-    const opt = document.createElement("option");
-    opt.value = String(i);
-    opt.textContent = it.area ? `[${it.area}] ${it.domanda}` : it.domanda;
-    sel.appendChild(opt);
-  });
-  const pill = $("archiveCountPill");
-  if(pill) pill.textContent = `Archivio: ${ARCHIVIO.length}`;
-}
-
-function setCurrentItem(it){
-  currentItem = it;
-  if(!it) return;
-
-  currentQuestion = it.domanda;
-  showQuestionInOverlay(currentQuestion);
-
-  // risposta nel teleprompter
-  if($("answerBox")) $("answerBox").value = it.risposta;
-  applyAnswer(it.risposta);
-
-  
-  try{ const c=$("captionBox"); if(c) c.value = buildCaptionFull(); }catch(e){}
-if(document.body.classList.contains("modeSimple")){
-    window.__step = 5; // pronto per REC
-  }
-  updateWizard();
-  showToast("Domanda pronta ✅", 1200);
-}
-
-function buildCaptionQA(){
-  const q = String(currentItem?.domanda || currentQuestion || "").trim();
-  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
-  const parts = [];
-  if(q) parts.push("Domanda: " + q);
-  if(a) parts.push("Risposta: " + a);
-  return parts.join("\n");
-}
-
-
-function showToast(msg, ms=1600){
-  const el = $("toast");
-  if(!el) return;
-  el.textContent = msg;
-  el.style.display = "block";
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(()=>{ el.style.display="none"; }, ms);
-}
-
-function renderCountdown(){
-  const pill = $("countdownPill");
-  if(!pill) return;
-  pill.textContent = `⏱️ ${String(countdownRemaining).padStart(3,"0")}`;
-}
-function stopCountdown(){
-  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
-  countdownRemaining = 120;
-  renderCountdown();
-  try{ const c=$('captionBox'); if(c) c.value = buildCaptionQA(); }catch(e){}
-}
-function startCountdown(){
-  stopCountdown();
-  document.body.classList.add("isRecording");
-  countdownRemaining = 120;
-  renderCountdown();
-  countdownTimer = setInterval(()=>{
-    countdownRemaining -= 1;
-    if(countdownRemaining <= 0){
-      countdownRemaining = 0;
-      renderCountdown();
-      // auto stop
-      try{ stopRecording(); }catch(e){}
-      stopCountdown();
-      document.body.classList.remove("isRecording");
-      return;
-    }
-    renderCountdown();
-  }, 1000);
-}
-
-function setMode(mode){
-  const isSimple = mode === "simple";
-  document.body.classList.toggle("modeSimple", isSimple);
-  $("btnModeSimple").classList.toggle("primary", isSimple);
-  $("btnModeSimple").classList.toggle("gray", !isSimple);
-  $("btnModePro").classList.toggle("primary", !isSimple);
-  $("btnModePro").classList.toggle("gray", isSimple);
-  try{ localStorage.setItem("vc_mode", isSimple ? "simple" : "pro"); }catch(e){}
-  if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    updateWizard();
-}
-
-
-
-function updateWizard(){
-  const isSimple = document.body.classList.contains("modeSimple");
-  const hasQ = !!String(currentQuestion||"").trim();
-  const hasA = !!String(($("answerBox") && $("answerBox").value) || "").trim();
-  const hasRec = (typeof recordings !== "undefined") && recordings && recordings.length > 0;
-  const camOk = !!camStream;
-
-  if(typeof window.__step === "undefined") window.__step = 1;
-  const setStep = (n)=>{ window.__step = Math.max(1, Math.min(5, n)); };
-
-  if(isSimple){
-    if(!hasQ) setStep(1);
-    else if(hasQ && !hasA) setStep(2);
-    else if(hasQ && hasA && !hasRec) setStep(3);
-    else if(hasRec) setStep(5);
-  }
-
-  const steps = Array.from(document.querySelectorAll(".wizStep"));
-  if(steps.length){
-    let active = isSimple ? window.__step : 1;
-    steps.forEach(s=>{
-      const n = Number(s.dataset.step||0);
-      s.classList.toggle("active", n===active);
-      s.classList.toggle("done", n < active);
-    });
-  }
-
-  // Locks
-  function lock(id, locked){
-    const el = $(id);
-    if(!el) return;
-    el.disabled = !!locked;
-    el.style.opacity = locked ? ".45" : "1";
-    el.style.pointerEvents = locked ? "none" : "auto";
-  }
-
-  if(isSimple){
-    // Lock all except what we need
-    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp"].forEach(id=>lock(id,true));
-    lock("btnNext", false); // nuova domanda
-
-    if(window.__step === 1){
-      // only nuova domanda
-    }else if(window.__step === 2){
-      // allow REC only after answer exists; still keep locked
-    }else if(window.__step === 3){
-      lock("btnStartVideo", false); // REC
-      lock("btnCam", false);
-      lock("btnStop", false); // allow stop (recording will start after rec)
-    }else if(window.__step === 5){
-      lock("btnDownloadVideo", false);
-      lock("btnWhatsApp", false);
-      lock("btnNext", false);
-    }
-
-    // If camera ready and no recording yet but answer exists, ensure step 3
-    if(hasQ && hasA && !hasRec) setStep(3);
-
-    // Provide minimal guidance via toast hints (optional)
-  }else{
-    ["btnStartVideo","btnCam","btnStop","btnDownloadVideo","btnWhatsApp","btnNext"].forEach(id=>lock(id,false));
-  }
-}
-
-
-
-
 function pad2(n){ return String(n).padStart(2,"0"); }
 function nowStamp(){
   const d = new Date();
@@ -1459,50 +985,6 @@ function setCaptionClean(clean){
   }
 }
 
-function getFreeText(){
-  return String($("freeTextBox")?.value || "").trim();
-}
-function getHashtags(){
-  return String($("hashtagsBox")?.value || "").trim();
-}
-
-function buildCaptionFromInputs(){
-  // Caption completa (QA oppure testo libero) + hashtag
-  return buildCaptionFull();
-}
-
-function buildCaptionFull(){
-  const tags = getHashtags();
-
-  // Se c'è testo libero, usalo come contenuto principale (senza etichette Domanda/Risposta)
-  const free = getFreeText();
-  if(free){
-    return (tags ? (free + "\n\n" + tags) : free).trim();
-  }
-
-  // Altrimenti: Domanda + Risposta
-  const q = String(currentItem?.domanda || currentQuestion || "").trim();
-  const a = String(currentItem?.risposta || ($("answerBox")?.value||"")).trim();
-  const parts = [];
-  if(q) parts.push("Domanda: " + q);
-  if(a) parts.push("Risposta: " + a);
-  let txt = parts.join("\n");
-  if(tags) txt = (txt ? (txt + "\n\n" + tags) : tags);
-  return String(txt || "").trim();
-}
-
-function refreshCaptionBox(){
-  try{
-    const c = $("captionBox");
-    if(c) c.value = buildCaptionFull();
-  }catch(e){}
-}
-
-function buildWhatsAppMessage(){
-  // WhatsApp deve mandare la caption completa con hashtag
-  return buildCaptionFull();
-}
-
 /* ==========================
    PROMPT
 ========================== */
@@ -1538,21 +1020,10 @@ function savePrompt(){
 function showQuestionInOverlay(q){
   $("questionBoxOverlay").textContent = q ? q : "Premi “Nuova domanda”.";
 }
-
 function nextQuestion(){
-  if(ARCHIVIO && ARCHIVIO.length){
-    const it = pickRandomItem();
-    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
-    setCurrentItem(it);
-    return;
-  }
-  // fallback
   qIdx = (qIdx + 1) % QUESTION_BANK.length;
   currentQuestion = QUESTION_BANK[qIdx].q;
   showQuestionInOverlay(currentQuestion);
-  if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
-  updateWizard();
-  showToast("Carica l’archivio CSV per avere anche le risposte 📁", 2200);
 }
 function composeChatGPTInput(){
   const q = String(currentQuestion || "").trim();
@@ -1623,7 +1094,6 @@ function stopTeleprompter(){
 function restartTeleprompter(){
   stopTeleprompter();
   resetTeleprompter();
-      try{ refreshCaptionBox(); setCaptionClean(buildCaptionFull()); }catch(e){}
   setTimeout(()=> startTeleprompter(), 120);
 }
 function animateTele(){
@@ -1655,8 +1125,7 @@ function applyAnswer(answer){
   $("teleText").textContent = a;
   resetTeleprompter();
   stopTeleprompter();
-  setCaptionClean(buildCaptionFull());
-  refreshCaptionBox();
+  setCaptionClean(a);
   return true;
 }
 
@@ -1675,10 +1144,6 @@ function setSpeed(seconds){
    CAMERA + REC (CANVAS CLEAN)
 ========================== */
 let camStream = null;
-let camFacing = "user"; // user | environment
-let countdownTimer = null;
-let countdownRemaining = 120;
-
 let chunks = [];
 let rafCanvasId = null;
 
@@ -1832,24 +1297,7 @@ function buildFileName(videoNum, platform, question){
   return `video_${String(videoNum).padStart(3,"0")}_${p}_${k}_${nowStamp()}.webm`;
 }
 
-
-// delayed auto-scroll only if overflow
-function delayedAutoScroll(){
-  const el = $("teleText");
-  if(!el) return;
-  setTimeout(()=>{
-    if(el.scrollHeight > el.clientHeight){
-      el.scrollTop = 0;
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      el.scrollTo({ top: maxScroll, behavior: "smooth" });
-    }
-  }, 2000);
-}
-
 function startRecording(){
-  // countdown starts after 2s
-  try{ setTimeout(()=>{ startCountdown(); }, 2000); }catch(e){}
-
   if(!camStream){ alert("Attiva la camera."); return; }
   if(recorder && recorder.state !== "inactive"){ return; }
 
@@ -1873,7 +1321,7 @@ function startRecording(){
   recorder.onstart = ()=>{ isRecording = true; startRecLamp(); };
 
   const qNow = String(currentQuestion || "").trim();
-  const capNow = buildCaptionFromInputs();
+  const capNow = String(lastCaptionClean || "").trim();
   const platformNow = getActivePlatform();
 
   recorder.onstop = ()=>{
@@ -1898,8 +1346,6 @@ function startRecording(){
 
     advancePlatform();
     refreshProfileUI();
-    if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
-    updateWizard();
   };
 
   recorder.start(1000);
@@ -1973,28 +1419,6 @@ function addUploadedVideo(file){
    INIT
 ========================== */
 document.addEventListener("DOMContentLoaded", ()=>{
-  // copia caption
-  const capBtn = document.getElementById("btnCopyCaption");
-  if(capBtn && !capBtn._bound){
-    capBtn._bound=true;
-    capBtn.addEventListener("click", async ()=>{
-      const text = (document.getElementById("captionBox")?.value || buildCaptionFull()).trim();
-      if(!text){ try{ showToast("Niente da copiare",1400);}catch(e){} return; }
-      try{ await navigator.clipboard.writeText(text); showToast("Caption copiata ✅",1400);}catch(e){
-        const ta=document.getElementById("captionBox");
-        if(ta){ ta.focus(); ta.select(); document.execCommand("copy"); try{ showToast("Caption copiata ✅",1400);}catch(e){} }
-      }
-    });
-  }
-
-  // mode init (default: Semplice)
-  try{
-    const savedMode = localStorage.getItem("vc_mode");
-    setMode(savedMode === "pro" ? "pro" : "simple");
-  }catch(e){
-    setMode("simple");
-  }
-
   // prompt
   loadPrompt();
   lockPromptUI();
@@ -2033,7 +1457,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   resetTeleprompter();
   applyZoom(1.0);
   setSpeed(105);
-  updateWizard();
 
   // speed radio-like
   $("speed120").addEventListener("change", (e)=>{ if(e.target.checked) setSpeed(120); });
@@ -2051,68 +1474,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // nuova domanda
   $("btnNext").addEventListener("click", ()=> nextQuestion());
 
-  // Archivio CSV
-  $("csvFile").addEventListener("change", async (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    const text = await file.text();
-    const res = loadArchiveFromCSV(text);
-    if(!res.ok){ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : " + res.err, 2200); return; }
-    showToast(`Archivio caricato ✅ (${res.count})`, 1800);
-  });
-
-  $("questionSelect").addEventListener("change", ()=>{
-    const v = $("questionSelect").value;
-    if(v === "") return;
-    const it = ARCHIVIO[Number(v)];
-    if(it) setCurrentItem(it);
-  });
-
-  $("btnGenerateQuestion").addEventListener("click", ()=>{
-    if(!ARCHIVIO.length){
-      showToast("Carica prima l’archivio CSV 📁", 2000);
-      return;
-    }
-    const it = pickRandomItem();
-    $("questionSelect").value = String(ARCHIVIO.indexOf(it));
-    setCurrentItem(it);
-  });
-
-
-  // modalità semplice/pro
-  $("btnModeSimple").addEventListener("click", ()=> setMode("simple"));
-  $("btnModePro").addEventListener("click", ()=> setMode("pro"));
-
-  // START VIDEO (Semplice): camera + domanda + teleprompter + REC
-  
-  // quando scrivi/incolli il testo, sblocca REC
-  $("answerBox").addEventListener("input", ()=>{
-    if(document.body.classList.contains("modeSimple")){
-      window.__step = ($("answerBox").value||"").trim() ? 3 : 2;
-      updateWizard();
-    }
-  });
-
-  $("btnStartVideo").addEventListener("click", async ()=>{
-    if(!currentQuestion){ nextQuestion(); showToast("Domanda pronta ✅"); }
-    const ans = ($("answerBox").value || "").trim();
-    if(!ans){
-      showToast("Incolla la risposta prima 👇");
-      $("answerBox").focus();
-      updateWizard();
-      return;
-    }
-    const okCam = await ensureReady();
-    if(!okCam){ showToast("Camera non disponibile"); return; }
-    applyAnswer(ans);
-    showToast("REC avviato 🔴");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    try{ const o=$("questionBoxOverlay"); if(o) o.style.display="none"; }catch(e){}
-    startRecording();
-    delayedAutoScroll();
-    updateWizard();
-  });
-
   // apri chatgpt + copia prompt+domanda
   $("btnOpenChatGPTPasteQ").addEventListener("click", async ()=>{
     if(!currentQuestion){
@@ -2120,9 +1481,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
     const payload = composeChatGPTInput();
     await copyText(payload);
-    showToast("Copiato ✅ Incolla su ChatGPT");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 3; }
-    updateWizard();
     window.open(CHATGPT_URL, "_blank", "noopener");
   });
 
@@ -2131,9 +1489,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     try{
       const t = await readClipboardText();
       $("answerBox").value = (t || "");
-      showToast("Risposta incollata ✅");
-      if(document.body.classList.contains("modeSimple")){ window.__step = ($("answerBox").value||"").trim() ? 4 : 3; }
-      updateWizard();
     }catch(e){
       alert("Clipboard bloccata: incolla manualmente nel blocco risposta.");
     }
@@ -2142,62 +1497,34 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // invia al teleprompter
   $("btnSendTele").addEventListener("click", ()=>{
     const ok = applyAnswer($("answerBox").value || "");
-    if(!ok){ showToast("Scrivi o incolla una risposta prima 👇"); return; }
-    showToast("Teleprompter pronto ✅");
-    if(document.body.classList.contains("modeSimple")){ window.__step = 5; }
-    updateWizard();
+    if(!ok) alert("Scrivi o incolla una risposta prima.");
   });
 
   // camera
-  $("btnCam").addEventListener("click", async ()=>{
-  camFacing = (camFacing === "user") ? "environment" : "user";
-  // restart camera with new facing
-  try{ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }catch(e){}
-  const ok = await ensureReady();
-  if(ok) showToast(camFacing === "user" ? "Camera frontale ✅" : "Camera posteriore ✅");
-  updateWizard();
-});
-// Teleprompter + REC
+  $("btnCam").addEventListener("click", async ()=>{ await ensureReady(); });
+
+  // Teleprompter + REC
   $("btnTeleRec").addEventListener("click", async ()=>{
     const okCam = await ensureReady();
     if(!okCam) return;
 
-    // Se non hai ancora inviato nulla al teleprompter, prova a usare il testo nel box “Risposta”.
-    // Così puoi registrare anche video “liberi” (es: “Oggi sto bene”) senza dover avere per forza una domanda.
-    const maybe = String(getFreeText() || $("answerBox")?.value || "").trim();
-    if(String($("teleText")?.textContent || "").trim() === "" && maybe){
-      $("teleText").textContent = maybe;
-      resetTeleprompter();
-      try{ refreshCaptionBox(); setCaptionClean(buildCaptionFull()); }catch(e){}
+    if(!currentQuestion){
+      nextQuestion();
     }
 
-    // Avvia teleprompter (anche se vuoto: in quel caso registri comunque il video)
-    startTeleprompter();
+    const ans = ($("answerBox").value || "").trim();
+    if(!ans){
+      alert("Scrivi o incolla una risposta (o usa “Incolla risposta”) prima di registrare.");
+      return;
+    }
 
-    // Countdown + REC
-    startCountdown();
-    await startRecording();
-    if(document.body.classList.contains("modeSimple")){ window.__step = 6; }
-    updateWizard();
+    applyAnswer(ans);
+    startRecording();
   });
 
   $("btnStop").addEventListener("click", ()=> stopRecording());
   $("btnRestart").addEventListener("click", ()=> restartTeleprompter());
   $("zoom").addEventListener("input", (e)=> applyZoom(e.target.value));
-
-  // Aggiorna caption completa (QA/testo libero + hashtag)
-  ["answerBox","freeTextBox","hashtagsBox"].forEach((id)=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.addEventListener("input", ()=>{
-      refreshCaptionBox();
-      // aggiorna anche preview "caption clean" per le registrazioni future
-      try{ setCaptionClean(buildCaptionFull()); }catch(e){}
-    });
-  });
-  // init caption
-  refreshCaptionBox();
-
 
   // remember caption toggle
   $("chkRememberCaption").addEventListener("change", ()=>{
@@ -2213,60 +1540,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const out = captionWithHashtagsIfNeeded(lastCaptionClean);
     if(!out){ alert("Niente da copiare."); return; }
     await copyText(out);
-  });
-
-
-  // invia whatsapp (domanda + risposta)
-  
-  async function shareVideoOnWhatsApp(blob, filename, captionText){
-    const file = new File([blob], filename, { type: blob.type || "video/webm" });
-
-    // 1) Native share (mobile)
-    if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
-      await navigator.share({ files:[file], text: captionText, title: "Video" });
-      return "native-share";
-    }
-
-    // 2) Fallback: copy caption + open WhatsApp text + download video
-    try{ await navigator.clipboard.writeText(captionText); }catch(e){}
-    const phone = "393713708294";
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(captionText)}`;
-    window.open(url, "_blank", "noopener");
-
-    // download file
-    const a = document.createElement("a");
-    const u = URL.createObjectURL(blob);
-    a.href = u;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u), 5000);
-
-    return "fallback";
-  }
-
-  // invia whatsapp: video + caption (domanda + risposta)
-  $("btnWhatsApp").addEventListener("click", async ()=>{
-    const r = recordings && recordings[0];
-    if(!r || !r.blob){
-      showToast("Registra un video prima 👇");
-      return;
-    }
-    const captionText = String(r.captionClean || buildCaptionFull() || "").trim();
-    if(!captionText){
-      showToast("Manca il testo per la caption");
-      return;
-    }
-    showToast("Condivisione…");
-    try{
-      const mode = await shareVideoOnWhatsApp(r.blob, r.name || "video.webm", captionText);
-      if(mode === "fallback") showToast("Scaricato + WhatsApp aperto ✅");
-      else showToast("Inviato ✅");
-    }catch(err){
-      console.error(err);
-      showToast("Non riuscito. Prova Scarica + invio manuale.");
-    }
   });
 
   // download selected video
@@ -2336,162 +1609,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     $("unlockCode").value = "";
   });
 });
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  const csv = document.getElementById("csvFile");
-  const gen = document.getElementById("btnGenerateQuestion");
-  const sel = document.getElementById("questionSelect");
-
-  if(csv && !csv._bound){
-    csv._bound = true;
-    csv.addEventListener("change", async (e)=>{
-      const file = e.target.files && e.target.files[0];
-      if(!file) return;
-      const text = await file.text();
-      const res = loadArchiveFromCSV(text);
-      if(!res.ok){ try{ showToast("CSV non valido (controlla intestazioni e separatore , oppure ;) : "+res.err,2200);}catch(e){} return; }
-      try{ showToast(`Archivio caricato ✅ (${res.count})`,1800);}catch(e){}
-    });
-  }
-
-  if(sel && !sel._bound){
-    sel._bound = true;
-    sel.addEventListener("change", ()=>{
-      const v = sel.value;
-      if(v==="") return;
-      const it = ARCHIVIO[Number(v)];
-      if(it) setCurrentItem(it);
-    });
-  }
-
-  if(gen && !gen._bound){
-    gen._bound = true;
-    gen.addEventListener("click", ()=>{
-      if(!ARCHIVIO.length){ try{ showToast("Carica prima l’archivio CSV 📁",2000);}catch(e){} return; }
-      const it = pickRandomItem();
-      sel.value = String(ARCHIVIO.indexOf(it));
-      setCurrentItem(it);
-    });
-  }
-});
-
-
-/* ==========================
-   WHATSAPP SEND (Domanda + Risposta)
-========================== */
-(function(){
-  const waBtn = document.getElementById("btnWhatsApp");
-  const copy2 = document.getElementById("btnCopyCaption2");
-  const copy1 = document.getElementById("btnCopyCaption");
-  if(copy2 && copy1){
-    copy2.addEventListener("click", (e)=>{ e.preventDefault(); copy1.click(); });
-  }
-
-  function buildWA(){
-    try{
-      const msg = (typeof buildWhatsAppMessage === "function") ? buildWhatsAppMessage() : "";
-      return String(msg || "").trim();
-    }catch(e){ return ""; }
-  }
-
-  if(waBtn){
-    waBtn.addEventListener("click", ()=>{
-      const msg = buildWA();
-      if(!msg){
-        try{ showToast("Nessun testo da inviare: genera una domanda e inserisci/incolla una risposta.", 2200);}catch(e){}
-        return;
-      }
-      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-      window.open(url, "_blank", "noopener");
-    });
-  }
-})();
-
-
-/* ==========================
-   FIX: ISTRUZIONI + WHATSAPP + ROTAZIONE PROFILI
-========================== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  // --- Istruzioni (modal)
-  const modal = $("instructionsModal");
-  const btnTop = $("btnInstructions");
-  const btnBottom = $("btnInstructionsBottom");
-  const btnClose = $("btnCloseInstructions");
-
-  function openInstructions(){
-    if(!modal) return;
-    modal.style.display = "flex";
-    modal.setAttribute("aria-hidden","false");
-    try{ btnClose && btnClose.focus(); }catch(e){}
-  }
-  function closeInstructions(){
-    if(!modal) return;
-    modal.style.display = "none";
-    modal.setAttribute("aria-hidden","true");
-  }
-
-  [btnTop, btnBottom].forEach(b=>{
-    if(b && !b._bound){
-      b._bound = true;
-      b.addEventListener("click", openInstructions);
-    }
-  });
-  if(btnClose && !btnClose._bound){
-    btnClose._bound=true;
-    btnClose.addEventListener("click", closeInstructions);
-  }
-  if(modal && !modal._bound){
-    modal._bound=true;
-    modal.addEventListener("click", (e)=>{
-      if(e.target === modal) closeInstructions();
-    });
-    document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && modal.style.display === "flex") closeInstructions();
-    });
-  }
-
-  // --- WhatsApp (domanda + risposta, oppure solo testo libero)
-  const waBtn = $("btnWhatsApp");
-  if(waBtn && !waBtn._bound){
-    waBtn._bound=true;
-    waBtn.addEventListener("click", ()=>{
-      const q = String(currentQuestion || "").trim();
-      const a = String($("answerBox")?.value || "").trim();
-
-      let msg = "";
-      if(q && a) msg = `Domanda: ${q}\n\nRisposta:\n${a}`;
-      else if(a) msg = a;
-      else if(q) msg = q;
-
-      if(!msg.trim()){
-        showToast("Scrivi una risposta (o un testo libero) prima di inviare su WhatsApp 👇");
-        return;
-      }
-      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-      window.open(url, "_blank", "noopener");
-    });
-  }
-
-  // --- Rotazione profili: parte da un profilo casuale + avanza anche su “Nuova domanda”
-  try{
-    const list = getRotationPlatforms();
-    if(list.length > 0){
-      rotationIndex = Math.floor(Math.random() * list.length);
-      refreshProfileUI();
-    }
-  }catch(e){}
-  const btnNext = $("btnNext");
-  if(btnNext && !btnNext._rotBound){
-    btnNext._rotBound = true;
-    btnNext.addEventListener("click", ()=>{
-      advancePlatform();
-      refreshProfileUI();
-    });
-  }
-});
 </script>
-
-<div id="toast" aria-live="polite"></div>
-
 </body>
 </html>
