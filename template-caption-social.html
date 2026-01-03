@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Template Caption Social</title>
+
+<style>
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.4; padding: 24px; max-width: 860px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 12px; }
+.box { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 12px 0 18px; }
+label { display: block; font-weight: 600; margin: 10px 0 6px; }
+input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; }
+textarea { min-height: 170px; }
+.hint { font-size: 12px; color: #555; margin-top: 6px; }
+.caption { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space: pre-wrap; }
+</style>
+</head>
+
+<body>
+<h1>Template Caption (riempibile)</h1>
+
+<div class="box">
+  <div>Istruzioni: compila i campi qui sotto, poi incolla/riscrivi gli stessi contenuti nel box “Caption pronta” (puoi farlo velocemente con copia/incolla).</div>
+  <div class="hint">Nota: questo template è statico (senza automazioni). Se vuoi che i campi si inseriscano da soli nella caption, te lo preparo con un mini form + pulsante “Genera”.</div>
+</div>
+
+<div class="box">
+  <label for="data">Data</label>
+  <input id="data" placeholder="Es. 15 Marzo 2026">
+
+  <label for="titolo">Titolo</label>
+  <input id="titolo" placeholder="Es. Workshop di Fotografia Urbana">
+
+  <label for="descrizione">Descrizione evento/prodotto</label>
+  <textarea id="descrizione" placeholder="Scrivi qui la descrizione (punti chiave, benefit, CTA, ecc.)"></textarea>
+
+  <label for="prezzo">Prezzo</label>
+  <input id="prezzo" placeholder="Es. €49 / Gratuito / Da €29">
+
+  <label for="luogo">Luogo</label>
+  <input id="luogo" placeholder="Es. Milano / Online / Roma (Centro)">
+</div>
+
+<div class="box">
+  <label for="caption">Caption pronta (modifica i campi tra parentesi)</label>
+  <textarea id="caption" class="caption">📅 [inserisci data]
+🎯 [inserisci titolo]
+📝 [inserisci caption: testo coinvolgente, chiaro e orientato all’azione]
+💰 [inserisci prezzo]
+📍 [inserisci luogo]
+🔗 Link in bio</textarea>
+  <div class="hint">Regole rispettate: ordine fisso, nessuna voce rimossa, emoji solo a inizio riga.</div>
+</div>
+</body>
+</html>
