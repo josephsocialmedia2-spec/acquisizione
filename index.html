@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it-IT">
 <head>
@@ -605,8 +606,8 @@
       <div class="bd">
 
         <div class="row">
-          <button class="btn gold" id="btnNewQ" type="button" aria-label="Genera nuova domanda">✨ Nuova domanda</button>
-          <button class="btn ghost" id="btnCopyQuestion" type="button" aria-label="Copia domanda corrente">📋 Copia domanda</button>
+          <button class="btn gold" id="btnNewQ" type="button" aria-label="Apri ChatGPT">✨ Nuova domanda</button>
+          
         </div>
 
         <hr class="sep" aria-hidden="true">
@@ -616,11 +617,12 @@
             <label for="answerBox">Risposta (incolla o scrivi)</label>
             <textarea id="answerBox" placeholder="Incolla qui la risposta (o scrivila tu)…" aria-describedby="answerHelp"></textarea>
             <div id="answerHelp" class="muted" style="margin-top: 4px;">Supporta fino a 5000 caratteri</div>
+            <div class="muted" id="autoFlowHint" style="margin-top: 6px;">Dopo aver incollato/scritto la risposta, viene inviata automaticamente al teleprompter e la domanda viene copiata negli appunti.</div>
           </div>
         </div>
 
         <div class="row">
-          <button class="btn primary" id="btnSendTele" type="button" aria-label="Invia testo al teleprompter">➡️ Invia al teleprompter</button>
+          
           <button class="btn ghost" id="btnPasteAnswer" type="button" aria-label="Incolla dagli appunti">📋 Incolla dagli appunti</button>
         </div>
 
@@ -1764,5 +1766,57 @@ if (typeof requestIdleCallback !== 'undefined') {
   }
 }
 </style>
+<script>
+(function () {
+  const CHAT_URL = "https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb";
+
+  // Nuova domanda -> apre ChatGPT (bloccando eventuali listener esistenti)
+  const btnNewQ = document.getElementById("btnNewQ");
+  if (btnNewQ) {
+    btnNewQ.addEventListener("click", async function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      // Copia la domanda negli appunti (utile da incollare in chat)
+      try {
+        if (window.AppState && AppState.currentQuestion) {
+          await copyToClipboard(AppState.currentQuestion);
+        }
+      } catch (_) {}
+
+      window.open(CHAT_URL, "_blank", "noopener");
+    }, true);
+  }
+
+  // La risposta va in automatico al teleprompter (e copia la domanda a fine inserimento)
+  const answerBox = document.getElementById("answerBox");
+  let debounceId = null;
+
+  function pushAnswerToTeleprompter() {
+    const answerText = (answerBox && answerBox.value || "").trim();
+    if (!answerText) return;
+
+    try { applyAnswerToTeleprompter(answerText); } catch (_) {}
+
+    try {
+      if (window.AppState && AppState.currentQuestion) {
+        copyToClipboard(AppState.currentQuestion);
+      }
+    } catch (_) {}
+  }
+
+  function scheduleAutoPush() {
+    if (debounceId) clearTimeout(debounceId);
+    debounceId = setTimeout(pushAnswerToTeleprompter, 500);
+  }
+
+  if (answerBox) {
+    answerBox.addEventListener("input", scheduleAutoPush);
+    answerBox.addEventListener("change", pushAnswerToTeleprompter);
+    answerBox.addEventListener("blur", pushAnswerToTeleprompter);
+  }
+})();
+</script>
+
 </body>
 </html>
