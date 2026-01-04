@@ -840,6 +840,21 @@ async function openChatGPTAndCopyPrompt() {
 }
 
 
+/* ==========================
+   OVERRIDE: ORDINE COPIA (PROMPT → DOMANDA)
+========================== */
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  const base = String(TELEPROMPTER_PROMPT || '').trim();
+  if (!q) return base;
+  // Ordine richiesto: prima PROMPT, poi DOMANDA generata (senza etichette aggiuntive)
+  return `${base}
+
+${q}`;
+}
+
+
+
 
 /* ==========================
    GLOBAL STATE & CONSTANTS
