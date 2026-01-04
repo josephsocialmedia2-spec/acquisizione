@@ -770,8 +770,7 @@
 ========================== */
 const TELEPROMPTER_PROMPT = `SEI UN ESPERTO DI CONTENUTI SOCIAL IMMOBILIARI.
 OBIETTIVO: generare un TESTO DA TELEPROMPTER per un video social partendo dalla domanda:
-“È il momento di vendere casa?”
-
+ 
 CONTESTO STRATEGICO (OBBLIGATORIO):
 - Il video fa parte di una STRATEGIA DI CONTENUTI SOCIAL per acquisizione immobiliare.
 - NON devi vendere, NON devi proporre servizi, NON devi spingere l’agenzia.
@@ -780,8 +779,8 @@ CONTESTO STRATEGICO (OBBLIGATORIO):
 - Il pubblico sono PROPRIETARI DI CASA indecisi se vendere ora o aspettare.
 
 VINCOLI DI SCRITTURA:
-- Testo parlato, naturale, come se fosse letto su un teleprompter.
-- Frasi brevi.
+- Testo parlato, naturale,letto su un teleprompter
+_ Rispeste generate max 300 parole.
 - Linguaggio semplice (capibile da chi non è del settore).
 - Nessun termine tecnico inutile.
 - Niente numeri inventati.
@@ -801,43 +800,6 @@ FORMATO OUTPUT:
 LUNGHEZZA:
 - 45–60 secondi di parlato.
 `;
-
-
-/* ==========================
-   CHATGPT INTEGRATION (NUOVA DOMANDA)
-   - apre thread ChatGPT dedicato
-   - copia negli appunti il prompt + la domanda
-========================== */
-const CHATGPT_THREAD_URL = 'https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb';
-
-function buildTeleprompterPrompt(questionText) {
-  const q = String(questionText || '').trim();
-  // Se non c'è domanda, usa quella standard del prompt
-  if (!q) return String(TELEPROMPTER_PROMPT || '').trim();
-  return `${String(TELEPROMPTER_PROMPT || '').trim()}
-
-DOMANDA:
-${q}
-
-ORA GENERA IL TESTO.`;
-}
-
-async function openChatGPTAndCopyPrompt() {
-  // assicura che ci sia una domanda corrente
-  if (!AppState.currentQuestion) {
-    try { getNextQuestion(); } catch (e) {}
-  }
-  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
-  await copyToClipboard(payload);
-  // apre la chat in una nuova scheda
-  try {
-    window.open(CHATGPT_THREAD_URL, '_blank', 'noopener');
-  } catch (e) {
-    // fallback: se popup bloccato, cambia location
-    try { window.location.href = CHATGPT_THREAD_URL; } catch (_) {}
-  }
-  showToast('Prompt copiato. Apri ChatGPT e incolla (Ctrl+V).', 'success', 4500);
-}
 
 
 /* ==========================
