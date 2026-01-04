@@ -1944,6 +1944,87 @@ async function openChatGPTAndCopyPrompt() {
   hud.appendChild(btn);
 })();
 
+
+/* ==========================
+   UI TWEAKS:
+   1) Sposta "Scarica selezionato" sopra la scritta del player
+   2) Teleprompter: scorrimento dall'alto verso il basso
+========================== */
+(function uiTweaks(){
+  function moveDownloadButtonNearPlayer() {
+    const btnDownload = document.getElementById('btnDownload');
+    const playerHelp = document.getElementById('playerHelp');
+    const player = document.getElementById('player');
+    if (!btnDownload || !playerHelp || !player) return;
+
+    // Crea un contenitore sopra la scritta "Il player mostra..."
+    let holder = document.getElementById('downloadHolder');
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.id = 'downloadHolder';
+      holder.className = 'row';
+      holder.style.marginTop = '10px';
+      holder.style.marginBottom = '6px';
+      holder.style.justifyContent = 'flex-start';
+      playerHelp.insertAdjacentElement('beforebegin', holder);
+    }
+
+    // Sposta il bottone (non lo duplica)
+    holder.appendChild(btnDownload);
+  }
+
+  if (document.readyState !== 'loading') {
+    moveDownloadButtonNearPlayer();
+  } else {
+    document.addEventListener('DOMContentLoaded', moveDownloadButtonNearPlayer);
+  }
+})();
+
+/* ==========================
+   OVERRIDE: TELEPROMPTER TOP → BOTTOM
+========================== */
+function resetTeleprompter() {
+  const teleText = document.getElementById('teleText');
+  if (teleText) {
+    const h = teleText.scrollHeight || 900;
+    teleText.style.transform = `translateY(${-h - 40}px)`;
+  }
+}
+
+function startTeleprompter() {
+  if (AppState.teleRunning) return;
+
+  AppState.teleRunning = true;
+  AppState.teleStart = performance.now() / 1000;
+
+  function tick() {
+    if (!AppState.teleRunning) return;
+
+    const teleText = document.getElementById('teleText');
+    if (!teleText) {
+      AppState.teleRunning = false;
+      return;
+    }
+
+    const now = performance.now() / 1000;
+    const elapsed = now - AppState.teleStart;
+    const progress = (elapsed % AppState.teleSeconds) / AppState.teleSeconds;
+
+    const teleArea = teleText.parentElement;
+    const areaH = teleArea ? (teleArea.clientHeight || 520) : 520;
+    const textH = teleText.scrollHeight || 900;
+
+    const startY = -textH - 40;
+    const endY = areaH + 40;
+    const currentY = startY + (endY - startY) * progress;
+
+    teleText.style.transform = `translateY(${currentY}px)`;
+    AppState.teleRAF = requestAnimationFrame(tick);
+  }
+
+  AppState.teleRAF = requestAnimationFrame(tick);
+}
+
 </script>
 
 <!-- Aggiungi stili CSS per toast -->
