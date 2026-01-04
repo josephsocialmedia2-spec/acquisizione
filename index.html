@@ -770,7 +770,8 @@
 ========================== */
 const TELEPROMPTER_PROMPT = `SEI UN ESPERTO DI CONTENUTI SOCIAL IMMOBILIARI.
 OBIETTIVO: generare un TESTO DA TELEPROMPTER per un video social partendo dalla domanda:
- 
+“È il momento di vendere casa?”
+
 CONTESTO STRATEGICO (OBBLIGATORIO):
 - Il video fa parte di una STRATEGIA DI CONTENUTI SOCIAL per acquisizione immobiliare.
 - NON devi vendere, NON devi proporre servizi, NON devi spingere l’agenzia.
@@ -779,8 +780,8 @@ CONTESTO STRATEGICO (OBBLIGATORIO):
 - Il pubblico sono PROPRIETARI DI CASA indecisi se vendere ora o aspettare.
 
 VINCOLI DI SCRITTURA:
-- Testo parlato, naturale,letto su un teleprompter
-_ Rispeste generate max 300 parole.
+- Testo parlato, naturale, come se fosse letto su un teleprompter.
+- Frasi brevi.
 - Linguaggio semplice (capibile da chi non è del settore).
 - Nessun termine tecnico inutile.
 - Niente numeri inventati.
@@ -800,6 +801,43 @@ FORMATO OUTPUT:
 LUNGHEZZA:
 - 45–60 secondi di parlato.
 `;
+
+
+/* ==========================
+   CHATGPT INTEGRATION (NUOVA DOMANDA)
+   - apre thread ChatGPT dedicato
+   - copia negli appunti il prompt + la domanda
+========================== */
+const CHATGPT_THREAD_URL = 'https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb';
+
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  // Se non c'è domanda, usa quella standard del prompt
+  if (!q) return String(TELEPROMPTER_PROMPT || '').trim();
+  return `${String(TELEPROMPTER_PROMPT || '').trim()}
+
+DOMANDA:
+${q}
+
+ORA GENERA IL TESTO.`;
+}
+
+async function openChatGPTAndCopyPrompt() {
+  // assicura che ci sia una domanda corrente
+  if (!AppState.currentQuestion) {
+    try { getNextQuestion(); } catch (e) {}
+  }
+  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
+  await copyToClipboard(payload);
+  // apre la chat in una nuova scheda
+  try {
+    window.open(CHATGPT_THREAD_URL, '_blank', 'noopener');
+  } catch (e) {
+    // fallback: se popup bloccato, cambia location
+    try { window.location.href = CHATGPT_THREAD_URL; } catch (_) {}
+  }
+  showToast('Prompt copiato. Apri ChatGPT e incolla (Ctrl+V).', 'success', 4500);
+}
 
 
 /* ==========================
@@ -1802,6 +1840,31 @@ if (typeof requestIdleCallback !== 'undefined') {
 } else {
   setTimeout(initApp, 100);
 }
+
+/* ==========================
+   OVERRIDE: NUOVA DOMANDA → APRI CHATGPT (LINK NUOVO) + COPIA PROMPT + COPIA DOMANDA
+   Nota: per limiti di sicurezza del browser, l'incolla su ChatGPT non può essere automatico.
+   Qui copiamo negli appunti: PROMPT (prima) + DOMANDA (dopo), in un unico contenuto.
+========================== */
+const CHATGPT_THREAD_URL_V2 = 'https://chatgpt.com/c/69588a96-4cdc-8332-91d2-26ac10ede496';
+
+async function openChatGPTAndCopyPrompt() {
+  // Genera SEMPRE una nuova domanda quando premi "Nuova domanda"
+  try { getNextQuestion(); } catch (e) {}
+
+  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
+
+  await copyToClipboard(payload);
+
+  try {
+    window.open(CHATGPT_THREAD_URL_V2, '_blank', 'noopener');
+  } catch (e) {
+    try { window.location.href = CHATGPT_THREAD_URL_V2; } catch (_) {}
+  }
+
+  showToast('Prompt copiato (prima) + domanda copiata (dopo). Incolla in ChatGPT (Ctrl+V).', 'success', 5200);
+}
+
 </script>
 
 <!-- Aggiungi stili CSS per toast -->
