@@ -804,6 +804,44 @@ LUNGHEZZA:
 
 
 /* ==========================
+   CHATGPT INTEGRATION (NUOVA DOMANDA)
+   - apre thread ChatGPT dedicato
+   - copia negli appunti il prompt + la domanda
+========================== */
+const CHATGPT_THREAD_URL = 'https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb';
+
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  // Se non c'è domanda, usa quella standard del prompt
+  if (!q) return String(TELEPROMPTER_PROMPT || '').trim();
+  return `${String(TELEPROMPTER_PROMPT || '').trim()}
+
+DOMANDA:
+${q}
+
+ORA GENERA IL TESTO.`;
+}
+
+async function openChatGPTAndCopyPrompt() {
+  // assicura che ci sia una domanda corrente
+  if (!AppState.currentQuestion) {
+    try { getNextQuestion(); } catch (e) {}
+  }
+  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
+  await copyToClipboard(payload);
+  // apre la chat in una nuova scheda
+  try {
+    window.open(CHATGPT_THREAD_URL, '_blank', 'noopener');
+  } catch (e) {
+    // fallback: se popup bloccato, cambia location
+    try { window.location.href = CHATGPT_THREAD_URL; } catch (_) {}
+  }
+  showToast('Prompt copiato. Apri ChatGPT e incolla (Ctrl+V).', 'success', 4500);
+}
+
+
+
+/* ==========================
    GLOBAL STATE & CONSTANTS
 ========================== */
 'use strict';
@@ -1757,6 +1795,16 @@ function setupEventListeners() {
       }
     });
   });
+  // Override "Nuova domanda": apre ChatGPT + copia prompt (in capture per bloccare handler precedente)
+  const _btnNewQ = $('btnNewQ');
+  if (_btnNewQ) {
+    _btnNewQ.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      await openChatGPTAndCopyPrompt();
+    }, true);
+  }
+
 }
 
 function safeAddListener(id, event, handler) {
