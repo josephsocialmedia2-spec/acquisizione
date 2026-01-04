@@ -1840,6 +1840,1981 @@ if (typeof requestIdleCallback !== 'undefined') {
 } else {
   setTimeout(initApp, 100);
 }
+
+/* ==========================
+   OVERRIDE: NUOVA DOMANDA → APRI CHATGPT (LINK NUOVO) + COPIA PROMPT + COPIA DOMANDA
+   Nota: per limiti di sicurezza del browser, l'incolla su ChatGPT non può essere automatico.
+   Qui copiamo negli appunti: PROMPT (prima) + DOMANDA (dopo), in un unico contenuto.
+========================== */
+const CHATGPT_THREAD_URL_V2 = 'https://chatgpt.com/c/69588a96-4cdc-8332-91d2-26ac10ede496';
+
+async function openChatGPTAndCopyPrompt() {
+  // Genera SEMPRE una nuova domanda quando premi "Nuova domanda"
+  try { getNextQuestion(); } catch (e) {}
+
+  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
+
+  await copyToClipboard(payload);
+
+  try {
+    window.open(CHATGPT_THREAD_URL_V2, '_blank', 'noopener');
+  } catch (e) {
+    try { window.location.href = CHATGPT_THREAD_URL_V2; } catch (_) {}
+  }
+
+  showToast('Prompt copiato (prima) + domanda copiata (dopo). Incolla in ChatGPT (Ctrl+V).', 'success', 5200);
+}
+
+
+/* ==========================
+   EXTRA CONTROL: HO FINITO (STOP REC)
+========================== */
+(function addHoFinitoButton(){
+  const recBtn = document.getElementById('btnTeleRec');
+  if (!recBtn || document.getElementById('btnHoFinito')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btnHoFinito';
+  btn.type = 'button';
+  btn.className = 'btn danger';
+  btn.textContent = '⏹ HO FINITO';
+  btn.setAttribute('aria-label', 'Ferma registrazione');
+
+  recBtn.insertAdjacentElement('afterend', btn);
+
+  btn.addEventListener('click', function(){
+    if (typeof recording !== 'undefined' && recording.stop) {
+      recording.stop();
+    }
+  });
+})();
+
+
+/* ==========================
+   EXTRA CONTROL: HO FINITO (ACCANTO AL TIMER)
+========================== */
+(function addHoFinitoNearTimer(){
+  const hud = document.querySelector('.hud');
+  const lamp = document.querySelector('.lamp');
+  if (!hud || !lamp || document.getElementById('btnHoFinito')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btnHoFinito';
+  btn.type = 'button';
+  btn.className = 'btn danger small';
+  btn.textContent = '⏹ HO FINITO';
+  btn.setAttribute('aria-label', 'Ferma registrazione');
+
+  lamp.insertAdjacentElement('afterend', btn);
+
+  btn.addEventListener('click', function(){
+    if (typeof recording !== 'undefined' && recording.stop) {
+      recording.stop();
+    }
+  });
+})();
+
+/* ==========================
+   REMOVE PREVIOUS HO FINITO (ACCANTO A REC)
+========================== */
+(function removeOldHoFinito(){
+  const oldBtn = document.querySelector('#btnHoFinito');
+  if (oldBtn && oldBtn.previousElementSibling?.id === 'btnTeleRec') {
+    oldBtn.remove();
+  }
+})();
+
+
+/* ==========================
+   EXTRA CONTROL: INVIA CON WHATSAPP
+========================== */
+(function addWhatsAppButton(){
+  const hud = document.querySelector('.hud');
+  if (!hud || document.getElementById('btnWhatsApp')) return;
+
+  const btn = document.createElement('a');
+  btn.id = 'btnWhatsApp';
+  btn.className = 'btn ghost small';
+  btn.textContent = '📲 INVIA CON WHATSAPP';
+  btn.setAttribute('aria-label', 'Invia via WhatsApp');
+  btn.href = 'https://wa.me/393713708294';
+  btn.target = '_blank';
+  btn.rel = 'noopener';
+
+  hud.appendChild(btn);
+})();
+
+</script>
+
+<!-- Aggiungi stili CSS per toast -->
+<style>
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Supporto per prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes slideIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+}
+</style>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="it-IT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="description" content="Tool per creazione video verticali 9:16 con teleprompter integrato, registrazione e gestione video">
+  <title>Video Creator — Redesign (Zoom sotto)</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --panel: #12141b;
+      --panel2: #0f1218;
+      --text: #e9eef8;
+      --muted: #b8bfcc;
+      --border: rgba(255, 255, 255, 0.12);
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      --radius: 18px;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --gold: #d8a23a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :focus {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: 
+        radial-gradient(900px 520px at 12% 0%, rgba(216, 162, 58, 0.16), transparent 60%),
+        radial-gradient(900px 620px at 90% 20%, rgba(239, 68, 68, 0.12), transparent 55%),
+        radial-gradient(900px 620px at 70% 90%, rgba(34, 197, 94, 0.12), transparent 55%),
+        var(--bg);
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(18, 20, 27, 0.92);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    header .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(13px, 2vw, 16px);
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Componenti comuni */
+    .pill {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.3);
+      font-weight: 800;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 12px 60px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 420px) 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card */
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hd {
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hd h2 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .bd {
+      padding: 12px;
+    }
+
+    /* Form */
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+
+    textarea,
+    input[type="text"],
+    input[type="range"],
+    select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 13px;
+      font-family: var(--sans);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    textarea:focus,
+    input:focus,
+    select:focus {
+      border-color: rgba(216, 162, 58, 0.6);
+      box-shadow: 0 0 0 3px rgba(216, 162, 58, 0.2);
+    }
+
+    /* Layout */
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    /* Bottoni */
+    .btn {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      font-size: 12px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+      border-color: rgba(216, 162, 58, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      filter: brightness(0.95);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.95), rgba(34, 197, 94, 0.65));
+      border-color: rgba(34, 197, 94, 0.5);
+      color: #f0fdf4;
+    }
+
+    .btn.danger {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(239, 68, 68, 0.65));
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fef2f2;
+    }
+
+    .btn.gold {
+      background: linear-gradient(135deg, rgba(216, 162, 58, 0.95), rgba(216, 162, 58, 0.7));
+      border-color: rgba(216, 162, 58, 0.6);
+      color: #1c1917;
+    }
+
+    .btn.ghost {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn.small {
+      padding: 8px 10px;
+      font-size: 11px;
+      border-radius: 12px;
+    }
+
+    /* Utility */
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .sep {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 12px 0;
+      border: none;
+    }
+
+    /* Stage */
+    .stageWrap {
+      display: grid;
+      grid-template-columns: 1fr minmax(300px, 340px);
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .stageWrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stageBlock {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stage916 {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9/16;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #000;
+      box-shadow: var(--shadow);
+    }
+
+    #camPreview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #recCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .qBox {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .teleArea {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      margin-top: auto;
+    }
+
+    .teleText {
+      position: absolute;
+      left: 0;
+      right: 0;
+      white-space: pre-wrap;
+      font-size: clamp(16px, 2vw, 20px);
+      line-height: 1.4;
+      font-weight: 600;
+      color: rgba(243, 244, 246, 0.98);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+      transform: translateY(20px);
+      padding: 0 8px 80px;
+      word-break: break-word;
+    }
+
+    /* HUD */
+    .hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .lamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.3);
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .dot.rec {
+      background: var(--danger);
+      box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2);
+      animation: pulse 1.1s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 12px rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    /* Zoom */
+    .zoomCard {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.25);
+      margin-top: 10px;
+    }
+
+    .zoomRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .zoomRow .zLabel {
+      font-weight: 800;
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 40px;
+    }
+
+    input[type="range"] {
+      width: min(220px, 100%);
+      accent-color: var(--gold);
+      height: 6px;
+      border-radius: 3px;
+    }
+
+    .zVal {
+      font-family: var(--mono);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      min-width: 50px;
+      text-align: center;
+    }
+
+    /* Lista video */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .list::-webkit-scrollbar-thumb {
+      background-color: var(--border);
+      border-radius: 3px;
+    }
+
+    .item {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .item:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .item.selected {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .item h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .item .meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .k {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Player */
+    video.player {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #000;
+      aspect-ratio: 9/16;
+      box-shadow: var(--shadow);
+    }
+
+    /* Modal */
+    #modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* High contrast per accessibilità */
+    @media (prefers-contrast: high) {
+      :root {
+        --text: #ffffff;
+        --muted: #cccccc;
+        --border: rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    /* Riduzione movimento */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      
+      .dot.rec {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="title" role="heading" aria-level="1">
+    <span class="pill"><span id="videoCount">Video: 0</span></span>
+    <h1>Video Creator — Redesign (zoom sotto, sempre visibile)</h1>
+  </div>
+  <div class="row">
+    <button class="btn small ghost" id="btnHelp" type="button" aria-label="Mostra istruzioni">📘 Istruzioni</button>
+  </div>
+</header>
+
+<main class="wrap" id="mainContent">
+  <div class="grid">
+
+    <!-- LEFT: flow -->
+    <section class="card" aria-labelledby="flowTitle">
+      <div class="hd">
+        <h2 id="flowTitle">Flow</h2>
+        <span class="pill">Profilo: <b id="profileNext" style="color:#e5e7eb">—</b></span>
+      </div>
+      <div class="bd">
+
+        <div class="row">
+          <button class="btn gold" id="btnNewQ" type="button" aria-label="Genera nuova domanda">✨ Nuova domanda</button>
+          <button class="btn ghost" id="btnCopyQuestion" type="button" aria-label="Copia domanda corrente">📋 Copia domanda</button>
+        </div>
+
+        <hr class="sep" aria-hidden="true">
+
+        <div class="row">
+          <div class="col">
+            <label for="answerBox">Risposta (incolla o scrivi)</label>
+            <textarea id="answerBox" placeholder="Incolla qui la risposta (o scrivila tu)…" aria-describedby="answerHelp"></textarea>
+            <div id="answerHelp" class="muted" style="margin-top: 4px;">Supporta fino a 5000 caratteri</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="btnSendTele" type="button" aria-label="Invia testo al teleprompter">➡️ Invia al teleprompter</button>
+          <button class="btn ghost" id="btnPasteAnswer" type="button" aria-label="Incolla dagli appunti">📋 Incolla dagli appunti</button>
+        </div>
+
+        <hr class="sep" aria-hidden="true">
+
+        <div class="row">
+          <div class="col">
+            <label for="teleSpeed">Velocità teleprompter</label>
+            <select id="teleSpeed" aria-describedby="speedHelp">
+              <option value="120">120s (lento)</option>
+              <option value="105" selected>105s (medio)</option>
+              <option value="90">90s (veloce)</option>
+              <option value="60">60s (molto veloce)</option>
+            </select>
+            <div id="speedHelp" class="muted" style="margin-top: 4px;">Durata scorrimento</div>
+          </div>
+          <div class="col">
+            <label for="profiles">Rotazione profili</label>
+            <select id="profiles" aria-describedby="profileHelp">
+              <option value="tiktok,instagram,shorts,facebook" selected>Tutti i profili</option>
+              <option value="tiktok,instagram">TikTok + Instagram</option>
+              <option value="instagram">Solo Instagram</option>
+              <option value="tiktok">Solo TikTok</option>
+              <option value="shorts">Solo Shorts</option>
+              <option value="facebook">Solo Facebook</option>
+            </select>
+            <div id="profileHelp" class="muted" style="margin-top: 4px;">Ordine di rotazione</div>
+          </div>
+        </div>
+
+        <hr class="sep" aria-hidden="true">
+
+        <div class="row">
+          <button class="btn ghost" id="btnCamera" type="button" aria-label="Attiva/disattiva camera">📷 Camera</button>
+          <button class="btn danger" id="btnStop" type="button" aria-label="Ferma registrazione">⏹ Stop</button>
+          <button class="btn ghost" id="btnRestartTele" type="button" aria-label="Riavvia teleprompter">↻ Riavvia tele</button>
+          <button class="btn danger" id="btnTeleRec" type="button" aria-label="Avvia registrazione con teleprompter">🔴 Teleprompter + REC</button>
+        </div>
+
+        <div class="muted" style="margin-top:12px; padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+          <strong>Sequenza consigliata:</strong> <b>Nuova domanda</b> → incolla risposta → <b>Invia al teleprompter</b> → <b>Teleprompter + REC</b>.
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIGHT: stage + list -->
+    <section class="stageWrap">
+
+      <div class="stageBlock">
+        <div class="stage916" role="region" aria-label="Stage video 9:16">
+          <video id="camPreview" autoplay playsinline muted aria-hidden="true"></video>
+          <canvas id="recCanvas" width="1080" height="1920" aria-label="Canvas di registrazione"></canvas>
+
+          <div class="overlay" aria-live="polite">
+            <div class="qBox" id="qOverlay" role="status">Premi "Nuova domanda" per iniziare.</div>
+            <div class="teleArea">
+              <div class="teleText" id="teleText" role="marquee" aria-label="Testo del teleprompter">
+                Incolla/scrivi una risposta → "Invia al teleprompter" → "Teleprompter + REC".
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HUD -->
+        <div class="hud" role="status">
+          <div class="lamp" aria-live="polite">
+            <span class="dot" id="recDot" aria-hidden="true"></span>
+            <span><b id="recLabel">PRONTO</b> · <span id="recTime">00:00</span></span>
+          </div>
+          <div class="row">
+            <button class="btn small ghost" id="btnUpload" type="button" aria-label="Carica video">⬆️ Carica video</button>
+            <button class="btn small ghost" id="btnDownload" type="button" aria-label="Scarica video selezionato">📥 Scarica selezionato</button>
+            <button class="btn small ghost" id="btnClear" type="button" aria-label="Svuota lista video">🗑️ Svuota</button>
+          </div>
+        </div>
+
+        <!-- ZOOM: sempre sotto, SEMPRE VISIBILE -->
+        <div class="zoomCard" role="region" aria-label="Controllo zoom">
+          <div class="zoomRow">
+            <span class="zLabel">Zoom</span>
+            <input id="zoom" type="range" min="1" max="2.5" step="0.1" value="1.1" 
+                   aria-valuemin="1" aria-valuemax="2.5" aria-valuenow="1.1"
+                   aria-label="Livello di zoom" />
+            <span class="zVal" id="zoomVal" aria-live="polite">1.1×</span>
+            <span class="muted">Applicato anche nel video registrato</span>
+          </div>
+        </div>
+
+        <video class="player" id="player" controls playsinline preload="metadata" 
+               aria-label="Player video" aria-describedby="playerHelp"></video>
+        <div id="playerHelp" class="muted">Il player mostra il video selezionato (registrato o caricato).</div>
+      </div>
+
+      <div class="card" role="region" aria-labelledby="videoListTitle">
+        <div class="hd">
+          <h2 id="videoListTitle">Video</h2>
+          <span class="pill"><span id="totalCount">0</span> video</span>
+        </div>
+        <div class="bd">
+          <div class="list" id="videoList" role="list" aria-label="Lista video">
+            <div class="muted" role="listitem">— Nessun video ancora</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+</main>
+
+<!-- Hidden upload input -->
+<input type="file" id="fileInput" accept="video/*,audio/*" style="display:none" 
+       aria-label="Seleziona file video" />
+
+<!-- Simple instructions modal -->
+<div id="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true" hidden>
+  <div class="card" style="width:min(860px,96vw); max-height:min(80vh,760px); overflow:auto;">
+    <div class="hd">
+      <h2 id="modalTitle" style="margin:0; font-size:12px; letter-spacing:.6px; text-transform:uppercase;">Istruzioni</h2>
+      <button class="btn small ghost" id="btnCloseModal" type="button" aria-label="Chiudi finestra">✕ Chiudi</button>
+    </div>
+    <div class="bd" style="font-size:13px; line-height:1.6; color:#e5e7eb;">
+      <div style="border:1px solid rgba(216,162,58,.3); background:rgba(216,162,58,.12); border-radius:14px; padding:12px 14px; margin-bottom:14px;">
+        <strong>Obiettivo:</strong> creare video verticali <b>9:16</b> con il flusso <b>domanda → risposta → teleprompter → registrazione</b>.
+      </div>
+      <ol style="padding-left: 20px; margin-bottom: 16px;">
+        <li style="margin-bottom: 8px;"><b>Nuova domanda</b> → la domanda appare nell'overlay.</li>
+        <li style="margin-bottom: 8px;">Incolla o scrivi la risposta nel box "Risposta".</li>
+        <li style="margin-bottom: 8px;"><b>Invia al teleprompter</b> → il testo viene caricato nel teleprompter.</li>
+        <li style="margin-bottom: 8px;">Regola il <b>Zoom</b> (slider sotto il video) e la <b>Velocità</b> di scorrimento.</li>
+        <li style="margin-bottom: 8px;"><b>Teleprompter + REC</b> per iniziare la registrazione. <b>Stop</b> per fermare.</li>
+        <li style="margin-bottom: 8px;">Seleziona un video dalla lista → rivedilo nel player → <b>Scarica selezionato</b>.</li>
+      </ol>
+      <div class="muted" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+        <strong>Suggerimenti:</strong> Premi <kbd>ESC</kbd> per chiudere finestre. Usa <kbd>Tab</kbd> per navigare con tastiera.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+/* ==========================
+   PROMPT GPT TELEPROMPTER
+========================== */
+const TELEPROMPTER_PROMPT = `SEI UN ESPERTO DI CONTENUTI SOCIAL IMMOBILIARI.
+OBIETTIVO: generare un TESTO DA TELEPROMPTER per un video social partendo dalla domanda:
+“È il momento di vendere casa?”
+
+CONTESTO STRATEGICO (OBBLIGATORIO):
+- Il video fa parte di una STRATEGIA DI CONTENUTI SOCIAL per acquisizione immobiliare.
+- NON devi vendere, NON devi proporre servizi, NON devi spingere l’agenzia.
+- Devi informare, rassicurare e APRIRE una conversazione.
+- Il tono è umano, calmo, competente, da professionista che spiega senza forzare.
+- Il pubblico sono PROPRIETARI DI CASA indecisi se vendere ora o aspettare.
+
+VINCOLI DI SCRITTURA:
+- Testo parlato, naturale, come se fosse letto su un teleprompter.
+- Frasi brevi.
+- Linguaggio semplice (capibile da chi non è del settore).
+- Nessun termine tecnico inutile.
+- Niente numeri inventati.
+- Niente promesse.
+- Niente call to action commerciali.
+
+STRUTTURA OBBLIGATORIA DEL TESTO:
+1) HOOK
+2) CONTESTUALIZZAZIONE
+3) SPIEGAZIONE NEUTRA
+4) APERTURA DEL DIALOGO
+5) CHIUSURA SOFT
+
+FORMATO OUTPUT:
+- Solo il testo del teleprompter.
+
+LUNGHEZZA:
+- 45–60 secondi di parlato.
+`;
+
+
+/* ==========================
+   CHATGPT INTEGRATION (NUOVA DOMANDA)
+   - apre thread ChatGPT dedicato
+   - copia negli appunti il prompt + la domanda
+========================== */
+const CHATGPT_THREAD_URL = 'https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb';
+
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  // Se non c'è domanda, usa quella standard del prompt
+  if (!q) return String(TELEPROMPTER_PROMPT || '').trim();
+  return `${String(TELEPROMPTER_PROMPT || '').trim()}
+
+DOMANDA:
+${q}
+
+ORA GENERA IL TESTO.`;
+}
+
+async function openChatGPTAndCopyPrompt() {
+  // assicura che ci sia una domanda corrente
+  if (!AppState.currentQuestion) {
+    try { getNextQuestion(); } catch (e) {}
+  }
+  const payload = buildTeleprompterPrompt(AppState.currentQuestion);
+  await copyToClipboard(payload);
+  // apre la chat in una nuova scheda
+  try {
+    window.open(CHATGPT_THREAD_URL, '_blank', 'noopener');
+  } catch (e) {
+    // fallback: se popup bloccato, cambia location
+    try { window.location.href = CHATGPT_THREAD_URL; } catch (_) {}
+  }
+  showToast('Prompt copiato. Apri ChatGPT e incolla (Ctrl+V).', 'success', 4500);
+}
+
+
+/* ==========================
+   OVERRIDE: ORDINE COPIA (PROMPT → DOMANDA)
+========================== */
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  const base = String(TELEPROMPTER_PROMPT || '').trim();
+  if (!q) return base;
+  // Ordine richiesto: prima PROMPT, poi DOMANDA generata (senza etichette aggiuntive)
+  return `${base}
+
+${q}`;
+}
+
+
+
+
+/* ==========================
+   GLOBAL STATE & CONSTANTS
+========================== */
+'use strict';
+
+const AppState = {
+  // Question system
+  questionBank: [
+    "Perché ricevo poche chiamate anche se l'annuncio è online da settimane?",
+    "Se arrivano solo curiosi e nessuna proposta, cosa significa?",
+    "Come capisco se il prezzo sta bloccando la vendita?",
+    "Meglio partire alto e poi scendere o partire subito con il prezzo giusto?",
+    "Ha senso provare a vendere da privato oppure rischio solo di perdere tempo?",
+    "Se un agente mi chiede l'esclusiva, come capisco se conviene davvero?",
+    "Quali sono le fasi reali di una vendita fatta bene, dall'inizio alla firma?",
+    "Cosa devo controllare settimana per settimana per capire se la vendita sta andando bene?",
+    "Se dopo le visite non succede nulla, qual è la sequenza corretta per intervenire?"
+  ],
+  questionIndex: -1,
+  currentQuestion: "",
+  
+  // Platform rotation
+  rotation: ["tiktok", "instagram", "shorts", "facebook"],
+  rotationIndex: 0,
+  
+  // Teleprompter
+  teleSeconds: 105,
+  teleRunning: false,
+  teleStart: 0,
+  teleRAF: null,
+  
+  // Camera & Recording
+  camStream: null,
+  canvasRAF: null,
+  zoomValue: 1.1,
+  
+  // Recording state
+  recorder: null,
+  chunks: [],
+  isRecording: false,
+  recTimerId: null,
+  recStartTs: null,
+  
+  // Video list
+  videos: [],
+  selectedVideoIndex: -1
+};
+
+/* ==========================
+   DOM UTILITIES
+========================== */
+const $ = (id) => document.getElementById(id);
+const $$ = (selector) => document.querySelectorAll(selector);
+
+function showToast(message, type = 'info', duration = 3000) {
+  const toast = document.createElement('div');
+  toast.setAttribute('role', 'alert');
+  toast.style.cssText = `
+    position: fixed; top: 20px; right: 20px; z-index: 10000;
+    padding: 12px 16px; border-radius: 12px; font-size: 13px;
+    font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+    max-width: 320px;
+  `;
+  
+  if (type === 'success') {
+    toast.style.background = 'linear-gradient(135deg, rgba(34,197,94,0.95), rgba(34,197,94,0.7))';
+    toast.style.color = '#f0fdf4';
+    toast.style.border = '1px solid rgba(34,197,94,0.5)';
+  } else if (type === 'error') {
+    toast.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.95), rgba(239,68,68,0.7))';
+    toast.style.color = '#fef2f2';
+    toast.style.border = '1px solid rgba(239,68,68,0.5)';
+  } else {
+    toast.style.background = 'rgba(18,20,27,0.95)';
+    toast.style.color = '#e9eef8';
+    toast.style.border = '1px solid rgba(216,162,58,0.4)';
+  }
+  
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/* ==========================
+   QUESTION MANAGEMENT
+========================== */
+function getNextQuestion() {
+  AppState.questionIndex = (AppState.questionIndex + 1) % AppState.questionBank.length;
+  AppState.currentQuestion = AppState.questionBank[AppState.questionIndex];
+  $('qOverlay').textContent = AppState.currentQuestion;
+  showToast('Nuova domanda caricata', 'success');
+}
+
+/* ==========================
+   PROFILE ROTATION
+========================== */
+function refreshProfileDisplay() {
+  if (!AppState.rotation.length) {
+    $('profileNext').textContent = '—';
+    return;
+  }
+  AppState.rotationIndex = AppState.rotationIndex % AppState.rotation.length;
+  $('profileNext').textContent = AppState.rotation[AppState.rotationIndex];
+}
+
+function advanceToNextProfile() {
+  if (!AppState.rotation.length) return;
+  AppState.rotationIndex = (AppState.rotationIndex + 1) % AppState.rotation.length;
+  refreshProfileDisplay();
+}
+
+/* ==========================
+   CLIPBOARD MANAGEMENT
+========================== */
+async function copyToClipboard(text) {
+  const textToCopy = String(text || '').trim();
+  if (!textToCopy) {
+    showToast('Nessun testo da copiare', 'error');
+    return false;
+  }
+  
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    showToast('Copiato negli appunti', 'success');
+    return true;
+  } catch (err) {
+    // Fallback per HTTP o browser vecchi
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      const success = document.execCommand('copy');
+      textArea.remove();
+      
+      if (success) {
+        showToast('Copiato negli appunti', 'success');
+        return true;
+      } else {
+        throw new Error('Fallback copy failed');
+      }
+    } catch (fallbackErr) {
+      showToast('Impossibile accedere agli appunti. Copia manualmente: ' + textToCopy.substring(0, 100), 'error');
+      return false;
+    }
+  }
+}
+
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && $('answerBox')) {
+      $('answerBox').value = text;
+      showToast('Testo incollato dagli appunti', 'success');
+      return text;
+    }
+  } catch (err) {
+    // Fallback: usa prompt per incollare manualmente
+    const fallbackText = prompt('Incolla il testo manualmente:');
+    if (fallbackText && $('answerBox')) {
+      $('answerBox').value = fallbackText;
+      showToast('Testo incollato manualmente', 'info');
+      return fallbackText;
+    }
+  }
+  return '';
+}
+
+/* ==========================
+   TELEPROMPTER SYSTEM
+========================== */
+function resetTeleprompter() {
+  const teleText = $('teleText');
+  if (teleText) {
+    teleText.style.transform = 'translateY(20px)';
+  }
+}
+
+function startTeleprompter() {
+  if (AppState.teleRunning) return;
+  
+  AppState.teleRunning = true;
+  AppState.teleStart = performance.now() / 1000;
+  
+  function tick() {
+    if (!AppState.teleRunning) return;
+    
+    const teleText = $('teleText');
+    if (!teleText) {
+      AppState.teleRunning = false;
+      return;
+    }
+    
+    const now = performance.now() / 1000;
+    const elapsed = now - AppState.teleStart;
+    const progress = (elapsed % AppState.teleSeconds) / AppState.teleSeconds;
+    
+    const textHeight = teleText.scrollHeight || 900;
+    const startY = 20;
+    const endY = -textHeight - 40;
+    const currentY = startY + (endY - startY) * progress;
+    
+    teleText.style.transform = `translateY(${currentY}px)`;
+    AppState.teleRAF = requestAnimationFrame(tick);
+  }
+  
+  AppState.teleRAF = requestAnimationFrame(tick);
+}
+
+function stopTeleprompter() {
+  AppState.teleRunning = false;
+  if (AppState.teleRAF) {
+    cancelAnimationFrame(AppState.teleRAF);
+    AppState.teleRAF = null;
+  }
+}
+
+function restartTeleprompter() {
+  stopTeleprompter();
+  resetTeleprompter();
+  setTimeout(startTeleprompter, 200);
+}
+
+function applyAnswerToTeleprompter(text) {
+  const cleanText = String(text || '').trim();
+  if (!cleanText) {
+    showToast('Inserisci una risposta prima di inviare al teleprompter', 'error');
+    return false;
+  }
+  
+  const teleText = $('teleText');
+  if (teleText) {
+    teleText.textContent = cleanText;
+    resetTeleprompter();
+    stopTeleprompter();
+    showToast('Risposta inviata al teleprompter', 'success');
+    return true;
+  }
+  return false;
+}
+
+/* ==========================
+   CAMERA & CANVAS SYSTEM
+========================== */
+const camera = {
+  element: $('camPreview'),
+  canvas: $('recCanvas'),
+  context: null,
+  
+  init() {
+    if (!this.canvas) return;
+    this.context = this.canvas.getContext('2d', { 
+      alpha: false,
+      desynchronized: true 
+    });
+  },
+  
+  async start() {
+    if (AppState.camStream) {
+      this.stop();
+    }
+    
+    try {
+      AppState.camStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 }
+        }
+      });
+      
+      this.element.srcObject = AppState.camStream;
+      
+      return new Promise((resolve, reject) => {
+        this.element.onloadedmetadata = () => {
+          this.element.play()
+            .then(() => {
+              this.startRenderLoop();
+              showToast('Camera attivata', 'success');
+              resolve(true);
+            })
+            .catch(reject);
+        };
+        this.element.onerror = reject;
+      });
+    } catch (error) {
+      console.error('Camera error:', error);
+      showToast(`Errore camera: ${error.message}`, 'error');
+      return false;
+    }
+  },
+  
+  stop() {
+    if (AppState.camStream) {
+      AppState.camStream.getTracks().forEach(track => track.stop());
+      AppState.camStream = null;
+    }
+    if (AppState.canvasRAF) {
+      cancelAnimationFrame(AppState.canvasRAF);
+      AppState.canvasRAF = null;
+    }
+  },
+  
+  startRenderLoop() {
+    if (AppState.canvasRAF) return;
+    
+    const render = () => {
+      if (!this.context || !this.element || this.element.readyState < 2) {
+        AppState.canvasRAF = requestAnimationFrame(render);
+        return;
+      }
+      
+      const canvas = this.canvas;
+      const video = this.element;
+      
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        const zoom = AppState.zoomValue;
+        const srcWidth = video.videoWidth / zoom;
+        const srcHeight = video.videoHeight / zoom;
+        const srcX = (video.videoWidth - srcWidth) / 2;
+        const srcY = (video.videoHeight - srcHeight) / 2;
+        
+        this.context.drawImage(
+          video,
+          srcX, srcY, srcWidth, srcHeight,
+          0, 0, canvas.width, canvas.height
+        );
+      }
+      
+      AppState.canvasRAF = requestAnimationFrame(render);
+    };
+    
+    AppState.canvasRAF = requestAnimationFrame(render);
+  }
+};
+
+function updateZoom(value) {
+  AppState.zoomValue = Math.max(1, Math.min(Number(value) || 1, 2.5));
+  const zoomValElement = $('zoomVal');
+  if (zoomValElement) {
+    zoomValElement.textContent = AppState.zoomValue.toFixed(1) + '×';
+  }
+}
+
+async function ensureCameraReady() {
+  if (!AppState.camStream) {
+    const success = await camera.start();
+    if (!success) return false;
+  }
+  return true;
+}
+
+/* ==========================
+   RECORDING SYSTEM
+========================== */
+const recording = {
+  formatTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  },
+  
+  updateUI(isRecording) {
+    const dot = $('recDot');
+    const label = $('recLabel');
+    
+    if (isRecording) {
+      dot?.classList.add('rec');
+      if (label) label.textContent = 'REC';
+    } else {
+      dot?.classList.remove('rec');
+      if (label) label.textContent = 'PRONTO';
+      $('recTime').textContent = '00:00';
+    }
+  },
+  
+  startTimer() {
+    AppState.recStartTs = Date.now();
+    $('recTime').textContent = '00:00';
+    
+    AppState.recTimerId = setInterval(() => {
+      if (AppState.recStartTs) {
+        $('recTime').textContent = this.formatTime(Date.now() - AppState.recStartTs);
+      }
+    }, 250);
+  },
+  
+  stopTimer() {
+    if (AppState.recTimerId) {
+      clearInterval(AppState.recTimerId);
+      AppState.recTimerId = null;
+    }
+    AppState.recStartTs = null;
+  },
+  
+  generateTimestamp() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  },
+  
+  async start() {
+    // Validazione prerequisiti
+    if (!AppState.camStream) {
+      showToast('Attiva la camera prima di registrare', 'error');
+      return;
+    }
+    
+    if (AppState.recorder && AppState.recorder.state !== 'inactive') {
+      showToast('Registrazione già in corso', 'error');
+      return;
+    }
+    
+    const answerText = ($('answerBox')?.value || '').trim();
+    if (!answerText) {
+      showToast('Scrivi o incolla una risposta prima di registrare', 'error');
+      return;
+    }
+    
+    // Inizia teleprompter
+    applyAnswerToTeleprompter(answerText);
+    startTeleprompter();
+    
+    // Prepara stream
+    const canvasStream = camera.canvas.captureStream(30);
+    const audioTrack = AppState.camStream.getAudioTracks()[0];
+    if (audioTrack) {
+      canvasStream.addTrack(audioTrack);
+    }
+    
+    // Trova codec supportato
+    const mimeOptions = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=h264,opus',
+      'video/webm'
+    ];
+    
+    let mimeType = '';
+    for (const option of mimeOptions) {
+      if (MediaRecorder.isTypeSupported(option)) {
+        mimeType = option;
+        break;
+      }
+    }
+    
+    try {
+      AppState.recorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : {});
+      AppState.chunks = [];
+      
+      AppState.recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          AppState.chunks.push(event.data);
+        }
+      };
+      
+      AppState.recorder.onstart = () => {
+        AppState.isRecording = true;
+        this.updateUI(true);
+        this.startTimer();
+        showToast('Registrazione iniziata', 'success');
+      };
+      
+      AppState.recorder.onstop = () => {
+        AppState.isRecording = false;
+        this.updateUI(false);
+        this.stopTimer();
+        stopTeleprompter();
+        
+        if (AppState.chunks.length === 0) {
+          showToast('Nessun dato registrato', 'error');
+          return;
+        }
+        
+        const blob = new Blob(AppState.chunks, { 
+          type: AppState.recorder.mimeType || 'video/webm' 
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const platform = AppState.rotation.length ? AppState.rotation[AppState.rotationIndex] : '—';
+        const timestamp = this.generateTimestamp();
+        const title = `#${String(AppState.videos.length + 1).padStart(3, '0')} • ${platform} • ${timestamp}`;
+        const filename = `video_${String(AppState.videos.length + 1).padStart(3, '0')}_${platform}_${timestamp}.webm`;
+        
+        AppState.videos.unshift({
+          title,
+          url,
+          blob,
+          filename,
+          question: AppState.currentQuestion,
+          platform,
+          type: 'recorded',
+          timestamp: new Date().toISOString()
+        });
+        
+        AppState.selectedVideoIndex = 0;
+        
+        const player = $('player');
+        if (player) {
+          player.src = url;
+          player.load();
+        }
+        
+        renderVideoList();
+        advanceToNextProfile();
+        showToast('Registrazione completata', 'success');
+      };
+      
+      AppState.recorder.onerror = (event) => {
+        console.error('Recording error:', event.error);
+        showToast(`Errore registrazione: ${event.error?.message || 'Unknown'}`, 'error');
+        AppState.isRecording = false;
+        this.updateUI(false);
+        this.stopTimer();
+        stopTeleprompter();
+      };
+      
+      // Inizia registrazione
+      AppState.recorder.start(1000); // Raccolta dati ogni secondo
+      
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      showToast(`Impossibile iniziare registrazione: ${error.message}`, 'error');
+      stopTeleprompter();
+    }
+  },
+  
+  stop() {
+    if (AppState.recorder && AppState.recorder.state === 'recording') {
+      AppState.recorder.stop();
+    }
+  }
+};
+
+/* ==========================
+   VIDEO LIST MANAGEMENT
+========================== */
+function renderVideoList() {
+  const listElement = $('videoList');
+  const totalCountElement = $('totalCount');
+  const videoCountElement = $('videoCount');
+  
+  if (!listElement) return;
+  
+  // Aggiorna contatori
+  if (totalCountElement) {
+    totalCountElement.textContent = String(AppState.videos.length);
+  }
+  if (videoCountElement) {
+    videoCountElement.textContent = `Video: ${AppState.videos.length}`;
+  }
+  
+  // Render lista
+  if (AppState.videos.length === 0) {
+    listElement.innerHTML = `
+      <div class="muted" role="listitem" style="text-align: center; padding: 20px;">
+        — Nessun video ancora<br>
+        <small>Registra o carica un video per iniziare</small>
+      </div>
+    `;
+    return;
+  }
+  
+  listElement.innerHTML = AppState.videos.map((video, index) => {
+    const isSelected = index === AppState.selectedVideoIndex;
+    const questionPreview = (video.question || '').substring(0, 100);
+    const className = isSelected ? 'item selected' : 'item';
+    const platformIcon = video.platform === 'tiktok' ? '🎵' : 
+                        video.platform === 'instagram' ? '📷' : 
+                        video.platform === 'facebook' ? '📘' : '🎬';
+    
+    return `
+      <div class="${className}" 
+           role="listitem" 
+           data-index="${index}"
+           aria-selected="${isSelected}"
+           tabindex="0">
+        <h3>${platformIcon} ${video.title}</h3>
+        <div class="meta">
+          <span class="k">${video.platform || '—'}</span>
+          <span class="k">${video.type === 'recorded' ? 'Registrato' : 'Caricato'}</span>
+          <span class="k">${new Date(video.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+        <div class="muted" style="margin-top: 8px; font-size: 11px;">
+          ${questionPreview}${video.question && video.question.length > 100 ? '…' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Aggiungi event listeners
+  listElement.querySelectorAll('[data-index]').forEach(item => {
+    const index = parseInt(item.getAttribute('data-index'));
+    
+    item.addEventListener('click', () => {
+      selectVideo(index);
+    });
+    
+    item.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectVideo(index);
+      }
+    });
+  });
+}
+
+function selectVideo(index) {
+  if (index < 0 || index >= AppState.videos.length) return;
+  
+  AppState.selectedVideoIndex = index;
+  const video = AppState.videos[index];
+  
+  const player = $('player');
+  if (player) {
+    player.src = video.url;
+    player.load();
+    player.play().catch(() => {
+      // Auto-play potrebbe essere bloccato, è normale
+    });
+  }
+  
+  renderVideoList();
+  showToast(`Video selezionato: ${video.title}`, 'info');
+}
+
+function downloadSelectedVideo() {
+  if (AppState.selectedVideoIndex < 0 || !AppState.videos[AppState.selectedVideoIndex]) {
+    showToast('Seleziona un video dalla lista prima di scaricare', 'error');
+    return;
+  }
+  
+  const video = AppState.videos[AppState.selectedVideoIndex];
+  try {
+    const url = URL.createObjectURL(video.blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = video.filename || `video_${Date.now()}.webm`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(`Download avviato: ${video.filename}`, 'success');
+  } catch (error) {
+    console.error('Download error:', error);
+    showToast(`Errore download: ${error.message}`, 'error');
+  }
+}
+
+function handleFileUpload(file) {
+  if (!file) return;
+  
+  if (!file.type.startsWith('video/')) {
+    showToast('Seleziona un file video valido', 'error');
+    return;
+  }
+  
+  if (file.size > 500 * 1024 * 1024) { // 500MB limit
+    showToast('File troppo grande (max 500MB)', 'error');
+    return;
+  }
+  
+  const url = URL.createObjectURL(file);
+  const platform = AppState.rotation.length ? AppState.rotation[AppState.rotationIndex] : '—';
+  const title = `#${String(AppState.videos.length + 1).padStart(3, '0')} • ${platform} • UPLOAD • ${file.name.substring(0, 30)}`;
+  
+  AppState.videos.unshift({
+    title,
+    url,
+    blob: file,
+    filename: file.name,
+    question: AppState.currentQuestion || 'Video caricato',
+    platform,
+    type: 'uploaded',
+    timestamp: new Date().toISOString()
+  });
+  
+  AppState.selectedVideoIndex = 0;
+  
+  const player = $('player');
+  if (player) {
+    player.src = url;
+    player.load();
+  }
+  
+  renderVideoList();
+  advanceToNextProfile();
+  showToast('Video caricato con successo', 'success');
+}
+
+function clearVideoList() {
+  if (AppState.videos.length === 0) return;
+  
+  if (confirm(`Svuotare la lista video? (${AppState.videos.length} video)`)) {
+    // Rilascia URL degli oggetti
+    AppState.videos.forEach(video => {
+      try {
+        URL.revokeObjectURL(video.url);
+      } catch (e) {
+        // Ignora errori di URL già rilasciati
+      }
+    });
+    
+    AppState.videos = [];
+    AppState.selectedVideoIndex = -1;
+    
+    const player = $('player');
+    if (player) {
+      player.removeAttribute('src');
+      player.load();
+    }
+    
+    AppState.rotationIndex = 0;
+    refreshProfileDisplay();
+    renderVideoList();
+    showToast('Lista video svuotata', 'info');
+  }
+}
+
+/* ==========================
+   MODAL MANAGEMENT
+========================== */
+const modal = {
+  element: $('modal'),
+  
+  show() {
+    if (this.element) {
+      this.element.hidden = false;
+      this.element.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      this.element.focus();
+    }
+  },
+  
+  hide() {
+    if (this.element) {
+      this.element.hidden = true;
+      this.element.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  },
+  
+  init() {
+    const closeButton = $('btnCloseModal');
+    if (closeButton) {
+      closeButton.addEventListener('click', () => this.hide());
+    }
+    
+    if (this.element) {
+      this.element.addEventListener('click', (event) => {
+        if (event.target === this.element) {
+          this.hide();
+        }
+      });
+      
+      this.element.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          this.hide();
+        }
+      });
+    }
+  }
+};
+
+/* ==========================
+   INITIALIZATION
+========================== */
+function initApp() {
+  // Verifica che il DOM sia completamente caricato
+  if (document.readyState !== 'loading') {
+    setupApp();
+  } else {
+    document.addEventListener('DOMContentLoaded', setupApp);
+  }
+}
+
+function setupApp() {
+  console.log('Initializing Video Creator App...');
+  
+  // Inizializza componenti
+  camera.init();
+  modal.init();
+  
+  // Stato iniziale
+  refreshProfileDisplay();
+  renderVideoList();
+  
+  // Setup zoom control
+  const zoomSlider = $('zoom');
+  if (zoomSlider) {
+    updateZoom(zoomSlider.value);
+    zoomSlider.addEventListener('input', (event) => {
+      updateZoom(event.target.value);
+    });
+  }
+  
+  // Setup teleprompter speed
+  const teleSpeedSelect = $('teleSpeed');
+  if (teleSpeedSelect) {
+    teleSpeedSelect.addEventListener('change', (event) => {
+      AppState.teleSeconds = Number(event.target.value) || 105;
+    });
+  }
+  
+  // Setup profile rotation
+  const profilesSelect = $('profiles');
+  if (profilesSelect) {
+    profilesSelect.addEventListener('change', (event) => {
+      AppState.rotation = String(event.target.value || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      AppState.rotationIndex = 0;
+      refreshProfileDisplay();
+    });
+  }
+  
+  // Setup bottoni
+  setupEventListeners();
+  
+  // Controlla supporto MediaRecorder
+  if (!window.MediaRecorder) {
+    showToast('Il tuo browser non supporta la registrazione video. Aggiorna a una versione recente.', 'error');
+  }
+  
+  // Controlla supporto getUserMedia
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('La fotocamera non è supportata da questo browser', 'error');
+  }
+  
+  console.log('App initialized successfully');
+}
+
+function setupEventListeners() {
+  // Question buttons
+  safeAddListener('btnNewQ', 'click', getNextQuestion);
+  safeAddListener('btnCopyQuestion', 'click', async () => {
+    if (!AppState.currentQuestion) {
+      getNextQuestion();
+    }
+    await copyToClipboard(AppState.currentQuestion);
+  });
+  
+  // Answer buttons
+  safeAddListener('btnPasteAnswer', 'click', pasteFromClipboard);
+  safeAddListener('btnSendTele', 'click', () => {
+    const answerText = ($('answerBox')?.value || '').trim();
+    applyAnswerToTeleprompter(answerText);
+  });
+  
+  // Camera & recording buttons
+  safeAddListener('btnCamera', 'click', () => ensureCameraReady());
+  safeAddListener('btnTeleRec', 'click', async () => {
+    if (!AppState.currentQuestion) {
+      getNextQuestion();
+    }
+    
+    const isReady = await ensureCameraReady();
+    if (isReady) {
+      recording.start();
+    }
+  });
+  
+  safeAddListener('btnStop', 'click', () => recording.stop());
+  safeAddListener('btnRestartTele', 'click', () => restartTeleprompter());
+  
+  // Video list buttons
+  safeAddListener('btnUpload', 'click', () => {
+    $('fileInput')?.click();
+  });
+  
+  safeAddListener('btnDownload', 'click', () => downloadSelectedVideo());
+  safeAddListener('btnClear', 'click', () => clearVideoList());
+  
+  // Modal buttons
+  safeAddListener('btnHelp', 'click', () => modal.show());
+  
+  // File input
+  const fileInput = $('fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        handleFileUpload(file);
+      }
+      event.target.value = '';
+    });
+  }
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (event) => {
+    // Solo se non si sta scrivendo in un campo di testo
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+      return;
+    }
+    
+    switch (event.key.toLowerCase()) {
+      case 'f1':
+        event.preventDefault();
+        modal.show();
+        break;
+      case 'n':
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          getNextQuestion();
+        }
+        break;
+      case 'r':
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          recording.start();
+        }
+        break;
+      case 's':
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          recording.stop();
+        }
+        break;
+    }
+  });
+  
+  // Pulizia al ricaricamento
+  window.addEventListener('beforeunload', () => {
+    if (AppState.isRecording) {
+      recording.stop();
+    }
+    camera.stop();
+    
+    // Rilascia URL degli oggetti
+    AppState.videos.forEach(video => {
+      try {
+        URL.revokeObjectURL(video.url);
+      } catch (e) {
+        // Ignora errori
+      }
+    });
+  });
+  // Override "Nuova domanda": apre ChatGPT + copia prompt (in capture per bloccare handler precedente)
+  const _btnNewQ = $('btnNewQ');
+  if (_btnNewQ) {
+    _btnNewQ.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      await openChatGPTAndCopyPrompt();
+    }, true);
+  }
+
+}
+
+function safeAddListener(id, event, handler) {
+  const element = $(id);
+  if (element) {
+    element.addEventListener(event, handler);
+  } else {
+    console.warn(`Element #${id} not found for event listener`);
+  }
+}
+
+/* ==========================
+   START APPLICATION
+========================== */
+// Inizializza app con ritardo per sicurezza
+if (typeof requestIdleCallback !== 'undefined') {
+  requestIdleCallback(() => initApp(), { timeout: 1000 });
+} else {
+  setTimeout(initApp, 100);
+}
 </script>
 
 <!-- Aggiungi stili CSS per toast -->
