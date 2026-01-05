@@ -2,254 +2,380 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Sottotitoli Live (Mobile)</title>
-
-  <!-- Suggerimento "app-like" -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini TikTok Recorder (Web)</title>
   <style>
-    :root { --bg:#000; --fg:#fff; --accent:#00e5ff; }
+    :root { color-scheme: dark; }
     body{
-      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg); color:var(--fg); min-height:100vh;
-      display:flex; flex-direction:column;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right)
-               env(safe-area-inset-bottom) env(safe-area-inset-left);
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:#0b0b0f; color:#fff; height:100vh; display:flex; justify-content:center;
     }
-    header, footer{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      padding:12px 12px;
-      border-bottom:1px solid rgba(255,255,255,.12);
+    .app{
+      width:min(420px, 100vw); height:100vh; position:relative; overflow:hidden;
+      background:#000;
     }
-    footer{
-      border-bottom:none;
-      border-top:1px solid rgba(255,255,255,.12);
+    video, canvas{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     }
-    button{
-      background:var(--fg); color:#000; border:0; border-radius:12px;
-      padding:10px 12px; font-weight:800; cursor:pointer;
-      touch-action: manipulation;
+    canvas{ display:none; } /* lo usiamo per registrare con overlay */
+    .hud{
+      position:absolute; inset:0; pointer-events:none;
+      display:flex; flex-direction:column; justify-content:space-between;
+      padding:16px;
+      background: linear-gradient(to top, rgba(0,0,0,.55), transparent 35%),
+                  linear-gradient(to bottom, rgba(0,0,0,.35), transparent 35%);
     }
-    button.secondary{
-      background: rgba(255,255,255,.12); color: var(--fg);
+    .topRow{
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      pointer-events:auto;
+    }
+    .pill{
+      background:rgba(255,255,255,.12);
       border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+      padding:10px 12px; border-radius:14px;
+      display:flex; gap:8px; align-items:center;
+      width:100%;
+    }
+    input{
+      width:100%;
+      background:transparent; border:0; outline:0; color:#fff;
+      font-size:14px;
+    }
+    .topicOverlay{
+      pointer-events:none;
+      font-weight:800;
+      font-size:28px;
+      line-height:1.1;
+      text-shadow: 0 4px 18px rgba(0,0,0,.75);
+      max-width:90%;
+    }
+    .bottomRow{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:12px; pointer-events:auto;
+    }
+    .btnCol{ display:flex; flex-direction:column; gap:10px; }
+    button{
+      border:0; border-radius:16px; padding:12px 14px;
+      background:rgba(255,255,255,.12);
+      color:#fff; font-weight:700; cursor:pointer;
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    button.primary{
+      background:#ff2d55; border-color:#ff2d55;
     }
     button:disabled{ opacity:.5; cursor:not-allowed; }
-    .pill{
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
-      font-size:13px;
+    .recordDot{
+      width:10px; height:10px; border-radius:50%;
+      background:#ff2d55; display:inline-block;
+      box-shadow: 0 0 0 6px rgba(255,45,85,.18);
+      margin-right:8px;
+      animation: pulse 1.2s infinite;
     }
-    .pill b{ color: var(--accent); }
-    main{
-      flex:1; display:flex; align-items:center; justify-content:center;
-      padding: 12px;
+    .hidden{ display:none !important; }
+    @keyframes pulse{
+      0%{ transform:scale(1); opacity:1 }
+      50%{ transform:scale(1.08); opacity:.85 }
+      100%{ transform:scale(1); opacity:1 }
     }
-    .box{
-      width: min(1100px, 96vw);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 18px 45px rgba(0,0,0,.35);
+    .toast{
+      position:absolute; left:50%; transform:translateX(-50%);
+      bottom:92px;
+      background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px; border-radius:14px; font-size:13px;
+      max-width:90%; text-align:center;
+      display:none;
     }
-    .subtitle{
-      font-size: clamp(30px, 6vw, 72px);
-      line-height: 1.15;
-      font-weight: 900;
-      letter-spacing: .2px;
-      word-break: break-word;
+    .downloadLink{
+      display:block; margin-top:8px; color:#7ee787; font-weight:800;
+      text-decoration:none;
     }
-    .final{ opacity:.96; }
-    .interim{ opacity:.62; margin-top: 10px; }
-    input[type="range"]{ width: 220px; }
-    textarea{
-      width: min(1100px, 96vw);
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.35);
-      color: var(--fg);
-      padding:12px;
-      font-size:16px;
-      min-height:54px;
-      resize: vertical;
-    }
-    .small{ opacity:.75; font-size: 12px; }
   </style>
 </head>
 <body>
+  <div class="app">
+    <video id="preview" playsinline muted autoplay></video>
+    <canvas id="recCanvas"></canvas>
 
-<header>
-  <button id="startBtn">🎙️ Avvia</button>
-  <button id="stopBtn" class="secondary" disabled>⏹️ Ferma</button>
-  <button id="fsBtn" class="secondary">⛶ Full screen</button>
-  <button id="wakeBtn" class="secondary">🔒 Schermo acceso</button>
-  <button id="clearBtn" class="secondary">🧽 Pulisci</button>
-  <span class="pill">Stato: <b id="status">pronto</b></span>
-</header>
+    <div class="hud">
+      <div class="topRow">
+        <div class="pill">
+          <span>🎯</span>
+          <input id="topicInput" placeholder="Scrivi l’argomento (es: 'Allenamento spalle')" maxlength="60" />
+        </div>
+      </div>
 
-<main>
-  <div class="box" id="box" aria-live="polite" aria-atomic="true">
-    <div class="subtitle final" id="finalText">Tocca “Avvia” e parla…</div>
-    <div class="subtitle interim" id="interimText"></div>
+      <div class="bottomRow">
+        <div class="topicOverlay" id="topicOverlay"></div>
+
+        <div class="btnCol">
+          <button id="btnStartCam">Attiva camera</button>
+          <button id="btnFlip" disabled>Flip</button>
+          <button id="btnRecord" class="primary" disabled>Registra</button>
+          <button id="btnStop" disabled>Stop</button>
+          <button id="btnDownload" disabled>Download</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
   </div>
-</main>
-
-<footer>
-  <label class="pill">Testo:
-    <input id="sizeRange" type="range" min="26" max="96" value="60" />
-    <span id="sizeLabel">60px</span>
-  </label>
-  <span class="small">Se l’audio non va (spesso su iPhone), scrivi qui sotto: apparirà come sottotitolo.</span>
-  <textarea id="manual" placeholder="Sottotitoli manuali…"></textarea>
-</footer>
 
 <script>
 (() => {
-  const startBtn = document.getElementById('startBtn');
-  const stopBtn  = document.getElementById('stopBtn');
-  const fsBtn    = document.getElementById('fsBtn');
-  const wakeBtn  = document.getElementById('wakeBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const statusEl = document.getElementById('status');
-  const finalEl  = document.getElementById('finalText');
-  const interimEl= document.getElementById('interimText');
-  const sizeRange= document.getElementById('sizeRange');
-  const sizeLabel= document.getElementById('sizeLabel');
-  const manual   = document.getElementById('manual');
+  const preview = document.getElementById('preview');
+  const canvas = document.getElementById('recCanvas');
+  const ctx = canvas.getContext('2d');
 
-  function setStatus(s){ statusEl.textContent = s; }
+  const topicInput = document.getElementById('topicInput');
+  const topicOverlay = document.getElementById('topicOverlay');
 
-  function setFontSize(px){
-    finalEl.style.fontSize = px + "px";
-    interimEl.style.fontSize = px + "px";
-    sizeLabel.textContent = px + "px";
+  const btnStartCam = document.getElementById('btnStartCam');
+  const btnFlip = document.getElementById('btnFlip');
+  const btnRecord = document.getElementById('btnRecord');
+  const btnStop = document.getElementById('btnStop');
+  const btnDownload = document.getElementById('btnDownload');
+
+  const toast = document.getElementById('toast');
+
+  let stream = null;
+  let facingMode = 'user'; // 'user' or 'environment'
+  let recorder = null;
+  let chunks = [];
+  let recordedBlob = null;
+
+  // aggiorna testo overlay “live”
+  function syncTopic() {
+    const t = (topicInput.value || '').trim();
+    topicOverlay.textContent = t;
   }
-  setFontSize(parseInt(sizeRange.value,10));
-  sizeRange.addEventListener('input', () => setFontSize(parseInt(sizeRange.value,10)));
+  topicInput.addEventListener('input', syncTopic);
+  syncTopic();
 
-  clearBtn.addEventListener('click', () => {
-    finalEl.textContent = "—";
-    interimEl.textContent = "";
-    manual.value = "";
-  });
+  function showToast(html, ms=3500){
+    toast.innerHTML = html;
+    toast.style.display = 'block';
+    if (ms) setTimeout(() => toast.style.display = 'none', ms);
+  }
 
-  manual.addEventListener('input', () => {
-    finalEl.textContent = manual.value.trim() || "—";
-    interimEl.textContent = "";
-  });
+  async function startCamera() {
+    // stop stream precedente
+    if (stream) {
+      stream.getTracks().forEach(tr => tr.stop());
+      stream = null;
+    }
 
-  // Fullscreen (funziona meglio su Android; su iOS è limitato)
-  fsBtn.addEventListener('click', async () => {
     try {
-      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch(e){ console.warn(e); }
-  });
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: true
+      });
+      preview.srcObject = stream;
 
-  // Wake Lock (tiene lo schermo acceso, solo su HTTPS + browser compatibili)
-  let wakeLock = null;
-  async function enableWakeLock(){
-    try{
-      if (!('wakeLock' in navigator)) {
-        setStatus("wake lock non supportato");
-        return;
-      }
-      wakeLock = await navigator.wakeLock.request('screen');
-      setStatus("schermo acceso");
-      wakeBtn.textContent = "🔓 Sblocca schermo";
-    } catch(e){
-      console.warn(e);
-      setStatus("wake lock negato");
+      btnFlip.disabled = false;
+      btnRecord.disabled = false;
+      btnStop.disabled = true;
+      btnDownload.disabled = true;
+      recordedBlob = null;
+
+      showToast(`Camera attiva (${facingMode === 'user' ? 'frontale' : 'posteriore'}).`);
+    } catch (e) {
+      console.error(e);
+      showToast(`⚠️ Non riesco ad attivare la camera. Apri la pagina su <b>https</b> o <b>localhost</b> e concedi i permessi.`);
     }
   }
-  async function disableWakeLock(){
-    try{
-      if (wakeLock) await wakeLock.release();
-      wakeLock = null;
-      setStatus("wake lock off");
-      wakeBtn.textContent = "🔒 Schermo acceso";
-    } catch(e){ console.warn(e); }
+
+  function fitCanvasToVideo() {
+    // usa dimensioni reali del video, non quelle CSS
+    const w = preview.videoWidth || 720;
+    const h = preview.videoHeight || 1280;
+    canvas.width = w;
+    canvas.height = h;
   }
-  wakeBtn.addEventListener('click', () => (wakeLock ? disableWakeLock() : enableWakeLock()));
-  document.addEventListener('visibilitychange', () => {
-    // se lo schermo si spegne e riapri, prova a riprendere
-    if (wakeLock && document.visibilityState === 'visible') enableWakeLock();
+
+  function drawFrame() {
+    // disegna il frame video
+    ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
+
+    // overlay testo (tipo TikTok)
+    const text = (topicInput.value || '').trim();
+    if (text) {
+      const pad = Math.round(canvas.width * 0.06);
+      const maxWidth = canvas.width - pad * 2;
+
+      // font responsive
+      const fontSize = Math.max(28, Math.round(canvas.width * 0.07));
+      ctx.font = `800 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'left';
+
+      // wrap semplice su 2-3 righe
+      const words = text.split(/\s+/);
+      const lines = [];
+      let line = '';
+      for (const w of words) {
+        const test = line ? line + ' ' + w : w;
+        if (ctx.measureText(test).width <= maxWidth) {
+          line = test;
+        } else {
+          if (line) lines.push(line);
+          line = w;
+        }
+      }
+      if (line) lines.push(line);
+
+      const maxLines = 3;
+      const finalLines = lines.slice(0, maxLines);
+
+      const lineHeight = Math.round(fontSize * 1.12);
+      const x = pad;
+      const yBase = canvas.height - pad; // in basso a sinistra
+
+      // shadow
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.75)';
+      ctx.shadowBlur = Math.round(fontSize * 0.55);
+      ctx.fillStyle = '#ffffff';
+
+      // disegna dal basso verso l’alto
+      for (let i = 0; i < finalLines.length; i++) {
+        const idx = finalLines.length - 1 - i;
+        const y = yBase - (i * lineHeight);
+        ctx.fillText(finalLines[idx], x, y);
+      }
+      ctx.restore();
+    }
+
+    // indicatore REC quando sta registrando
+    if (recorder && recorder.state === 'recording') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,45,85,1)';
+      ctx.beginPath();
+      ctx.arc(24, 24, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  let rafId = null;
+  function startDrawingLoop() {
+    const loop = () => {
+      drawFrame();
+      rafId = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+  function stopDrawingLoop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  function bestMimeType() {
+    const candidates = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm'
+    ];
+    return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
+  }
+
+  function setRecordingUI(isRec) {
+    btnRecord.disabled = isRec;
+    btnStop.disabled = !isRec;
+    btnFlip.disabled = isRec;
+    btnStartCam.disabled = isRec;
+    if (isRec) {
+      btnRecord.innerHTML = `<span class="recordDot"></span>REC`;
+    } else {
+      btnRecord.textContent = 'Registra';
+    }
+  }
+
+  async function startRecording() {
+    if (!stream) return;
+
+    // aspetta che il video abbia dimensioni
+    if (!preview.videoWidth) {
+      await new Promise(r => preview.onloadedmetadata = () => r());
+    }
+    fitCanvasToVideo();
+
+    // loop di disegno su canvas
+    startDrawingLoop();
+
+    // canvas stream + audio stream => recorder
+    const canvasStream = canvas.captureStream(30); // 30fps
+    const audioTracks = stream.getAudioTracks();
+    const mixedStream = new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...audioTracks
+    ]);
+
+    chunks = [];
+    recordedBlob = null;
+
+    const mimeType = bestMimeType();
+    recorder = new MediaRecorder(mixedStream, mimeType ? { mimeType } : undefined);
+
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      stopDrawingLoop();
+      setRecordingUI(false);
+
+      recordedBlob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+      btnDownload.disabled = false;
+
+      const sizeMB = (recordedBlob.size / (1024*1024)).toFixed(2);
+      showToast(`✅ Registrazione pronta (${sizeMB} MB).<br/>Premi <b>Download</b> per esportare.`);
+    };
+
+    recorder.start(250); // chunk ogni 250ms
+    setRecordingUI(true);
+    btnDownload.disabled = true;
+  }
+
+  function stopRecording() {
+    if (recorder && recorder.state === 'recording') {
+      recorder.stop();
+    }
+  }
+
+  function download() {
+    if (!recordedBlob) return;
+
+    const topic = (topicInput.value || 'video').trim().replace(/[^\w\-]+/g, '_').slice(0, 40);
+    const filename = `${topic || 'video'}_${new Date().toISOString().replace(/[:.]/g,'-')}.webm`;
+
+    const url = URL.createObjectURL(recordedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+    showToast(`⬇️ Download avviato: <b>${filename}</b>`);
+  }
+
+  // UI handlers
+  btnStartCam.addEventListener('click', startCamera);
+
+  btnFlip.addEventListener('click', async () => {
+    facingMode = (facingMode === 'user') ? 'environment' : 'user';
+    await startCamera();
   });
 
-  // Speech recognition
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  btnRecord.addEventListener('click', startRecording);
+  btnStop.addEventListener('click', stopRecording);
+  btnDownload.addEventListener('click', download);
 
-  if (!SpeechRecognition) {
-    setStatus("STT non supportato");
-    startBtn.disabled = true;
-    stopBtn.disabled = true;
-    finalEl.textContent = "Questo browser non supporta sottotitoli automatici. Usa la casella in basso per inserirli manualmente.";
-    return;
-  }
-
-  let recognition = null;
-  let listening = false;
-  let finalTranscript = "";
-
-  function createRecognition(){
-    const r = new SpeechRecognition();
-    r.lang = "it-IT";
-    r.continuous = true;
-    r.interimResults = true;
-
-    r.onstart = () => {
-      listening = true;
-      setStatus("in ascolto");
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-    };
-    r.onend = () => {
-      listening = false;
-      setStatus("fermato");
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
-    r.onerror = (e) => {
-      console.warn("STT error:", e);
-      setStatus("errore: " + (e.error || "sconosciuto"));
-    };
-    r.onresult = (event) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++){
-        const txt = event.results[i][0].transcript;
-        if (event.results[i].isFinal) finalTranscript += txt + " ";
-        else interim += txt;
-      }
-      finalEl.textContent = finalTranscript.trim() || "—";
-      interimEl.textContent = interim.trim();
-    };
-    return r;
-  }
-
-  async function start(){
-    try{
-      await navigator.mediaDevices.getUserMedia({ audio:true });
-    } catch(e){
-      setStatus("permesso microfono negato");
-      return;
-    }
-    finalTranscript = "";
-    interimEl.textContent = "";
-    finalEl.textContent = "—";
-    recognition = createRecognition();
-    try { recognition.start(); } catch(e){ console.warn(e); }
-  }
-
-  function stop(){
-    if (recognition && listening) recognition.stop();
-  }
-
-  startBtn.addEventListener('click', start);
-  stopBtn.addEventListener('click', stop);
+  // hint iniziale
+  showToast(`👋 Premi <b>Attiva camera</b>. Poi scrivi l’argomento e registra.`, 4500);
 })();
 </script>
 </body>
