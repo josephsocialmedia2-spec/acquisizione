@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it-IT">
 <head>
@@ -764,6 +765,13 @@
 
 <script>
 
+/* ==========================
+   PROMPT GPT TELEPROMPTER
+========================== */
+const TELEPROMPTER_PROMPT = `SEI UN ESPERTO DI CONTENUTI SOCIAL IMMOBILIARI.
+OBIETTIVO: generare un TESTO DA TELEPROMPTER per un video social partendo dalla domanda:
+“È il momento di vendere casa?”
+
 CONTESTO STRATEGICO (OBBLIGATORIO):
 - Il video fa parte di una STRATEGIA DI CONTENUTI SOCIAL per acquisizione immobiliare.
 - NON devi vendere, NON devi proporre servizi, NON devi spingere l’agenzia.
@@ -795,6 +803,13 @@ LUNGHEZZA:
 `;
 
 
+/* ==========================
+   CHATGPT INTEGRATION (NUOVA DOMANDA)
+   - apre thread ChatGPT dedicato
+   - copia negli appunti il prompt + la domanda
+========================== */
+const CHATGPT_THREAD_URL = 'https://chatgpt.com/c/695a2016-a020-8332-989d-4d3fada815fb';
+
 function buildTeleprompterPrompt(questionText) {
   const q = String(questionText || '').trim();
   // Se non c'è domanda, usa quella standard del prompt
@@ -807,7 +822,7 @@ ${q}
 ORA GENERA IL TESTO.`;
 }
 
-async function  {
+async function openChatGPTAndCopyPrompt() {
   // assicura che ci sia una domanda corrente
   if (!AppState.currentQuestion) {
     try { getNextQuestion(); } catch (e) {}
@@ -816,14 +831,24 @@ async function  {
   await copyToClipboard(payload);
   // apre la chat in una nuova scheda
   try {
-    window.open(, '_blank', 'noopener');
+    window.open(CHATGPT_THREAD_URL, '_blank', 'noopener');
   } catch (e) {
     // fallback: se popup bloccato, cambia location
-    try { window.location.href = ; } catch (_) {}
+    try { window.location.href = CHATGPT_THREAD_URL; } catch (_) {}
   }
   showToast('Prompt copiato. Apri ChatGPT e incolla (Ctrl+V).', 'success', 4500);
 }
 
+
+/* ==========================
+   OVERRIDE: ORDINE COPIA (PROMPT → DOMANDA)
+========================== */
+function buildTeleprompterPrompt(questionText) {
+  const q = String(questionText || '').trim();
+  const base = String(TELEPROMPTER_PROMPT || '').trim();
+  if (!q) return base;
+  // Ordine richiesto: prima PROMPT, poi DOMANDA generata (senza etichette aggiuntive)
+  return `${base}
 
 ${q}`;
 }
@@ -1785,7 +1810,17 @@ function setupEventListeners() {
       }
     });
   });
+  // Override "Nuova domanda": apre ChatGPT + copia prompt (in capture per bloccare handler precedente)
+  const _btnNewQ = $('btnNewQ');
+  if (_btnNewQ) {
+    _btnNewQ.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      await openChatGPTAndCopyPrompt();
+    }, true);
   }
+
+}
 
 function safeAddListener(id, event, handler) {
   const element = $(id);
@@ -1806,7 +1841,14 @@ if (typeof requestIdleCallback !== 'undefined') {
   setTimeout(initApp, 100);
 }
 
-async function  {
+/* ==========================
+   OVERRIDE: NUOVA DOMANDA → APRI CHATGPT (LINK NUOVO) + COPIA PROMPT + COPIA DOMANDA
+   Nota: per limiti di sicurezza del browser, l'incolla su ChatGPT non può essere automatico.
+   Qui copiamo negli appunti: PROMPT (prima) + DOMANDA (dopo), in un unico contenuto.
+========================== */
+const CHATGPT_THREAD_URL_V2 = 'https://chatgpt.com/c/69588a96-4cdc-8332-91d2-26ac10ede496';
+
+async function openChatGPTAndCopyPrompt() {
   // Genera SEMPRE una nuova domanda quando premi "Nuova domanda"
   try { getNextQuestion(); } catch (e) {}
 
@@ -1815,9 +1857,9 @@ async function  {
   await copyToClipboard(payload);
 
   try {
-    window.open(_V2, '_blank', 'noopener');
+    window.open(CHATGPT_THREAD_URL_V2, '_blank', 'noopener');
   } catch (e) {
-    try { window.location.href = _V2; } catch (_) {}
+    try { window.location.href = CHATGPT_THREAD_URL_V2; } catch (_) {}
   }
 
   showToast('Prompt copiato (prima) + domanda copiata (dopo). Incolla in ChatGPT (Ctrl+V).', 'success', 5200);
