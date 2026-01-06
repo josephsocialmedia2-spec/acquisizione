@@ -2,1445 +2,1056 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>WebTok PRO — Recorder + Feed + Teleprompter + IndexedDB</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendario Settimanale – Clienti + CSV Import/Export</title>
   <style>
-    :root { color-scheme: dark; }
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    :root{
+      --bg:#0b0f17;
+      --text:#e9eef7;
+      --muted:#a9b3c7;
+      --line:rgba(255,255,255,.08);
+      --good:#24d17e;
+      --bad:#ff4d4d;
+      --shadow: 0 10px 24px rgba(0,0,0,.35);
+      --radius: 16px;
+      --focus: 0 0 0 3px rgba(106,168,255,.35);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    *{box-sizing:border-box}
     body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background:#07070a; color:#fff;
-      height:100vh; overflow:hidden;
+      margin:0;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(106,168,255,.18), transparent 60%),
+                  radial-gradient(900px 500px at 100% 0%, rgba(36,209,126,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      font: 14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
-    .app{
-      width:min(460px, 100vw);
-      height:100vh;
-      margin:0 auto;
-      position:relative;
-      background:#000;
+    .wrap{
+      max-width: 1240px;
+      margin: 22px auto 40px;
+      padding: 0 14px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1.45fr .85fr;
     }
-
-    /* FEED */
-    .feed{
-      position:absolute; inset:0;
-      overflow-y:auto;
-      scroll-snap-type:y mandatory;
-      scroll-behavior:smooth;
-      -webkit-overflow-scrolling: touch;
-      background:#000;
+    header{
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
     }
-    .page{
-      height:100vh;
-      scroll-snap-align:start;
-      position:relative;
-      background:#000;
-      overflow:hidden;
-    }
-    .page video{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      background:#000;
-    }
-    .page .shade{
-      position:absolute; inset:0;
-      background:
-        linear-gradient(to top, rgba(0,0,0,.65), transparent 40%),
-        linear-gradient(to bottom, rgba(0,0,0,.35), transparent 35%);
-      pointer-events:none;
-    }
-
-    /* REC SCREEN */
-    .recScreen{
-      position:absolute; inset:0;
-      background:#000;
-      display:none;
-    }
-    .recScreen.active{ display:block; }
-
-    .recStage{
-      position:absolute; inset:0;
-      background:#000;
-      overflow:hidden;
-    }
-    .recStage video, .recStage canvas{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-    }
-    .recStage canvas{ display:none; } /* record source */
-
-    /* Preview mirror (optional) */
-    .mirrorPreview{
-      transform: scaleX(-1);
-    }
-
-    /* HUD */
-    .hud{
-      position:absolute; inset:0;
-      padding:16px;
+    .toprow{
       display:flex;
-      flex-direction:column;
+      flex-wrap:wrap;
+      gap:10px 12px;
+      align-items:flex-end;
       justify-content:space-between;
-      pointer-events:none;
-      z-index:5;
     }
-    .row{
+
+    /* HEADER BRAND (logo + intestazione) */
+    .brand{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      min-width: 280px;
+    }
+    .brandLogo{
+      height:60px;
+      width:auto;
+      object-fit:contain;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+    }
+    .brandTitle{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.2px;
+      line-height:1.1;
+    }
+    .brandSub{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .brandLine{
+      font-size:14px;
+      color: var(--muted);
+    }
+    .brandLine strong{
+      color: var(--text);
+      font-weight: 800;
+    }
+    .brandPhone{
+      font-size:14px;
+      margin-top:2px;
+    }
+    .brandPhone a{
+      color: var(--text);
+      text-decoration:none;
+    }
+
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;justify-content:flex-end;}
+    .field{display:flex;flex-direction:column;gap:6px;min-width: 220px;}
+    label{color: var(--muted);font-size: 12px;}
+    input[type="text"], input[type="date"], select{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      outline: none;
+    }
+    input[type="text"]:focus, input[type="date"]:focus, select:focus, button:focus, textarea:focus{
+      box-shadow: var(--focus);
+      border-color: rgba(106,168,255,.55);
+      outline:none;
+    }
+
+    .btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+    button{
+      appearance:none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      white-space:nowrap;
+    }
+    button:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14);}
+    button:active{ transform: translateY(1px); }
+    .primary{
+      border-color: rgba(106,168,255,.35);
+      background: rgba(106,168,255,.16);
+    }
+    .primary:hover{
+      background: rgba(106,168,255,.22);
+      border-color: rgba(106,168,255,.55);
+    }
+    .danger{
+      border-color: rgba(255,77,77,.35);
+      background: rgba(255,77,77,.12);
+    }
+    .danger:hover{
+      background: rgba(255,77,77,.18);
+      border-color: rgba(255,77,77,.55);
+    }
+
+    .help{
+      background: rgba(255,255,255,.04);
+      border: 1px dashed rgba(255,255,255,.14);
+      border-radius: 14px;
+      padding: 12px;
       display:flex;
       gap:10px;
       align-items:flex-start;
+      color: var(--muted);
+    }
+    .help .dot{
+      width:10px;height:10px;border-radius:999px;margin-top:5px;
+      background: rgba(106,168,255,.9);
+      box-shadow: 0 0 0 6px rgba(106,168,255,.12);
+      flex: 0 0 auto;
+    }
+    .help b{color: var(--text); font-weight: 650;}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{margin:0;font-size:14px;letter-spacing:.2px;}
+    .cardhead{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
       justify-content:space-between;
-      pointer-events:auto;
-    }
-    .pill{
-      width:100%;
-      display:flex; gap:10px; align-items:center;
-      padding:10px 12px;
-      border-radius:16px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-    }
-    .pill input, .pill textarea{
-      width:100%;
-      background:transparent;
-      border:0; outline:0;
-      color:#fff;
-      font-weight:650;
-      font-size:14px;
-      resize:none;
-    }
-    .pill .mini{
-      width:auto;
-      padding:6px 10px;
-      border-radius:12px;
-      background:rgba(0,0,0,.20);
-      border:1px solid rgba(255,255,255,.14);
-      cursor:pointer;
-      user-select:none;
-      white-space:nowrap;
-      font-size:12px;
-      font-weight:900;
-    }
-    .topicOverlay{
-      pointer-events:none;
-      font-weight:900;
-      font-size:28px;
-      line-height:1.12;
-      text-shadow: 0 4px 18px rgba(0,0,0,.75);
-      max-width:90%;
-    }
-    .metaOverlay{
-      margin-top:8px;
-      font-size:13px;
-      font-weight:850;
-      opacity:.92;
-      text-shadow: 0 4px 14px rgba(0,0,0,.75);
-      max-width:90%;
-    }
-
-    /* SIDE BUTTONS */
-    .side{
-      pointer-events:auto;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:flex-end;
-      padding-bottom:10px;
-      max-width:180px;
-    }
-    button{
-      border:0;
-      border-radius:16px;
-      padding:12px 14px;
-      background:rgba(255,255,255,.12);
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(10px);
-    }
-    button.primary{
-      background:#ff2d55;
-      border-color:#ff2d55;
-    }
-    button.ghost{
-      background:rgba(0,0,0,.22);
-      border-color: rgba(255,255,255,.16);
-    }
-    button:disabled{ opacity:.5; cursor:not-allowed; }
-
-    /* RECORD UI */
-    .recBadge{
-      display:inline-flex; align-items:center; gap:8px;
-      font-weight:950;
-      letter-spacing:.5px;
-      padding:10px 12px;
-      border-radius:16px;
-      background:rgba(0,0,0,.25);
-      border:1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-    }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background:#ff2d55;
-      box-shadow: 0 0 0 7px rgba(255,45,85,.18);
-      animation:pulse 1.2s infinite;
-    }
-    @keyframes pulse{
-      0%{ transform:scale(1); opacity:1 }
-      50%{ transform:scale(1.08); opacity:.85 }
-      100%{ transform:scale(1); opacity:1 }
-    }
-
-    /* COUNTDOWN */
-    .countdown{
-      position:absolute; inset:0;
-      display:none;
-      place-items:center;
-      font-size:72px;
-      font-weight:950;
-      text-shadow: 0 10px 40px rgba(0,0,0,.75);
-      background: radial-gradient(circle at center, rgba(0,0,0,.25), rgba(0,0,0,.55));
-      pointer-events:none;
-      z-index:10;
-    }
-    .countdown.show{ display:grid; }
-
-    /* TOAST */
-    .toast{
-      position:absolute;
-      left:50%; transform:translateX(-50%);
-      bottom:92px;
-      background:rgba(0,0,0,.70);
-      border:1px solid rgba(255,255,255,.14);
-      padding:10px 12px;
-      border-radius:14px;
-      font-size:13px;
-      max-width:92%;
-      text-align:center;
-      display:none;
-      z-index:50;
-    }
-    .toast a{ color:#7ee787; font-weight:900; text-decoration:none; }
-
-    /* TOP BAR on FEED */
-    .topBar{
-      position:absolute; top:0; left:0; right:0;
-      padding:12px 16px;
-      display:flex; align-items:center; justify-content:space-between;
-      pointer-events:none;
-      z-index:5;
-    }
-    .brand{
-      pointer-events:auto;
-      font-weight:950;
-      letter-spacing:.2px;
-      padding:10px 12px;
-      border-radius:16px;
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
-      display:flex; align-items:center; gap:8px;
-    }
-    .brand small{ opacity:.75; font-weight:850; }
-    .fab{
-      pointer-events:auto;
-      border-radius:18px;
-      padding:12px 14px;
-      background:#ff2d55;
-      border:1px solid #ff2d55;
-      font-weight:950;
-      cursor:pointer;
-    }
-    .empty{
-      position:absolute; inset:0;
-      display:grid;
-      place-items:center;
-      padding:24px;
-      text-align:center;
-      color:rgba(255,255,255,.9);
-    }
-    .empty .card{
-      max-width:360px;
-      border-radius:22px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      padding:18px 16px;
-      backdrop-filter: blur(10px);
-    }
-    .empty h2{ margin:0 0 8px; font-size:18px; }
-    .empty p{ margin:0; opacity:.85; line-height:1.35; }
-    .kbd{
-      display:inline-block;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.22);
-      font-weight:950;
-      font-size:12px;
-      margin:0 2px;
-      white-space:nowrap;
-    }
-
-    /* Teleprompter UI panel */
-    .tpPanel{
-      position:absolute;
-      left:16px; right:16px;
-      top:72px;
-      z-index:20;
-      pointer-events:auto;
-      display:none;
-    }
-    .tpPanel.show{ display:block; }
-
-    .tpGrid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
-    .tpControls{
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .tpControls button{
-      padding:10px 12px;
-      border-radius:14px;
-      font-size:13px;
-      font-weight:950;
-    }
-    .tpControls .pill{
-      padding:10px 12px;
-      border-radius:16px;
-      display:flex;
       gap:10px;
       align-items:center;
-      width:100%;
+      background: rgba(0,0,0,.12);
     }
-    .tpControls input[type="range"]{ width:100%; }
-    .tpLabel{ font-size:12px; opacity:.85; font-weight:900; }
+    .cardbody{padding: 12px 14px;}
 
-    /* Teleprompter overlay (what user reads) */
-    .tpOverlay{
-      position:absolute;
-      left:0; right:0;
-      z-index:8;
-      pointer-events:none;
-      display:none;
+    .weekline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      color: var(--muted);
+      font-size: 13px;
     }
-    .tpOverlay.show{ display:block; }
-    .tpBox{
-      margin:0 auto;
-      width:min(92%, 440px);
-      border-radius:20px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
-      padding:14px 14px 10px;
+    .weekline strong{ color: var(--text); font-weight: 700; }
+
+    table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;}
+    thead th{position: sticky;top:0;z-index:1;background: rgba(15,22,34,.92);backdrop-filter: blur(8px);}
+    th, td{border-bottom: 1px solid var(--line);border-right: 1px solid var(--line);padding: 10px;vertical-align: top;}
+    th:last-child, td:last-child{ border-right:none; }
+    tbody tr:last-child td{border-bottom:none;}
+    th.day{width:120px;text-align:left;color:var(--text);font-weight:700;}
+    th.slot{text-align:left;color:var(--muted);font-weight:650;}
+    .slotmeta{display:flex;flex-direction:column;gap:2px;}
+    .slotmeta .time{color:var(--muted);font-size:12px;}
+    .slotmeta .kind{color:var(--text);font-size:12px;font-weight:700;}
+
+    .cell{display:flex;flex-direction:column;gap:8px;min-height: 88px;}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background: rgba(0,0,0,.16);width:fit-content;max-width:100%;
     }
-    .tpViewport{
-      height:140px; /* will be adjusted */
-      overflow:hidden;
-      position:relative;
+    .pill .small{color:var(--muted);font-size:12px;white-space:nowrap;}
+    .pill .big{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width: 420px;}
+
+    .statusRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+    .statusHint{color:var(--muted);font-size:12px;}
+    .toggle{
+      display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;
+      border:1px solid var(--line);background: rgba(0,0,0,.14);cursor:pointer;user-select:none;
+      transition: background .15s ease, border-color .15s ease;
     }
-    .tpText{
-      position:absolute;
-      left:0; right:0;
-      top:0;
-      font-weight:900;
-      line-height:1.2;
-      text-shadow: 0 4px 18px rgba(0,0,0,.75);
-      white-space:pre-wrap;
-      word-break:break-word;
+    .toggle:hover{background: rgba(255,255,255,.06);border-color: rgba(255,255,255,.14);}
+    .ball{width:12px;height:12px;border-radius:999px;background: var(--bad);box-shadow: 0 0 0 6px rgba(255,77,77,.12);}
+    .done .ball{background: var(--good);box-shadow: 0 0 0 6px rgba(36,209,126,.12);}
+    .toggle .txt{font-size:12px;color:var(--muted);}
+    .done .txt{color: rgba(233,238,247,.9);font-weight:650;}
+
+    .sidebar{display:flex;flex-direction:column;gap:14px;}
+    .list{display:flex;flex-direction:column;gap:10px;max-height: 520px;overflow:auto;padding-right: 6px;}
+    .item{
+      border:1px solid var(--line);border-radius:14px;padding:10px;background: rgba(0,0,0,.14);
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
+    }
+    .item .left{display:flex;flex-direction:column;gap:2px;min-width:0;}
+    .item .title{font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px;}
+    .item .meta{color:var(--muted);font-size:12px;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;
+      border:1px solid var(--line);background: rgba(255,255,255,.04);
+      color: var(--muted);font-size:12px;white-space:nowrap;
+    }
+    .tag strong{color: var(--text);font-weight:750;}
+
+    textarea{
+      width:100%;min-height: 120px;resize: vertical;
+      padding: 10px 12px;border-radius: 12px;border: 1px solid var(--line);
+      background: rgba(0,0,0,.20);color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;line-height: 1.35;
+    }
+
+    .smallnote{ font-size: 12px; color: var(--muted); }
+    .grid3{display:grid;grid-template-columns: 1fr 1fr 1fr; gap:10px;}
+
+    .linkbtn{ text-decoration:none; }
+    .linkbtn button{ width:100%; }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      .item .title{ max-width: 66vw; }
+      th.day{ width: 108px; }
+      .grid3{grid-template-columns: 1fr;}
+    }
+    @media (max-width: 640px){
+      th.day{ width: 96px; }
+      .controls .field{ min-width: 100%; }
+      .btns{ width:100%; justify-content:space-between; }
+      .pill .big{ max-width: 70vw; }
+      .brandLogo{ height:52px; }
+      .brandTitle{ font-size:18px; }
     }
   </style>
 </head>
+
 <body>
-  <div class="app">
+  <!--
+  NOTE IMPORTANTI
+  - Per vedere il logo, metti il file immagine nella stessa cartella di questo HTML.
+  - Qui ho impostato: src="Untitled_design-removebg-preview.png"
+    Se il tuo file si chiama diversamente, cambia SOLO quel nome.
+  -->
 
-    <!-- FEED -->
-    <div class="feed" id="feed" aria-label="Feed verticale">
-      <div class="topBar">
-        <div class="brand">🎬 WebTok <small>PRO</small></div>
-        <button class="fab" id="btnOpenRec">+ Registra</button>
-      </div>
-
-      <div class="empty" id="emptyState">
-        <div class="card">
-          <h2>Nessun clip ancora</h2>
-          <p>
-            Premi <span class="kbd">+ Registra</span>, aggiungi <span class="kbd">Argomento</span> + <span class="kbd">#hashtag</span>,
-            e se vuoi attiva <span class="kbd">Teleprompter</span>.
-          </p>
-        </div>
-      </div>
-      <!-- pages injected -->
-    </div>
-
-    <!-- RECORDER SCREEN -->
-    <div class="recScreen" id="recScreen">
-      <div class="recStage">
-        <video id="livePreview" playsinline muted autoplay></video>
-        <canvas id="recCanvas"></canvas>
-      </div>
-
-      <!-- Teleprompter overlay (visual) -->
-      <div class="tpOverlay" id="tpOverlay">
-        <div class="tpBox" id="tpBox">
-          <div class="tpViewport" id="tpViewport">
-            <div class="tpText" id="tpText"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Teleprompter panel (controls) -->
-      <div class="tpPanel" id="tpPanel">
-        <div class="tpGrid">
-          <div class="pill">
-            <span style="font-size:14px;">📝</span>
-            <textarea id="tpScript" rows="3" placeholder="Script teleprompter… (va a capo quando vuoi)"></textarea>
-            <span class="mini" id="tpClear">Pulisci</span>
-          </div>
-
-          <div class="pill" style="flex-direction:column; align-items:stretch; gap:10px;">
-            <div class="tpControls">
-              <button class="ghost" id="tpPlay">▶︎ Play</button>
-              <button class="ghost" id="tpPause">⏸︎ Pausa</button>
-              <button class="ghost" id="tpReset">↺ Reset</button>
-              <button class="ghost" id="tpMirror">Mirror: OFF</button>
-              <button class="ghost" id="tpPos">Pos: BASSO</button>
-              <button class="ghost" id="tpBurn">Burn-in: ON</button>
+  <div class="wrap">
+    <header>
+      <div class="toprow">
+        <!-- BRAND: LOGO + FIRMA -->
+        <div class="brand">
+          <img
+            class="brandLogo"
+            src="Untitled_design-removebg-preview.png"
+            alt="Immobiliare La Sacra"
+          />
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <h1 class="brandTitle">Immobiliare La Sacra</h1>
+            <div class="brandLine">Geometra <strong>Christian Raimondi</strong></div>
+            <div class="brandPhone">
+              📞 <a href="tel:3462568685">346&nbsp;256&nbsp;86&nbsp;85</a>
             </div>
+            <p class="brandSub">Calendario contenuti (multi-cliente) • Slot DA FARE/FATTO • Export CSV</p>
+          </div>
+        </div>
 
-            <div style="display:grid; gap:10px;">
-              <div>
-                <div class="tpLabel">Velocità (px/s)</div>
-                <input id="tpSpeed" type="range" min="10" max="220" value="70">
-              </div>
-              <div>
-                <div class="tpLabel">Dimensione testo</div>
-                <input id="tpFont" type="range" min="18" max="60" value="34">
-              </div>
-              <div>
-                <div class="tpLabel">Opacità box</div>
-                <input id="tpBoxOpacity" type="range" min="0" max="80" value="35">
-              </div>
-              <div>
-                <div class="tpLabel">Altezza teleprompter</div>
-                <input id="tpHeight" type="range" min="90" max="260" value="140">
-              </div>
-            </div>
+        <div class="controls" role="group" aria-label="Impostazioni calendario">
+          <div class="field">
+            <label for="clientSelect">Cliente</label>
+            <select id="clientSelect" aria-label="Seleziona cliente"></select>
+          </div>
+
+          <div class="field">
+            <label for="clientName">Nome cliente (modifica)</label>
+            <input id="clientName" type="text" placeholder="Es. Rossi Immobiliare" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="weekDate">Settimana (scegli una data, io la porto a Lunedì)</label>
+            <input id="weekDate" type="date" />
+          </div>
+
+          <div class="btns">
+            <button id="addClient" class="primary" title="Aggiungi cliente">+ Cliente</button>
+
+            <!-- IMPORT CSV CLIENTI -->
+            <input type="file" id="importClientsCSV" accept=".csv" hidden />
+            <button id="importClientsBtn" title="Carica un CSV con i nomi dei clienti">Carica CSV clienti</button>
+
+            <!-- APERTURA CHAT -->
+            <a class="linkbtn"
+               href="https://chatgpt.com/c/695aba10-017c-8331-8cdb-e7aedae12fb9"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="Apri la chat di supporto in una nuova scheda">
+              <button type="button">Apri ChatGPT (assistenza)</button>
+            </a>
+
+            <button id="delClient" class="danger" title="Elimina cliente selezionato">Elimina</button>
+            <button id="prevWeek" title="Settimana precedente">← Indietro</button>
+            <button id="nextWeek" title="Settimana successiva">Avanti →</button>
+            <button id="setPlanStart" class="primary" title="Usa questa settimana come inizio pianificazione immobili">Imposta inizio pianificazione</button>
           </div>
         </div>
       </div>
 
-      <div class="countdown" id="countdown">3</div>
-
-      <div class="hud">
-        <div class="row">
-          <div class="pill" style="max-width:100%;">
-            <span style="font-size:14px;">🎯</span>
-            <input id="topicInput" placeholder="Argomento + hashtag (es: Spalle a casa #fitness #homeworkout)" maxlength="110" />
-            <span class="mini" id="btnClearTopic">Pulisci</span>
-          </div>
+      <div class="help" role="note" aria-label="Come usare">
+        <div class="dot" aria-hidden="true"></div>
+        <div>
+          <div><b>Come usare:</b> seleziona/crea un <b>cliente</b>, imposta la settimana, clicca i pallini per <b>DA FARE/FATTO</b>.</div>
+          <div class="smallnote">Usa <b>Carica CSV clienti</b> per creare in blocco i clienti (uno per riga nel CSV). Il tasto <b>Apri ChatGPT</b> apre la chat di supporto.</div>
         </div>
+      </div>
+    </header>
 
-        <div class="row" style="align-items:flex-end;">
-          <div style="display:flex; flex-direction:column; gap:8px; max-width:90%;">
-            <div class="topicOverlay" id="topicOverlay"></div>
-            <div class="metaOverlay" id="hashOverlay"></div>
-          </div>
-
-          <div class="side">
-            <button class="ghost" id="btnBack">← Feed</button>
-            <button id="btnStartCam">Attiva camera</button>
-            <button id="btnFlip" disabled>Flip</button>
-
-            <button class="ghost" id="btnMirrorPreview">Mirror preview: OFF</button>
-
-            <button class="ghost" id="btnTeleprompter">Teleprompter: OFF</button>
-            <button class="ghost" id="btnCountdownToggle">Countdown: ON</button>
-
-            <button class="ghost" id="btnMax15">Max 15s</button>
-            <button class="ghost" id="btnMax30">Max 30s</button>
-            <button class="ghost" id="btnMax60">Max 60s</button>
-
-            <div class="recBadge" id="recBadge" style="display:none;">
-              <span class="dot"></span>
-              <span id="recTime">00:00</span>
-            </div>
-
-            <button class="primary" id="btnRecord" disabled>Registra</button>
-            <button id="btnStop" disabled>Stop</button>
-
-            <button id="btnSaveToFeed" disabled>Salva nel feed</button>
-            <button id="btnDownload" disabled>Download</button>
-          </div>
+    <!-- CALENDARIO -->
+    <section class="card">
+      <div class="cardhead">
+        <h2 id="titleClient">Cliente: <span class="smallnote">(non impostato)</span></h2>
+        <div class="weekline" aria-label="Settimana dal al">
+          <span>SETTIMANA DAL <strong id="weekFrom">—</strong> AL <strong id="weekTo">—</strong></span>
+          <span class="smallnote">Slot: 1 Pubblicità Sito • 2 Carosello • 3 Video Reel • 4 Video promo immobile di oggi</span>
         </div>
       </div>
 
-      <div class="toast" id="toast"></div>
-    </div>
+      <div class="cardbody" style="border-bottom:1px solid var(--line); background: rgba(0,0,0,.06);">
+        <div class="grid3">
+          <button id="exportWeekCSV" class="primary">Export CSV • Calendario settimana</button>
+          <button id="exportPlanCSV">Export CSV • Pianificazione immobili</button>
+          <button id="exportClientBundle">Backup cliente (JSON)</button>
+        </div>
+        <div class="smallnote" style="margin-top:8px;">
+          CSV: colonne complete (cliente, data, slot, orario, contenuto, immobile, stato).
+        </div>
+      </div>
 
+      <div style="padding:0;">
+        <table aria-label="Calendario settimanale a 4 slot">
+          <thead>
+            <tr>
+              <th class="day">GIORNO</th>
+              <th class="slot"><div class="slotmeta"><span class="kind">SLOT 1</span><span class="time">Orari variabili</span></div></th>
+              <th class="slot"><div class="slotmeta"><span class="kind">SLOT 2</span><span class="time">Orari variabili</span></div></th>
+              <th class="slot"><div class="slotmeta"><span class="kind">SLOT 3</span><span class="time">Orari variabili</span></div></th>
+              <th class="slot"><div class="slotmeta"><span class="kind">SLOT 4</span><span class="time">Orari variabili</span></div></th>
+            </tr>
+          </thead>
+          <tbody id="calBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <section class="card">
+        <div class="cardhead">
+          <h2>Pianificazione immobili (Slot 1 – Pubblicità Sito)</h2>
+          <span class="tag" title="La pianificazione parte dal Lunedì impostato come inizio">
+            Inizio: <strong id="planStartBadge">—</strong>
+          </span>
+        </div>
+        <div class="cardbody">
+          <div class="smallnote" style="margin-bottom:10px;">
+            Ogni immobile è assegnato a un giorno (Lun–Sab) nello <b>Slot 1</b>. Qui vedi tutta la rotazione del cliente.
+          </div>
+          <div class="list" id="propertyList" aria-label="Lista immobili programmati"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardhead">
+          <h2>Elenco immobili (per questo cliente)</h2>
+          <button id="resetProps" class="danger" title="Ripristina elenco demo (50 immobili)">Reset</button>
+        </div>
+        <div class="cardbody">
+          <div class="smallnote" style="margin-bottom:8px;">
+            Modifica i nomi: <b>uno per riga</b>. Poi clicca “Salva elenco”.
+          </div>
+          <textarea id="propsTextarea" aria-label="Elenco immobili (uno per riga)"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px;">
+            <button id="saveProps" class="primary">Salva elenco</button>
+            <button id="importClientBundle">Importa Backup (JSON)</button>
+          </div>
+          <div class="smallnote" style="margin-top:8px;">
+            Tip: fai “Backup cliente (JSON)” prima di grosse modifiche.
+          </div>
+        </div>
+      </section>
+    </aside>
   </div>
 
-<script>
-(() => {
-  // ---------------- DOM ----------------
-  const feed = document.getElementById('feed');
-  const emptyState = document.getElementById('emptyState');
-  const btnOpenRec = document.getElementById('btnOpenRec');
-
-  const recScreen = document.getElementById('recScreen');
-  const livePreview = document.getElementById('livePreview');
-  const canvas = document.getElementById('recCanvas');
-  const ctx = canvas.getContext('2d');
-
-  const countdownEl = document.getElementById('countdown');
-  const toast = document.getElementById('toast');
-
-  const topicInput = document.getElementById('topicInput');
-  const topicOverlay = document.getElementById('topicOverlay');
-  const hashOverlay = document.getElementById('hashOverlay');
-  const btnClearTopic = document.getElementById('btnClearTopic');
-
-  const btnBack = document.getElementById('btnBack');
-  const btnStartCam = document.getElementById('btnStartCam');
-  const btnFlip = document.getElementById('btnFlip');
-  const btnMirrorPreview = document.getElementById('btnMirrorPreview');
-
-  const btnTeleprompter = document.getElementById('btnTeleprompter');
-  const tpPanel = document.getElementById('tpPanel');
-  const tpOverlay = document.getElementById('tpOverlay');
-  const tpBox = document.getElementById('tpBox');
-  const tpViewport = document.getElementById('tpViewport');
-  const tpText = document.getElementById('tpText');
-
-  const tpScript = document.getElementById('tpScript');
-  const tpClear = document.getElementById('tpClear');
-  const tpPlay = document.getElementById('tpPlay');
-  const tpPause = document.getElementById('tpPause');
-  const tpReset = document.getElementById('tpReset');
-  const tpMirror = document.getElementById('tpMirror');
-  const tpPos = document.getElementById('tpPos');
-  const tpBurn = document.getElementById('tpBurn');
-  const tpSpeed = document.getElementById('tpSpeed');
-  const tpFont = document.getElementById('tpFont');
-  const tpBoxOpacity = document.getElementById('tpBoxOpacity');
-  const tpHeight = document.getElementById('tpHeight');
-
-  const btnCountdownToggle = document.getElementById('btnCountdownToggle');
-
-  const btnMax15 = document.getElementById('btnMax15');
-  const btnMax30 = document.getElementById('btnMax30');
-  const btnMax60 = document.getElementById('btnMax60');
-
-  const recBadge = document.getElementById('recBadge');
-  const recTimeEl = document.getElementById('recTime');
-
-  const btnRecord = document.getElementById('btnRecord');
-  const btnStop = document.getElementById('btnStop');
-  const btnSaveToFeed = document.getElementById('btnSaveToFeed');
-  const btnDownload = document.getElementById('btnDownload');
-
-  // ---------------- STATE ----------------
-  let stream = null;
-  let facingMode = 'user';
-  let recorder = null;
-  let chunks = [];
-  let recordedBlob = null;
-
-  let rafId = null;
-  let isCountdownOn = true;
-
-  let maxSeconds = 30;
-  let recStartTs = 0;
-  let recTimerId = null;
-
-  let mirrorPreview = false;
-
-  // Feed clips (persisted in IndexedDB)
-  let clips = []; // { id, createdAt, topic, hashtags, blob, mime, thumbBlob, durationMs }
-  const urlCache = new Map(); // id -> objectURL
-  const thumbUrlCache = new Map();
-
-  // Teleprompter
-  let tpEnabled = false;
-  let tpPlaying = false;
-  let tpMirrorOn = false;
-  let tpPosition = 'bottom'; // 'bottom' | 'top'
-  let tpBurnIn = true;
-
-  let tpScrollY = 0; // px
-  let tpLastTs = 0;
-
-  // ---------------- HELPERS ----------------
-  const pad2 = (n) => String(n).padStart(2,'0');
-  const fmtTime = (sec) => `${pad2(Math.floor(sec/60))}:${pad2(sec%60)}`;
-  const nowIso = () => new Date().toISOString();
-
-  function showToast(html, ms=3500){
-    toast.innerHTML = html;
-    toast.style.display = 'block';
-    if (ms) setTimeout(() => toast.style.display = 'none', ms);
-  }
-
-  function parseHashtags(text){
-    const tags = (text.match(/#[\p{L}\p{N}_]+/gu) || [])
-      .map(t => t.toLowerCase());
-    return [...new Set(tags)];
-  }
-
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#39;");
-  }
-
-  function bestMimeType() {
-    const candidates = [
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm'
+  <script>
+    // ------------------------------
+    // CONFIG
+    // ------------------------------
+    const DAYS = [
+      { key: "LUNEDI", label: "LUNEDÌ", times: ["08:00–10:00","10:00–14:00","14:00–18:00","18:00–22:00"] },
+      { key: "MARTEDI", label: "MARTEDÌ", times: ["09:00–11:00","11:00–15:00","15:00–19:00","19:00–23:00"] },
+      { key: "MERCOLEDI", label: "MERCOLEDÌ", times: ["08:00–10:00","10:00–14:00","14:00–18:00","18:00–22:00"] },
+      { key: "GIOVEDI", label: "GIOVEDÌ", times: ["08:00–10:00","10:00–14:00","14:00–18:00","18:00–22:00"] },
+      { key: "VENERDI", label: "VENERDÌ", times: ["09:00–11:00","11:00–15:00","15:00–19:00","19:00–23:00"] },
+      { key: "SABATO", label: "SABATO", times: ["08:00–10:00","10:00–14:00","14:00–18:00","18:00–22:00"] },
     ];
-    return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
-  }
+    const SLOT_KIND = {
+      1: "Pubblicità Sito",
+      2: "Carosello",
+      3: "Video Reel",
+      4: "Video promo immobile di oggi"
+    };
 
-  function setMaxButtons(){
-    const map = [[btnMax15,15],[btnMax30,30],[btnMax60,60]];
-    for (const [btn,val] of map){
-      const on = (maxSeconds === val);
-      btn.style.borderColor = on ? '#ff2d55' : 'rgba(255,255,255,.18)';
-      btn.style.background = on ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
+    // ------------------------------
+    // STORAGE (multi-cliente)
+    // ------------------------------
+    const LS = {
+      app: "cal_app_v3"
+      // { activeClientId, weekMondayISO, clients: { [id]: { name, planStartMondayISO, properties[], statusByWeek{} } } }
+    };
+
+    // ------------------------------
+    // DOM
+    // ------------------------------
+    const elClientSelect = document.getElementById("clientSelect");
+    const elClientName = document.getElementById("clientName");
+    const elWeekDate = document.getElementById("weekDate");
+    const elTitleClient = document.getElementById("titleClient");
+    const elWeekFrom = document.getElementById("weekFrom");
+    const elWeekTo = document.getElementById("weekTo");
+    const elPlanStartBadge = document.getElementById("planStartBadge");
+    const elCalBody = document.getElementById("calBody");
+    const elPropertyList = document.getElementById("propertyList");
+    const elPropsTextarea = document.getElementById("propsTextarea");
+
+    const elAddClient = document.getElementById("addClient");
+    const elDelClient = document.getElementById("delClient");
+    const elPrevWeek = document.getElementById("prevWeek");
+    const elNextWeek = document.getElementById("nextWeek");
+    const elSetPlanStart = document.getElementById("setPlanStart");
+
+    const elSaveProps = document.getElementById("saveProps");
+    const elResetProps = document.getElementById("resetProps");
+
+    const elExportWeekCSV = document.getElementById("exportWeekCSV");
+    const elExportPlanCSV = document.getElementById("exportPlanCSV");
+    const elExportClientBundle = document.getElementById("exportClientBundle");
+    const elImportClientBundle = document.getElementById("importClientBundle");
+
+    // IMPORT CSV CLIENTI
+    const elImportClientsBtn = document.getElementById("importClientsBtn");
+    const elImportClientsCSV = document.getElementById("importClientsCSV");
+
+    // ------------------------------
+    // Helpers date
+    // ------------------------------
+    const pad2 = n => String(n).padStart(2,"0");
+    const toISODate = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    const formatIT = (d) => `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+
+    function cloneDate(d){ return new Date(d.getTime()); }
+    function startOfMonday(date){
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = d.getDay(); // 0=Sun,1=Mon...
+      const diff = (day === 0 ? -6 : 1 - day);
+      d.setDate(d.getDate() + diff);
+      d.setHours(0,0,0,0);
+      return d;
     }
-  }
+    function addDays(d, n){ const x = cloneDate(d); x.setDate(x.getDate()+n); return x; }
+    function addWeeks(d, n){ return addDays(d, n*7); }
+    function weekKey(monday){ return toISODate(monday); }
 
-  function syncOverlays(){
-    const raw = (topicInput.value || '').trim();
-    const topic = raw.replace(/#[\s\S]*$/,'').trim();
-    const tags = parseHashtags(raw);
-    topicOverlay.textContent = topic;
-    hashOverlay.textContent = tags.length ? tags.join(' ') : '';
-  }
-
-  topicInput.addEventListener('input', syncOverlays);
-  btnClearTopic.addEventListener('click', () => { topicInput.value=''; syncOverlays(); });
-
-  // ---------------- IndexedDB ----------------
-  const DB_NAME = 'webtok_pro_db';
-  const DB_VER = 1;
-  const STORE = 'clips';
-
-  function openDB(){
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VER);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(STORE)){
-          const os = db.createObjectStore(STORE, { keyPath: 'id' });
-          os.createIndex('createdAt', 'createdAt', { unique:false });
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async function dbPutClip(clip){
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(clip);
-      tx.oncomplete = () => { db.close(); resolve(true); };
-      tx.onerror = () => { const e = tx.error; db.close(); reject(e); };
-    });
-  }
-
-  async function dbGetAllClips(){
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readonly');
-      const req = tx.objectStore(STORE).getAll();
-      req.onsuccess = () => { db.close(); resolve(req.result || []); };
-      req.onerror = () => { const e = req.error; db.close(); reject(e); };
-    });
-  }
-
-  async function dbDeleteClip(id){
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).delete(id);
-      tx.oncomplete = () => { db.close(); resolve(true); };
-      tx.onerror = () => { const e = tx.error; db.close(); reject(e); };
-    });
-  }
-
-  // ---------------- FEED RENDER ----------------
-  function getClipUrl(clip){
-    if (urlCache.has(clip.id)) return urlCache.get(clip.id);
-    const url = URL.createObjectURL(clip.blob);
-    urlCache.set(clip.id, url);
-    return url;
-  }
-
-  function getThumbUrl(clip){
-    if (!clip.thumbBlob) return null;
-    if (thumbUrlCache.has(clip.id)) return thumbUrlCache.get(clip.id);
-    const url = URL.createObjectURL(clip.thumbBlob);
-    thumbUrlCache.set(clip.id, url);
-    return url;
-  }
-
-  function revokeClipUrls(id){
-    if (urlCache.has(id)){
-      URL.revokeObjectURL(urlCache.get(id));
-      urlCache.delete(id);
+    // ------------------------------
+    // App state
+    // ------------------------------
+    function defaultProperties(){
+      return Array.from({length:50}, (_,i)=> `Immobile #${i+1}`);
     }
-    if (thumbUrlCache.has(id)){
-      URL.revokeObjectURL(thumbUrlCache.get(id));
-      thumbUrlCache.delete(id);
+    function uid(){
+      return "c_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
-  }
 
-  function removeAllPages(){
-    [...feed.querySelectorAll('.page')].forEach(p => p.remove());
-  }
+    let app = null;
+    let currentMonday = startOfMonday(new Date());
+    let activeClientId = null;
 
-  function downloadBlob(blob, topic){
-    const safe = (topic || 'video').replace(/[^\w\-]+/g,'_').slice(0,40);
-    const filename = `${safe}_${nowIso().replace(/[:.]/g,'-')}.webm`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
+    function safeJsonParse(str, fallback){
+      try { return JSON.parse(str); } catch { return fallback; }
+    }
 
-  // Autoplay/pause which page is visible
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(ent => {
-      const v = ent.target.querySelector('video');
-      if (!v) return;
-      if (ent.isIntersecting && ent.intersectionRatio >= 0.6){
-        v.play().catch(()=>{});
-      } else v.pause();
-    });
-  }, { threshold: [0, 0.2, 0.6, 1] });
+    function loadApp(){
+      const raw = localStorage.getItem(LS.app);
+      app = safeJsonParse(raw || "null", null);
 
-  function observePages(){
-    [...feed.querySelectorAll('.page')].forEach(p => io.observe(p));
-  }
-
-  function renderFeed(){
-    removeAllPages();
-    emptyState.style.display = clips.length ? 'none' : 'grid';
-
-    clips
-      .slice()
-      .sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
-      .forEach((clip, idx) => {
-        const page = document.createElement('div');
-        page.className = 'page';
-
-        const v = document.createElement('video');
-        v.src = getClipUrl(clip);
-        v.playsInline = true;
-        v.loop = true;
-        v.muted = false;
-
-        const shade = document.createElement('div');
-        shade.className = 'shade';
-
-        const hud = document.createElement('div');
-        hud.className = 'hud';
-
-        const topRow = document.createElement('div');
-        topRow.className = 'row';
-        topRow.style.alignItems = 'center';
-
-        const left = document.createElement('div');
-        left.className = 'pill';
-        left.style.maxWidth = '100%';
-
-        const thumbUrl = getThumbUrl(clip);
-        left.innerHTML = `
-          <div style="display:flex; gap:10px; align-items:center; width:100%;">
-            <div style="
-              width:44px; height:44px; border-radius:14px;
-              background: rgba(0,0,0,.25);
-              border:1px solid rgba(255,255,255,.12);
-              overflow:hidden; flex:0 0 auto;">
-              ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:100%; height:100%; object-fit:cover;">` : ''}
-            </div>
-            <div style="display:flex; flex-direction:column; gap:2px; width:100%;">
-              <div style="font-weight:950; font-size:14px;">${escapeHtml(clip.topic || 'Senza titolo')}</div>
-              <div style="opacity:.85; font-weight:850; font-size:12px;">${(clip.hashtags?.length ? escapeHtml(clip.hashtags.join(' ')) : '')}</div>
-            </div>
-          </div>
-        `;
-        topRow.appendChild(left);
-
-        const bottomRow = document.createElement('div');
-        bottomRow.className = 'row';
-        bottomRow.style.alignItems = 'flex-end';
-
-        const spacer = document.createElement('div');
-        spacer.style.maxWidth = '90%';
-
-        const side = document.createElement('div');
-        side.className = 'side';
-        side.innerHTML = `
-          <button class="ghost" data-action="mute">🔊 Audio</button>
-          <button class="ghost" data-action="download">⬇️ Download</button>
-          <button class="ghost" data-action="delete">🗑️ Elimina</button>
-        `;
-
-        bottomRow.appendChild(spacer);
-        bottomRow.appendChild(side);
-
-        hud.appendChild(topRow);
-        hud.appendChild(bottomRow);
-
-        page.appendChild(v);
-        page.appendChild(shade);
-        page.appendChild(hud);
-
-        page.addEventListener('click', (e) => {
-          const btn = e.target.closest('button');
-          if (btn) return;
-          if (v.paused) v.play().catch(()=>{});
-          else v.pause();
-        });
-
-        side.addEventListener('click', async (e) => {
-          const b = e.target.closest('button');
-          if (!b) return;
-          const action = b.dataset.action;
-
-          if (action === 'mute'){
-            v.muted = !v.muted;
-            b.textContent = v.muted ? '🔇 Muto' : '🔊 Audio';
-          }
-          if (action === 'download'){
-            downloadBlob(clip.blob, clip.topic || 'video');
-          }
-          if (action === 'delete'){
-            try{
-              await dbDeleteClip(clip.id);
-              revokeClipUrls(clip.id);
-              clips = clips.filter(c => c.id !== clip.id);
-              renderFeed();
-            }catch(err){
-              console.error(err);
-              showToast(`⚠️ Errore eliminazione.`);
+      if(!app || typeof app !== "object" || !app.clients){
+        const firstId = uid();
+        app = {
+          activeClientId: firstId,
+          weekMondayISO: toISODate(startOfMonday(new Date())),
+          clients: {
+            [firstId]: {
+              name: "Cliente 1",
+              planStartMondayISO: toISODate(startOfMonday(new Date())),
+              properties: defaultProperties(),
+              statusByWeek: {}
             }
           }
+        };
+      }
+
+      activeClientId = app.activeClientId;
+      currentMonday = startOfMonday(new Date(app.weekMondayISO));
+    }
+
+    function saveApp(){
+      app.activeClientId = activeClientId;
+      app.weekMondayISO = toISODate(currentMonday);
+      localStorage.setItem(LS.app, JSON.stringify(app));
+    }
+
+    function getClient(){
+      return app.clients[activeClientId];
+    }
+
+    // ------------------------------
+    // Status (per cliente)
+    // ------------------------------
+    function getSlotStatusForClient(client, monday, dayKey, slotNum){
+      const wk = weekKey(monday);
+      const key = `${dayKey}-S${slotNum}`;
+      return client.statusByWeek?.[wk]?.[key] || "todo";
+    }
+
+    function toggleSlotStatusForClient(client, monday, dayKey, slotNum){
+      const wk = weekKey(monday);
+      client.statusByWeek[wk] = client.statusByWeek[wk] || {};
+      const key = `${dayKey}-S${slotNum}`;
+      const cur = client.statusByWeek[wk][key] || "todo";
+      client.statusByWeek[wk][key] = (cur === "done") ? "todo" : "done";
+    }
+
+    // ------------------------------
+    // Pianificazione immobili (per cliente)
+    // ------------------------------
+    function scheduleForProperty(client, index){
+      const planStartMonday = startOfMonday(new Date(client.planStartMondayISO));
+      const perWeek = DAYS.length; // 6 (Lun-Sab)
+      const weekOffset = Math.floor(index / perWeek);
+      const dayIndex = index % perWeek;
+      const date = addDays(addWeeks(planStartMonday, weekOffset), dayIndex);
+      const day = DAYS[dayIndex];
+      const slotTime = day.times[0];
+      return { date, day, slotTime, weekOffset, dayIndex, planStartMonday };
+    }
+
+    function propertyAssignedToDay(client, monday, dayIndex){
+      const planStartMonday = startOfMonday(new Date(client.planStartMondayISO));
+      const diffDays = Math.round((startOfMonday(monday).getTime() - planStartMonday.getTime()) / (1000*60*60*24));
+      const weeksFromStart = Math.floor(diffDays / 7);
+      const absoluteIndex = weeksFromStart * DAYS.length + dayIndex;
+      if(absoluteIndex < 0 || absoluteIndex >= client.properties.length) return null;
+      return { name: client.properties[absoluteIndex], idx: absoluteIndex };
+    }
+
+    // ------------------------------
+    // Rendering
+    // ------------------------------
+    function renderClientSelect(){
+      const ids = Object.keys(app.clients);
+      elClientSelect.innerHTML = "";
+      ids.forEach(id => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = app.clients[id].name || "(senza nome)";
+        elClientSelect.appendChild(opt);
+      });
+      if(!app.clients[activeClientId]){
+        activeClientId = ids[0] || null;
+      }
+      elClientSelect.value = activeClientId;
+    }
+
+    function renderHeader(){
+      const client = getClient();
+
+      elClientName.value = client.name || "";
+      elTitleClient.innerHTML = client.name
+        ? `Cliente: <span style="font-weight:800">${escapeHtml(client.name)}</span>`
+        : `Cliente: <span class="smallnote">(non impostato)</span>`;
+
+      const from = cloneDate(currentMonday);
+      const to = addDays(currentMonday, 6);
+      elWeekFrom.textContent = formatIT(from);
+      elWeekTo.textContent = formatIT(to);
+
+      elPlanStartBadge.textContent = formatIT(startOfMonday(new Date(client.planStartMondayISO)));
+
+      elWeekDate.value = toISODate(currentMonday);
+      elPropsTextarea.value = client.properties.join("\n");
+    }
+
+    function renderCalendar(){
+      const client = getClient();
+      elCalBody.innerHTML = "";
+
+      DAYS.forEach((day, dayIndex) => {
+        const tr = document.createElement("tr");
+
+        const th = document.createElement("th");
+        th.className = "day";
+        const date = addDays(currentMonday, dayIndex);
+        th.innerHTML = `<div style="display:flex;flex-direction:column;gap:2px;">
+          <div>${day.label}</div>
+          <div style="color:var(--muted);font-size:12px;">${formatIT(date)}</div>
+        </div>`;
+        tr.appendChild(th);
+
+        for(let slot=1; slot<=4; slot++){
+          const td = document.createElement("td");
+          const status = getSlotStatusForClient(client, currentMonday, day.key, slot);
+
+          const cell = document.createElement("div");
+          cell.className = "cell";
+
+          const pill = document.createElement("div");
+          pill.className = "pill";
+
+          const time = day.times[slot-1];
+          let content = SLOT_KIND[slot];
+
+          if(slot === 1){
+            const assigned = propertyAssignedToDay(client, currentMonday, dayIndex);
+            content = assigned ? `Pubblicità Sito • ${assigned.name}` : `Pubblicità Sito • (nessun immobile)`;
+          }
+
+          pill.innerHTML = `
+            <span class="small">${escapeHtml(time)}</span>
+            <span class="big" title="${escapeHtml(content)}">${escapeHtml(content)}</span>
+          `;
+          cell.appendChild(pill);
+
+          const row = document.createElement("div");
+          row.className = "statusRow";
+
+          const hint = document.createElement("div");
+          hint.className = "statusHint";
+          hint.textContent = "Stato:";
+
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "toggle" + (status === "done" ? " done" : "");
+          toggle.setAttribute("aria-pressed", status === "done" ? "true" : "false");
+          toggle.setAttribute("title", "Clicca per cambiare stato (DA FARE / FATTO)");
+          toggle.innerHTML = `
+            <span class="ball" aria-hidden="true"></span>
+            <span class="txt">${status === "done" ? "FATTO" : "DA FARE"}</span>
+          `;
+          toggle.addEventListener("click", () => {
+            toggleSlotStatusForClient(client, currentMonday, day.key, slot);
+            saveApp();
+            render();
+          });
+
+          row.appendChild(hint);
+          row.appendChild(toggle);
+          cell.appendChild(row);
+
+          td.appendChild(cell);
+          tr.appendChild(td);
+        }
+
+        elCalBody.appendChild(tr);
+      });
+    }
+
+    function renderPropertyScheduleList(){
+      const client = getClient();
+      elPropertyList.innerHTML = "";
+
+      client.properties.forEach((name, idx) => {
+        const s = scheduleForProperty(client, idx);
+        const wkMon = startOfMonday(s.date);
+        const status = getSlotStatusForClient(client, wkMon, s.day.key, 1);
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="left">
+            <div class="title" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+            <div class="meta">
+              Pubblicità: <b>${s.day.label}</b> • ${formatIT(s.date)} • <span>${escapeHtml(s.slotTime)}</span>
+            </div>
+          </div>
+          <div class="tag" title="Stato dello Slot 1 in quel giorno">
+            <span style="display:inline-flex;align-items:center;gap:6px;">
+              <span style="width:10px;height:10px;border-radius:999px;background:${status==="done" ? "var(--good)" : "var(--bad)"}"></span>
+              <strong>${status==="done" ? "FATTO" : "DA FARE"}</strong>
+            </span>
+          </div>
+        `;
+        elPropertyList.appendChild(div);
+      });
+    }
+
+    function render(){
+      renderClientSelect();
+      renderHeader();
+      renderCalendar();
+      renderPropertyScheduleList();
+      saveApp();
+    }
+
+    // ------------------------------
+    // CSV Export
+    // ------------------------------
+    function csvEscape(val){
+      const s = String(val ?? "");
+      if(/[",\n\r;]/.test(s)) return `"${s.replaceAll('"','""')}"`;
+      return s;
+    }
+
+    function downloadTextFile(filename, text, mime="text/plain;charset=utf-8"){
+      const blob = new Blob([text], {type: mime});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1500);
+    }
+
+    function exportWeekCSV(){
+      const client = getClient();
+      const clientName = client.name || "Cliente";
+      const rows = [];
+      rows.push(["Cliente","Settimana_Dal","Settimana_Al","Giorno","Data","Slot","Orario","Tipo_Contenuto","Immobile","Stato"]);
+
+      const weekFrom = formatIT(currentMonday);
+      const weekTo = formatIT(addDays(currentMonday, 6));
+
+      DAYS.forEach((day, dayIndex) => {
+        const date = addDays(currentMonday, dayIndex);
+        for(let slot=1; slot<=4; slot++){
+          const time = day.times[slot-1];
+          const tipo = SLOT_KIND[slot];
+          const status = getSlotStatusForClient(client, currentMonday, day.key, slot) === "done" ? "FATTO" : "DA FARE";
+          let immobile = "";
+          if(slot === 1){
+            const assigned = propertyAssignedToDay(client, currentMonday, dayIndex);
+            immobile = assigned ? assigned.name : "";
+          }
+          rows.push([clientName, weekFrom, weekTo, day.label, formatIT(date), slot, time, tipo, immobile, status]);
+        }
+      });
+
+      const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+      const safeName = clientName.replaceAll(/[^\w\- ]+/g,"").trim().replaceAll(" ","_") || "Cliente";
+      downloadTextFile(`${safeName}_Calendario_${weekKey(currentMonday)}.csv`, csv, "text/csv;charset=utf-8");
+    }
+
+    function exportPlanCSV(){
+      const client = getClient();
+      const clientName = client.name || "Cliente";
+      const rows = [];
+      rows.push(["Cliente","Immobile","Giorno","Data","Orario_Slot1","Settimana_Dal","Settimana_Al","Stato_Slot1"]);
+
+      client.properties.forEach((name, idx) => {
+        const s = scheduleForProperty(client, idx);
+        const wkMon = startOfMonday(s.date);
+        const status = getSlotStatusForClient(client, wkMon, s.day.key, 1) === "done" ? "FATTO" : "DA FARE";
+        rows.push([clientName, name, s.day.label, formatIT(s.date), s.slotTime, formatIT(wkMon), formatIT(addDays(wkMon, 6)), status]);
+      });
+
+      const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+      const safeName = clientName.replaceAll(/[^\w\- ]+/g,"").trim().replaceAll(" ","_") || "Cliente";
+      downloadTextFile(`${safeName}_Pianificazione_Immobili.csv`, csv, "text/csv;charset=utf-8");
+    }
+
+    // ------------------------------
+    // Backup / Import cliente (JSON)
+    // ------------------------------
+    function exportClientBundle(){
+      const client = getClient();
+      const bundle = {
+        v: 3,
+        clientId: activeClientId,
+        name: client.name,
+        planStartMondayISO: client.planStartMondayISO,
+        properties: client.properties,
+        statusByWeek: client.statusByWeek
+      };
+      const json = JSON.stringify(bundle, null, 2);
+      const safeName = (client.name || "Cliente").replaceAll(/[^\w\- ]+/g,"").trim().replaceAll(" ","_") || "Cliente";
+      downloadTextFile(`${safeName}_backup.json`, json, "application/json;charset=utf-8");
+    }
+
+    function importClientBundle(){
+      const raw = prompt("Incolla qui il JSON di backup del cliente:");
+      if(!raw) return;
+      let b;
+      try{ b = JSON.parse(raw); } catch { alert("JSON non valido."); return; }
+      if(!b || typeof b !== "object") { alert("JSON non valido."); return; }
+
+      const newId = uid();
+      app.clients[newId] = {
+        name: String(b.name || "Cliente importato"),
+        planStartMondayISO: b.planStartMondayISO ? toISODate(startOfMonday(new Date(b.planStartMondayISO))) : toISODate(startOfMonday(new Date())),
+        properties: Array.isArray(b.properties) && b.properties.length ? b.properties.map(x=>String(x)) : defaultProperties(),
+        statusByWeek: (b.statusByWeek && typeof b.statusByWeek === "object") ? b.statusByWeek : {}
+      };
+      activeClientId = newId;
+      saveApp();
+      render();
+    }
+
+    // ------------------------------
+    // IMPORT CSV CLIENTI
+    // ------------------------------
+    function normalizeLine(s){
+      return String(s ?? "").replace(/\uFEFF/g,"").trim(); // rimuove BOM
+    }
+
+    function parseClientsFromCSV(text){
+      // Supporta:
+      // - CSV con intestazione "Cliente"
+      // - una colonna (uno per riga)
+      // - separatori , o ; (prendiamo la prima cella)
+      const lines = text.split(/\r?\n/).map(normalizeLine).filter(Boolean);
+      if(!lines.length) return [];
+
+      const first = lines[0].toLowerCase();
+      const startIdx = (first === "cliente" || first.startsWith("cliente,") || first.startsWith("cliente;")) ? 1 : 0;
+
+      const names = [];
+      for(let i=startIdx;i<lines.length;i++){
+        const line = lines[i];
+        const firstCell = line.split(/[;,]/)[0].trim();
+        if(!firstCell) continue;
+        names.push(firstCell);
+      }
+
+      const seen = new Set();
+      return names.filter(n=>{
+        const key = n.toLowerCase();
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function importClientsCSVFile(file){
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = String(reader.result || "");
+        const names = parseClientsFromCSV(text);
+
+        if(!names.length){
+          alert("CSV vuoto o non valido. Serve una colonna 'Cliente' o una lista di nomi (uno per riga).");
+          return;
+        }
+
+        const existingNames = new Set(
+          Object.values(app.clients)
+            .map(c => (c.name||"").toLowerCase().trim())
+            .filter(Boolean)
+        );
+
+        let created = 0;
+        names.forEach(name => {
+          const key = name.toLowerCase().trim();
+          if(existingNames.has(key)) return;
+
+          const id = uid();
+          app.clients[id] = {
+            name: name.trim(),
+            planStartMondayISO: toISODate(currentMonday),
+            properties: defaultProperties(),
+            statusByWeek: {}
+          };
+          existingNames.add(key);
+          created++;
         });
 
-        feed.appendChild(page);
-        if (idx === 0) setTimeout(() => v.play().catch(()=>{}), 50);
-      });
-
-    observePages();
-  }
-
-  // ---------------- NAV ----------------
-  function openRecorder(){
-    recScreen.classList.add('active');
-    feed.style.display = 'none';
-    showToast(`👋 Premi <b>Attiva camera</b>. Tip: Teleprompter in alto.`, 3500);
-  }
-  function closeRecorder(){
-    recScreen.classList.remove('active');
-    feed.style.display = 'block';
-  }
-
-  // ---------------- CAMERA/RECORD ----------------
-  function stopStream(){
-    if (stream){
-      stream.getTracks().forEach(t => t.stop());
-      stream = null;
-    }
-  }
-
-  async function startCamera(){
-    stopStream();
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-        audio: true
-      });
-      livePreview.srcObject = stream;
-
-      btnFlip.disabled = false;
-      btnRecord.disabled = false;
-      btnStop.disabled = true;
-
-      recordedBlob = null;
-      btnDownload.disabled = true;
-      btnSaveToFeed.disabled = true;
-
-      showToast(`Camera attiva (${facingMode === 'user' ? 'frontale' : 'posteriore'}).`);
-    }catch(e){
-      console.error(e);
-      showToast(`⚠️ Camera non disponibile. Apri su <b>https</b> o <b>localhost</b> e concedi i permessi.`);
-    }
-  }
-
-  function fitCanvasToVideo(){
-    const w = livePreview.videoWidth || 720;
-    const h = livePreview.videoHeight || 1280;
-    canvas.width = w;
-    canvas.height = h;
-  }
-
-  function setRecordingUI(isRec){
-    btnRecord.disabled = isRec;
-    btnStop.disabled = !isRec;
-    btnFlip.disabled = isRec;
-    btnStartCam.disabled = isRec;
-    btnBack.disabled = isRec;
-
-    if (isRec){
-      recBadge.style.display = 'inline-flex';
-    } else {
-      recBadge.style.display = 'none';
-      recTimeEl.textContent = '00:00';
-    }
-  }
-
-  function startRecTimer(){
-    recStartTs = Date.now();
-    recTimeEl.textContent = '00:00';
-    if (recTimerId) clearInterval(recTimerId);
-    recTimerId = setInterval(() => {
-      const sec = Math.floor((Date.now() - recStartTs)/1000);
-      recTimeEl.textContent = fmtTime(sec);
-      if (sec >= maxSeconds) stopRecording();
-    }, 200);
-  }
-  function stopRecTimer(){
-    if (recTimerId) clearInterval(recTimerId);
-    recTimerId = null;
-  }
-
-  async function runCountdown(){
-    if (!isCountdownOn) return true;
-    countdownEl.classList.add('show');
-    for (const n of [3,2,1]){
-      countdownEl.textContent = n;
-      await new Promise(r => setTimeout(r, 650));
-    }
-    countdownEl.classList.remove('show');
-    return true;
-  }
-
-  // ---------------- Teleprompter behavior ----------------
-  function applyTpUI(){
-    tpOverlay.classList.toggle('show', tpEnabled);
-    tpPanel.classList.toggle('show', tpEnabled);
-
-    btnTeleprompter.textContent = `Teleprompter: ${tpEnabled ? 'ON' : 'OFF'}`;
-    btnTeleprompter.style.borderColor = tpEnabled ? '#ff2d55' : 'rgba(255,255,255,.18)';
-    btnTeleprompter.style.background = tpEnabled ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
-
-    tpMirror.textContent = `Mirror: ${tpMirrorOn ? 'ON' : 'OFF'}`;
-    tpPos.textContent = `Pos: ${tpPosition === 'bottom' ? 'BASSO' : 'ALTO'}`;
-    tpBurn.textContent = `Burn-in: ${tpBurnIn ? 'ON' : 'OFF'}`;
-
-    // overlay placement
-    tpOverlay.style.top = (tpPosition === 'top') ? '90px' : 'auto';
-    tpOverlay.style.bottom = (tpPosition === 'bottom') ? '90px' : 'auto';
-
-    // box opacity and viewport height and font size
-    const opacity = Number(tpBoxOpacity.value) / 100;
-    tpBox.style.background = `rgba(0,0,0,${opacity})`;
-    tpViewport.style.height = `${Number(tpHeight.value)}px`;
-    tpText.style.fontSize = `${Number(tpFont.value)}px`;
-
-    // mirror overlay text if desired
-    tpText.style.transform = tpMirrorOn ? 'scaleX(-1)' : 'none';
-  }
-
-  function setTpText(){
-    tpText.textContent = tpScript.value || '';
-  }
-
-  function tpResetScroll(){
-    tpScrollY = Number(tpViewport.style.height.replace('px','') || tpViewport.clientHeight);
-    tpLastTs = performance.now();
-    tpText.style.top = `${tpScrollY}px`;
-  }
-
-  function tpTick(ts){
-    if (!tpEnabled) return;
-    if (!tpPlaying){
-      tpLastTs = ts;
-      return;
-    }
-    const dt = Math.max(0, (ts - tpLastTs) / 1000);
-    tpLastTs = ts;
-
-    const speed = Number(tpSpeed.value); // px/s
-    tpScrollY -= speed * dt;
-    tpText.style.top = `${tpScrollY}px`;
-
-    // loop when fully passed
-    const textHeight = tpText.scrollHeight;
-    if (tpScrollY < -textHeight - 20){
-      tpResetScroll();
-    }
-  }
-
-  tpScript.addEventListener('input', () => { setTpText(); });
-  tpClear.addEventListener('click', () => { tpScript.value=''; setTpText(); tpResetScroll(); });
-
-  tpPlay.addEventListener('click', () => { tpPlaying = true; showToast(`▶️ Teleprompter play`, 1200); });
-  tpPause.addEventListener('click', () => { tpPlaying = false; showToast(`⏸️ Teleprompter pausa`, 1200); });
-  tpReset.addEventListener('click', () => { tpResetScroll(); showToast(`↺ Reset`, 1200); });
-
-  tpMirror.addEventListener('click', () => { tpMirrorOn = !tpMirrorOn; applyTpUI(); });
-  tpPos.addEventListener('click', () => { tpPosition = (tpPosition === 'bottom') ? 'top' : 'bottom'; applyTpUI(); });
-  tpBurn.addEventListener('click', () => { tpBurnIn = !tpBurnIn; applyTpUI(); });
-
-  [tpSpeed, tpFont, tpBoxOpacity, tpHeight].forEach(el => el.addEventListener('input', applyTpUI));
-
-  // ---------------- Drawing (burn-in) ----------------
-  function drawTopicAndTags(){
-    const raw = (topicInput.value || '').trim();
-    const topic = raw.replace(/#[\s\S]*$/,'').trim();
-    const tags = parseHashtags(raw);
-
-    const pad = Math.round(canvas.width * 0.06);
-    const maxWidth = canvas.width - pad*2;
-
-    if (topic){
-      const fontSize = Math.max(28, Math.round(canvas.width * 0.07));
-      ctx.font = `900 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-      ctx.textBaseline = 'bottom';
-      ctx.textAlign = 'left';
-
-      const words = topic.split(/\s+/);
-      const lines = [];
-      let line = '';
-      for (const w of words){
-        const test = line ? line + ' ' + w : w;
-        if (ctx.measureText(test).width <= maxWidth) line = test;
-        else { if (line) lines.push(line); line = w; }
-      }
-      if (line) lines.push(line);
-
-      const finalLines = lines.slice(0, 3);
-      const lineH = Math.round(fontSize * 1.12);
-      const x = pad;
-      const yBase = canvas.height - pad;
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.75)';
-      ctx.shadowBlur = Math.round(fontSize * 0.55);
-      ctx.fillStyle = '#fff';
-
-      for (let i=0;i<finalLines.length;i++){
-        const idx = finalLines.length - 1 - i;
-        const y = yBase - (i * lineH);
-        ctx.fillText(finalLines[idx], x, y);
-      }
-      ctx.restore();
-    }
-
-    if (tags.length){
-      const fontSize2 = Math.max(18, Math.round(canvas.width * 0.045));
-      ctx.save();
-      ctx.font = `850 ${fontSize2}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-      ctx.textBaseline = 'bottom';
-      ctx.textAlign = 'left';
-      ctx.shadowColor = 'rgba(0,0,0,0.75)';
-      ctx.shadowBlur = Math.round(fontSize2 * 0.55);
-      ctx.fillStyle = '#fff';
-
-      const y = canvas.height - pad - Math.max(0, Math.round(canvas.width * 0.07)) * 1.3 - 10;
-      const text = tags.join(' ');
-      ctx.fillText(text.slice(0, 160), pad, y);
-      ctx.restore();
-    }
-  }
-
-  function drawTeleprompterBurnIn(){
-    if (!tpEnabled || !tpBurnIn) return;
-    const script = tpScript.value || '';
-    if (!script.trim()) return;
-
-    // Build visible window similar to overlay (but independent)
-    const viewportH = Number(tpHeight.value);
-    const fontSize = Number(tpFont.value);
-    const opacity = Number(tpBoxOpacity.value)/100;
-
-    // Place
-    const margin = Math.round(canvas.width * 0.04);
-    const boxW = Math.min(canvas.width - margin*2, 900); // cap
-    const boxX = Math.round((canvas.width - boxW)/2);
-
-    const boxY = (tpPosition === 'bottom')
-      ? canvas.height - margin - viewportH - 28
-      : margin + 70;
-
-    // Box
-    ctx.save();
-    ctx.fillStyle = `rgba(0,0,0,${opacity})`;
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-    ctx.lineWidth = 2;
-
-    const r = 26;
-    roundRect(ctx, boxX, boxY, boxW, viewportH + 28, r);
-    ctx.fill();
-    ctx.stroke();
-
-    // Clip to viewport
-    ctx.beginPath();
-    roundRect(ctx, boxX, boxY, boxW, viewportH + 28, r);
-    ctx.clip();
-
-    // Text
-    ctx.font = `900 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#fff';
-    ctx.shadowColor = 'rgba(0,0,0,0.75)';
-    ctx.shadowBlur = Math.round(fontSize * 0.55);
-
-    const innerPad = 18;
-    const textX = boxX + innerPad;
-    const textYTop = boxY + 14 + tpScrollY; // use same scroll
-
-    // Mirror: easiest is flip context around box center
-    if (tpMirrorOn){
-      ctx.translate(boxX + boxW/2, 0);
-      ctx.scale(-1, 1);
-      ctx.translate(-(boxX + boxW/2), 0);
-    }
-
-    // Wrap text
-    const maxTextW = boxW - innerPad*2;
-    const lines = wrapText(ctx, script, maxTextW);
-    const lineH = Math.round(fontSize * 1.22);
-
-    let y = textYTop;
-    for (const line of lines){
-      ctx.fillText(line, textX, y);
-      y += lineH;
-    }
-
-    ctx.restore();
-  }
-
-  function wrapText(context, text, maxWidth){
-    const rawLines = String(text).replace(/\r/g,'').split('\n');
-    const out = [];
-    for (const raw of rawLines){
-      const words = raw.split(/\s+/).filter(Boolean);
-      if (!words.length){ out.push(''); continue; }
-      let line = '';
-      for (const w of words){
-        const test = line ? line + ' ' + w : w;
-        if (context.measureText(test).width <= maxWidth) line = test;
-        else { if (line) out.push(line); line = w; }
-      }
-      if (line) out.push(line);
-    }
-    return out;
-  }
-
-  function roundRect(context, x, y, w, h, r){
-    const rr = Math.min(r, w/2, h/2);
-    context.moveTo(x+rr, y);
-    context.arcTo(x+w, y, x+w, y+h, rr);
-    context.arcTo(x+w, y+h, x, y+h, rr);
-    context.arcTo(x, y+h, x, y, rr);
-    context.arcTo(x, y, x+w, y, rr);
-    context.closePath();
-  }
-
-  function drawFrame(ts){
-    // Teleprompter tick (for overlay + burn-in)
-    tpTick(ts);
-
-    // Video base
-    ctx.drawImage(livePreview, 0, 0, canvas.width, canvas.height);
-
-    // Overlays burn-in
-    drawTopicAndTags();
-    drawTeleprompterBurnIn();
-
-    // Recording dot (optional)
-    if (recorder && recorder.state === 'recording'){
-      ctx.save();
-      ctx.fillStyle = 'rgba(255,45,85,1)';
-      ctx.beginPath();
-      ctx.arc(24, 24, 10, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-
-  function startDrawingLoop(){
-    const loop = (ts) => {
-      drawFrame(ts);
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
-  }
-  function stopDrawingLoop(){
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = null;
-  }
-
-  async function startRecording(){
-    if (!stream) return;
-
-    if (!livePreview.videoWidth){
-      await new Promise(r => livePreview.onloadedmetadata = () => r());
-    }
-    fitCanvasToVideo();
-
-    // reset teleprompter scroll start if enabled
-    if (tpEnabled){
-      setTpText();
-      applyTpUI();
-      if (!tpPlaying) tpResetScroll(); // prepare even if paused
-      if (tpScrollY === 0) tpResetScroll();
-    }
-
-    await runCountdown();
-
-    // start drawing to canvas (record source)
-    startDrawingLoop();
-
-    const canvasStream = canvas.captureStream(30);
-    const audioTracks = stream.getAudioTracks();
-    const mixed = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
-
-    chunks = [];
-    recordedBlob = null;
-
-    const mimeType = bestMimeType();
-    recorder = new MediaRecorder(mixed, mimeType ? { mimeType } : undefined);
-
-    recorder.ondataavailable = (e) => { if (e.data && e.data.size>0) chunks.push(e.data); };
-
-    recorder.onstop = () => {
-      stopDrawingLoop();
-      stopRecTimer();
-      setRecordingUI(false);
-
-      recordedBlob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
-
-      btnDownload.disabled = false;
-      btnSaveToFeed.disabled = false;
-
-      const mb = (recordedBlob.size/(1024*1024)).toFixed(2);
-      showToast(`✅ Clip pronto (${mb} MB). Premi <b>Salva nel feed</b> o <b>Download</b>.`);
-    };
-
-    recorder.start(250);
-    setRecordingUI(true);
-    btnDownload.disabled = true;
-    btnSaveToFeed.disabled = true;
-    startRecTimer();
-  }
-
-  function stopRecording(){
-    if (recorder && recorder.state === 'recording'){
-      recorder.stop();
-    }
-  }
-
-  function downloadRecorded(){
-    if (!recordedBlob) return;
-    const raw = (topicInput.value || '').trim();
-    const topic = raw.replace(/#[\s\S]*$/,'').trim() || 'video';
-    downloadBlob(recordedBlob, topic);
-    showToast(`⬇️ Download avviato.`);
-  }
-
-  // ---------------- Thumbnail from blob ----------------
-  async function makeThumbnailPng(videoBlob){
-    // Create a hidden video element to seek first frame
-    return new Promise((resolve) => {
-      const v = document.createElement('video');
-      v.playsInline = true;
-      v.muted = true;
-      v.preload = 'metadata';
-
-      const url = URL.createObjectURL(videoBlob);
-      v.src = url;
-
-      const clean = () => {
-        URL.revokeObjectURL(url);
-        v.src = '';
-      };
-
-      v.onloadeddata = async () => {
-        try{
-          const c = document.createElement('canvas');
-          const w = v.videoWidth || 360;
-          const h = v.videoHeight || 640;
-          c.width = Math.min(w, 360);
-          c.height = Math.round(c.width * (h / w));
-          const cctx = c.getContext('2d');
-          cctx.drawImage(v, 0, 0, c.width, c.height);
-          c.toBlob((b) => {
-            clean();
-            resolve(b || null);
-          }, 'image/png', 0.92);
-        }catch{
-          clean();
-          resolve(null);
+        if(created === 0){
+          alert("Nessun nuovo cliente creato: erano già presenti (stesso nome).");
+        }else{
+          activeClientId = Object.keys(app.clients).slice(-1)[0];
+          saveApp();
+          render();
+          alert(`Importati ${created} clienti ✅`);
         }
+
+        elImportClientsCSV.value = "";
       };
 
-      v.onerror = () => { clean(); resolve(null); };
+      reader.onerror = () => alert("Errore nella lettura del file CSV.");
+      reader.readAsText(file, "utf-8");
+    }
+
+    // ------------------------------
+    // Events
+    // ------------------------------
+    elClientSelect.addEventListener("change", () => {
+      activeClientId = elClientSelect.value;
+      render();
     });
-  }
 
-  // ---------------- Save to DB ----------------
-  async function saveToFeed(){
-    if (!recordedBlob) return;
+    elClientName.addEventListener("input", () => {
+      const client = getClient();
+      client.name = elClientName.value.trim();
+      saveApp();
+      renderClientSelect();
+      renderHeader();
+    });
 
-    const raw = (topicInput.value || '').trim();
-    const topic = raw.replace(/#[\s\S]*$/,'').trim() || 'Senza titolo';
-    const hashtags = parseHashtags(raw);
+    elWeekDate.addEventListener("change", () => {
+      const chosen = elWeekDate.value ? new Date(elWeekDate.value) : new Date();
+      currentMonday = startOfMonday(chosen);
+      elWeekDate.value = toISODate(currentMonday);
+      render();
+    });
 
-    const id = (crypto.randomUUID ? crypto.randomUUID() : (String(Date.now()) + Math.random().toString(16).slice(2)));
-    const createdAt = nowIso();
-    const mime = recordedBlob.type || 'video/webm';
+    elPrevWeek.addEventListener("click", () => {
+      currentMonday = addWeeks(currentMonday, -1);
+      render();
+    });
 
-    showToast(`💾 Salvataggio…`, 1200);
+    elNextWeek.addEventListener("click", () => {
+      currentMonday = addWeeks(currentMonday, 1);
+      render();
+    });
 
-    const thumbBlob = await makeThumbnailPng(recordedBlob);
+    elSetPlanStart.addEventListener("click", () => {
+      const client = getClient();
+      client.planStartMondayISO = toISODate(currentMonday);
+      saveApp();
+      render();
+    });
 
-    const clip = {
-      id,
-      createdAt,
-      topic,
-      hashtags,
-      mime,
-      blob: recordedBlob,
-      thumbBlob: thumbBlob || null
-    };
+    elAddClient.addEventListener("click", () => {
+      const name = prompt("Nome nuovo cliente:", `Cliente ${Object.keys(app.clients).length + 1}`) || "";
+      const id = uid();
+      app.clients[id] = {
+        name: name.trim() || `Cliente ${Object.keys(app.clients).length + 1}`,
+        planStartMondayISO: toISODate(currentMonday),
+        properties: defaultProperties(),
+        statusByWeek: {}
+      };
+      activeClientId = id;
+      saveApp();
+      render();
+    });
 
-    try{
-      await dbPutClip(clip);
-      clips.unshift(clip);
-      renderFeed();
-      closeRecorder();
-      feed.scrollTo({ top: 0, behavior: 'smooth' });
+    elDelClient.addEventListener("click", () => {
+      const ids = Object.keys(app.clients);
+      if(ids.length <= 1){
+        alert("Deve restare almeno 1 cliente.");
+        return;
+      }
+      const client = getClient();
+      const ok = confirm(`Eliminare il cliente "${client.name}"? (azione definitiva)`);
+      if(!ok) return;
 
-      // reset recorded slot
-      recordedBlob = null;
-      btnDownload.disabled = true;
-      btnSaveToFeed.disabled = true;
+      delete app.clients[activeClientId];
+      activeClientId = Object.keys(app.clients)[0];
+      saveApp();
+      render();
+    });
 
-      showToast(`📌 Salvato nel feed (persistente).`);
-    }catch(err){
-      console.error(err);
-      showToast(`⚠️ Errore salvataggio (spazio pieno?).`);
+    elSaveProps.addEventListener("click", () => {
+      const client = getClient();
+      const lines = elPropsTextarea.value.split("\n").map(s => s.trim()).filter(Boolean);
+      if(lines.length === 0){
+        alert("Inserisci almeno 1 immobile (uno per riga).");
+        return;
+      }
+      client.properties = lines;
+      saveApp();
+      render();
+    });
+
+    elResetProps.addEventListener("click", () => {
+      const client = getClient();
+      client.properties = defaultProperties();
+      saveApp();
+      render();
+    });
+
+    elExportWeekCSV.addEventListener("click", exportWeekCSV);
+    elExportPlanCSV.addEventListener("click", exportPlanCSV);
+    elExportClientBundle.addEventListener("click", exportClientBundle);
+    elImportClientBundle.addEventListener("click", importClientBundle);
+
+    // CSV Import UI
+    elImportClientsBtn.addEventListener("click", () => elImportClientsCSV.click());
+    elImportClientsCSV.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      importClientsCSVFile(file);
+    });
+
+    // ------------------------------
+    // Utils
+    // ------------------------------
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
-  }
 
-  // ---------------- UI EVENTS ----------------
-  btnOpenRec.addEventListener('click', openRecorder);
-  btnBack.addEventListener('click', () => closeRecorder());
-
-  btnStartCam.addEventListener('click', startCamera);
-  btnFlip.addEventListener('click', async () => {
-    facingMode = (facingMode === 'user') ? 'environment' : 'user';
-    await startCamera();
-  });
-
-  btnMirrorPreview.addEventListener('click', () => {
-    mirrorPreview = !mirrorPreview;
-    livePreview.classList.toggle('mirrorPreview', mirrorPreview);
-    btnMirrorPreview.textContent = `Mirror preview: ${mirrorPreview ? 'ON' : 'OFF'}`;
-    btnMirrorPreview.style.borderColor = mirrorPreview ? '#ff2d55' : 'rgba(255,255,255,.18)';
-    btnMirrorPreview.style.background = mirrorPreview ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
-  });
-
-  btnTeleprompter.addEventListener('click', () => {
-    tpEnabled = !tpEnabled;
-    if (tpEnabled){
-      setTpText();
-      applyTpUI();
-      tpResetScroll();
-      tpPlaying = true; // default play when enabled
-      showToast(`📝 Teleprompter ON`, 1200);
-    } else {
-      tpPanel.classList.remove('show');
-      tpOverlay.classList.remove('show');
-      tpPlaying = false;
-      showToast(`📝 Teleprompter OFF`, 1200);
-    }
-    applyTpUI();
-  });
-
-  btnCountdownToggle.addEventListener('click', () => {
-    isCountdownOn = !isCountdownOn;
-    btnCountdownToggle.textContent = `Countdown: ${isCountdownOn ? 'ON' : 'OFF'}`;
-    btnCountdownToggle.style.borderColor = isCountdownOn ? '#ff2d55' : 'rgba(255,255,255,.18)';
-    btnCountdownToggle.style.background = isCountdownOn ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
-  });
-
-  btnMax15.addEventListener('click', () => { maxSeconds = 15; setMaxButtons(); showToast(`⏱️ Max durata: 15s`, 1200); });
-  btnMax30.addEventListener('click', () => { maxSeconds = 30; setMaxButtons(); showToast(`⏱️ Max durata: 30s`, 1200); });
-  btnMax60.addEventListener('click', () => { maxSeconds = 60; setMaxButtons(); showToast(`⏱️ Max durata: 60s`, 1200); });
-
-  btnRecord.addEventListener('click', startRecording);
-  btnStop.addEventListener('click', stopRecording);
-  btnDownload.addEventListener('click', downloadRecorded);
-  btnSaveToFeed.addEventListener('click', saveToFeed);
-
-  // keyboard shortcuts (desktop)
-  window.addEventListener('keydown', (e) => {
-    const k = e.key.toLowerCase();
-    if (k === 'r' && !btnRecord.disabled) startRecording();
-    if (k === 's' && !btnStop.disabled) stopRecording();
-    if (k === 't') btnTeleprompter.click();
-  });
-
-  // ---------------- INIT ----------------
-  syncOverlays();
-  setMaxButtons();
-
-  // Start in feed
-  recScreen.classList.remove('active');
-  feed.style.display = 'block';
-
-  // Load DB clips
-  (async () => {
-    try{
-      clips = await dbGetAllClips();
-      // newest first
-      clips.sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      renderFeed();
-      showToast(`✅ Caricati ${clips.length} clip (IndexedDB).`, 1800);
-    }catch(err){
-      console.error(err);
-      showToast(`⚠️ IndexedDB non disponibile in questo browser.`);
-    }
-  })();
-
-  // hint
-  setTimeout(() => {
-    showToast(`Tip teleprompter: scrivi lo script, Play, regola velocità. <b>Burn-in</b> ON = testo anche nel video esportato.`, 5200);
-  }, 900);
-
-})();
-</script>
+    // ------------------------------
+    // Init
+    // ------------------------------
+    loadApp();
+    render();
+  </script>
 </body>
 </html>
