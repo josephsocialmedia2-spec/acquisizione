@@ -368,6 +368,18 @@
       font-size:13px;
     }
 
+  
+    /* Teleprompter UX: hide panel on play */
+    .tpQuickBtn{
+      position:absolute;
+      top:76px;
+      right:16px;
+      z-index:40;
+      pointer-events:auto;
+      display:none;
+    }
+    .tpQuickBtn.show{ display:block; }
+
   </style>
 </head>
 <body>
@@ -1599,6 +1611,71 @@
   addWaButtonToRecorder();
   addWaButtonToFeed();
   wireUpdates();
+})();
+</script>
+
+
+<script>
+(() => {
+  // Teleprompter fix: when pressing Play, hide commands panel so text overlay is visible
+  const tpPanel = document.getElementById('tpPanel');
+  const tpPlay = document.getElementById('tpPlay');
+  const tpPause = document.getElementById('tpPause');
+  const tpReset = document.getElementById('tpReset');
+  const btnTeleprompter = document.getElementById('btnTeleprompter');
+  const tpOverlay = document.getElementById('tpOverlay');
+
+  // Create a small "Comandi" button to reopen the panel
+  const recScreen = document.getElementById('recScreen');
+  if (recScreen && !document.getElementById('tpQuickBtn')){
+    const wrap = document.createElement('div');
+    wrap.className = 'tpQuickBtn';
+    wrap.id = 'tpQuickBtn';
+
+    const btn = document.createElement('button');
+    btn.className = 'ghost';
+    btn.textContent = '⚙️ Comandi';
+    btn.addEventListener('click', () => {
+      if (tpPanel) tpPanel.style.display = 'block';
+      wrap.classList.remove('show');
+    });
+
+    wrap.appendChild(btn);
+    recScreen.appendChild(wrap);
+  }
+
+  const quick = document.getElementById('tpQuickBtn');
+
+  function hidePanelShowOverlay(){
+    // Ensure overlay stays visible (it is managed by existing code, but we enforce it)
+    if (tpOverlay) tpOverlay.classList.add('show');
+    if (tpPanel) tpPanel.style.display = 'none';
+    if (quick) quick.classList.add('show');
+  }
+
+  function showPanel(){
+    if (tpPanel) tpPanel.style.display = 'block';
+    if (quick) quick.classList.remove('show');
+  }
+
+  // Wire buttons
+  if (tpPlay) tpPlay.addEventListener('click', hidePanelShowOverlay);
+  if (tpPause) tpPause.addEventListener('click', showPanel);
+  if (tpReset) tpReset.addEventListener('click', showPanel);
+
+  // If teleprompter gets toggled OFF, also clean UI
+  if (btnTeleprompter) btnTeleprompter.addEventListener('click', () => {
+    // After existing handler runs, read status from overlay visibility
+    setTimeout(() => {
+      const enabled = tpOverlay && tpOverlay.classList.contains('show');
+      if (!enabled){
+        if (tpPanel) tpPanel.style.display = 'none';
+        if (quick) quick.classList.remove('show');
+      } else {
+        showPanel();
+      }
+    }, 0);
+  });
 })();
 </script>
 
