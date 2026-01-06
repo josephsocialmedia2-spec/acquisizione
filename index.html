@@ -529,6 +529,62 @@
 
 <script>
 (() => {
+  // Burn-in logo on recorded canvas by patching drawImage for the live preview frame
+  const LOGO_SRC = 'Untitled_design-removebg-preview.png';
+
+  const logoImg = new Image();
+  logoImg.decoding = 'async';
+  logoImg.src = LOGO_SRC;
+
+  const origDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+
+  CanvasRenderingContext2D.prototype.drawImage = function(...args){
+    // call original first
+    const res = origDrawImage.apply(this, args);
+
+    try{
+      const srcEl = args && args[0];
+      // Only overlay when drawing the livePreview video onto the recording canvas
+      if (
+        this &&
+        this.canvas &&
+        this.canvas.id === 'recCanvas' &&
+        srcEl &&
+        srcEl.tagName === 'VIDEO' &&
+        srcEl.id === 'livePreview'
+      ){
+        if (logoImg && logoImg.complete && logoImg.naturalWidth > 0){
+          const cw = this.canvas.width || 0;
+          const ch = this.canvas.height || 0;
+          if (cw > 0 && ch > 0){
+            // Size and position
+            const targetW = Math.round(cw * 0.32);
+            const aspect = logoImg.naturalHeight / logoImg.naturalWidth;
+            const targetH = Math.round(targetW * aspect);
+
+            const x = Math.round((cw - targetW) / 2);
+            const y = Math.round(ch * 0.04);
+
+            // subtle backdrop for readability
+            this.save();
+            this.globalAlpha = 0.95;
+            this.drawImage(logoImg, x, y, targetW, targetH);
+            this.restore();
+          }
+        }
+      }
+    }catch(e){
+      // silent
+    }
+
+    return res;
+  };
+})();
+</script>
+
+
+<script>
+(() => {
   // ---------------- DOM ----------------
   const feed = document.getElementById('feed');
   const emptyState = document.getElementById('emptyState');
