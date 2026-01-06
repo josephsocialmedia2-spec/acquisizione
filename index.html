@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>WebTok PRO — Recorder + Feed</title>
+  <title>WebTok PRO — Recorder + Feed + Teleprompter + IndexedDB</title>
   <style>
     :root { color-scheme: dark; }
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -51,6 +51,180 @@
       pointer-events:none;
     }
 
+    /* REC SCREEN */
+    .recScreen{
+      position:absolute; inset:0;
+      background:#000;
+      display:none;
+    }
+    .recScreen.active{ display:block; }
+
+    .recStage{
+      position:absolute; inset:0;
+      background:#000;
+      overflow:hidden;
+    }
+    .recStage video, .recStage canvas{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+    }
+    .recStage canvas{ display:none; } /* record source */
+
+    /* Preview mirror (optional) */
+    .mirrorPreview{
+      transform: scaleX(-1);
+    }
+
+    /* HUD */
+    .hud{
+      position:absolute; inset:0;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      pointer-events:none;
+      z-index:5;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      pointer-events:auto;
+    }
+    .pill{
+      width:100%;
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+    }
+    .pill input, .pill textarea{
+      width:100%;
+      background:transparent;
+      border:0; outline:0;
+      color:#fff;
+      font-weight:650;
+      font-size:14px;
+      resize:none;
+    }
+    .pill .mini{
+      width:auto;
+      padding:6px 10px;
+      border-radius:12px;
+      background:rgba(0,0,0,.20);
+      border:1px solid rgba(255,255,255,.14);
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+      font-size:12px;
+      font-weight:900;
+    }
+    .topicOverlay{
+      pointer-events:none;
+      font-weight:900;
+      font-size:28px;
+      line-height:1.12;
+      text-shadow: 0 4px 18px rgba(0,0,0,.75);
+      max-width:90%;
+    }
+    .metaOverlay{
+      margin-top:8px;
+      font-size:13px;
+      font-weight:850;
+      opacity:.92;
+      text-shadow: 0 4px 14px rgba(0,0,0,.75);
+      max-width:90%;
+    }
+
+    /* SIDE BUTTONS */
+    .side{
+      pointer-events:auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:flex-end;
+      padding-bottom:10px;
+      max-width:180px;
+    }
+    button{
+      border:0;
+      border-radius:16px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    button.primary{
+      background:#ff2d55;
+      border-color:#ff2d55;
+    }
+    button.ghost{
+      background:rgba(0,0,0,.22);
+      border-color: rgba(255,255,255,.16);
+    }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
+
+    /* RECORD UI */
+    .recBadge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-weight:950;
+      letter-spacing:.5px;
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background:#ff2d55;
+      box-shadow: 0 0 0 7px rgba(255,45,85,.18);
+      animation:pulse 1.2s infinite;
+    }
+    @keyframes pulse{
+      0%{ transform:scale(1); opacity:1 }
+      50%{ transform:scale(1.08); opacity:.85 }
+      100%{ transform:scale(1); opacity:1 }
+    }
+
+    /* COUNTDOWN */
+    .countdown{
+      position:absolute; inset:0;
+      display:none;
+      place-items:center;
+      font-size:72px;
+      font-weight:950;
+      text-shadow: 0 10px 40px rgba(0,0,0,.75);
+      background: radial-gradient(circle at center, rgba(0,0,0,.25), rgba(0,0,0,.55));
+      pointer-events:none;
+      z-index:10;
+    }
+    .countdown.show{ display:grid; }
+
+    /* TOAST */
+    .toast{
+      position:absolute;
+      left:50%; transform:translateX(-50%);
+      bottom:92px;
+      background:rgba(0,0,0,.70);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px;
+      border-radius:14px;
+      font-size:13px;
+      max-width:92%;
+      text-align:center;
+      display:none;
+      z-index:50;
+    }
+    .toast a{ color:#7ee787; font-weight:900; text-decoration:none; }
+
     /* TOP BAR on FEED */
     .topBar{
       position:absolute; top:0; left:0; right:0;
@@ -80,7 +254,6 @@
       font-weight:950;
       cursor:pointer;
     }
-
     .empty{
       position:absolute; inset:0;
       display:grid;
@@ -99,80 +272,58 @@
     }
     .empty h2{ margin:0 0 8px; font-size:18px; }
     .empty p{ margin:0; opacity:.85; line-height:1.35; }
+    .kbd{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.22);
+      font-weight:950;
+      font-size:12px;
+      margin:0 2px;
+      white-space:nowrap;
+    }
 
-    /* REC SCREEN */
-    .recScreen{
-      position:absolute; inset:0;
-      background:#000;
+    /* Teleprompter UI panel */
+    .tpPanel{
+      position:absolute;
+      left:16px; right:16px;
+      top:72px;
+      z-index:20;
+      pointer-events:auto;
       display:none;
     }
-    .recScreen.active{ display:block; }
+    .tpPanel.show{ display:block; }
 
-    .recStage{
-      position:absolute; inset:0;
-      background:#000;
-      overflow:hidden;
-    }
-    .recStage video, .recStage canvas{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-    }
-    .recStage canvas{ display:none; } /* record source */
-
-    /* HUD */
-    .hud{
-      position:absolute; inset:0;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      pointer-events:none;
-      z-index:5;
-    }
-    .row{
-      display:flex;
+    .tpGrid{
+      display:grid;
+      grid-template-columns: 1fr;
       gap:10px;
-      align-items:flex-start;
-      justify-content:space-between;
-      pointer-events:auto;
     }
-    .pill{
-      width:100%;
-      display:flex; gap:10px; align-items:center;
+    .tpControls{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .tpControls button{
       padding:10px 12px;
-      border-radius:16px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-    }
-    .pill input, .pill textarea{
-      width:100%;
-      background:transparent;
-      border:0; outline:0;
-      color:#fff;
-      font-weight:750;
-      font-size:14px;
-      resize:none;
-    }
-    .miniBtn{
-      width:auto;
-      padding:8px 10px;
-      border-radius:12px;
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.14);
-      cursor:pointer;
-      user-select:none;
-      white-space:nowrap;
-      font-size:12px;
+      border-radius:14px;
+      font-size:13px;
       font-weight:950;
     }
+    .tpControls .pill{
+      padding:10px 12px;
+      border-radius:16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      width:100%;
+    }
+    .tpControls input[type="range"]{ width:100%; }
+    .tpLabel{ font-size:12px; opacity:.85; font-weight:900; }
 
-    /* TELEPROMPTER OVERLAY (visual) */
+    /* Teleprompter overlay (what user reads) */
     .tpOverlay{
       position:absolute;
       left:0; right:0;
-      bottom:96px;
       z-index:8;
       pointer-events:none;
       display:none;
@@ -189,7 +340,7 @@
       padding:14px 14px 10px;
     }
     .tpViewport{
-      height:150px;
+      height:140px; /* will be adjusted */
       overflow:hidden;
       position:relative;
     }
@@ -202,133 +353,38 @@
       text-shadow: 0 4px 18px rgba(0,0,0,.75);
       white-space:pre-wrap;
       word-break:break-word;
-      font-size:34px;
     }
-
-    /* COUNTDOWN */
-    .countdown{
-      position:absolute; inset:0;
-      display:none;
-      place-items:center;
-      font-size:72px;
-      font-weight:950;
-      text-shadow: 0 10px 40px rgba(0,0,0,.75);
-      background: radial-gradient(circle at center, rgba(0,0,0,.25), rgba(0,0,0,.55));
-      pointer-events:none;
-      z-index:20;
-    }
-    .countdown.show{ display:grid; }
-
-    /* TOAST */
-    .toast{
-      position:absolute;
-      left:50%; transform:translateX(-50%);
-      bottom:104px;
-      background:rgba(0,0,0,.70);
-      border:1px solid rgba(255,255,255,.14);
-      padding:10px 12px;
-      border-radius:14px;
-      font-size:13px;
-      max-width:92%;
-      text-align:center;
-      display:none;
-      z-index:50;
-    }
-
-    /* REC INDICATOR (UI) */
-    .recDotUI{
-      position:absolute;
-      top:14px; left:14px;
-      display:none;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:16px;
-      background:rgba(0,0,0,.25);
-      border:1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-      z-index:30;
-      pointer-events:none;
-      font-weight:950;
-    }
-    .recDotUI.show{ display:inline-flex; }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background:#ff2d55;
-      box-shadow: 0 0 0 7px rgba(255,45,85,.18);
-      animation:pulse 1.2s infinite;
-    }
-    @keyframes pulse{
-      0%{ transform:scale(1); opacity:1 }
-      50%{ transform:scale(1.08); opacity:.85 }
-      100%{ transform:scale(1); opacity:1 }
-    }
-
-    /* CENTER RECORD BUTTON */
-    .recCenterWrap{
-      position:absolute;
-      left:0; right:0;
-      bottom:26px;
-      display:flex;
-      justify-content:center;
+  
+    /* TEMPLATE SELECTOR (Per-Te ready) */
+    .templateBar{
       pointer-events:auto;
-      z-index:35;
-    }
-    .recToggle{
-      width:84px; height:84px;
-      border-radius:999px;
-      border:3px solid rgba(255,255,255,.88);
-      background:rgba(255,45,85,.92);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      box-shadow: 0 10px 40px rgba(0,0,0,.55);
-    }
-    .recToggle .inner{
-      width:34px; height:34px;
-      border-radius:10px;
-      background:#fff;
-      transition:all .15s ease;
-    }
-    .recToggle.recording{
-      background:rgba(255,45,85,1);
-      border-color: rgba(255,255,255,.92);
-    }
-    .recToggle.recording .inner{
-      width:34px; height:34px;
-      border-radius:8px;
-      background:#fff;
-    }
-
-    /* Bottom action bar after recording */
-    .bottomActions{
-      position:absolute;
-      left:14px; right:14px;
-      bottom:122px;
       display:flex;
       gap:10px;
-      pointer-events:auto;
-      z-index:40;
-      display:none;
-    }
-    .bottomActions.show{ display:flex; }
-    button{
-      border:0;
-      border-radius:16px;
-      padding:12px 14px;
-      background:rgba(255,255,255,.12);
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(10px);
       width:100%;
     }
-    button.primary{
-      background:#ff2d55;
-      border-color:#ff2d55;
+    .templateBtn{
+      flex:1;
+      padding:14px 12px;
+      border-radius:18px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      font-weight:950;
+      font-size:14px;
+      cursor:pointer;
+      backdrop-filter: blur(10px);
     }
-    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .templateBtn:active{ transform: translateY(1px); }
+    .templateBtn.on{
+      border-color:#ff2d55;
+      background:rgba(255,45,85,.18);
+    }
+
+    /* Force 60s: hide duration buttons */
+    #btnMax15, #btnMax30, #btnMax60{ display:none !important; }
+
+    /* Force teleprompter ON: hide toggle */
+    #btnTeleprompter{ display:none !important; }
 
   </style>
 </head>
@@ -345,7 +401,10 @@
       <div class="empty" id="emptyState">
         <div class="card">
           <h2>Nessun clip ancora</h2>
-          <p>Premi <b>+ Registra</b>, inserisci <b>Titolo</b> e <b>Teleprompter</b>, poi registra (max 60s).</p>
+          <p>
+            Premi <span class="kbd">+ Registra</span>, aggiungi <span class="kbd">Argomento</span> + <span class="kbd">#hashtag</span>,
+            e se vuoi attiva <span class="kbd">Teleprompter</span>.
+          </p>
         </div>
       </div>
       <!-- pages injected -->
@@ -360,59 +419,109 @@
 
       <!-- Teleprompter overlay (visual) -->
       <div class="tpOverlay" id="tpOverlay">
-        <div class="tpBox">
+        <div class="tpBox" id="tpBox">
           <div class="tpViewport" id="tpViewport">
             <div class="tpText" id="tpText"></div>
           </div>
         </div>
       </div>
 
-      <div class="countdown" id="countdown">3</div>
-      <div class="toast" id="toast"></div>
+      <!-- Teleprompter panel (controls) -->
+      <div class="tpPanel" id="tpPanel">
+        <div class="tpGrid">
+          <div class="pill">
+            <span style="font-size:14px;">📝</span>
+            <textarea id="tpScript" rows="3" placeholder="Script teleprompter… (va a capo quando vuoi)"></textarea>
+            <span class="mini" id="tpClear">Pulisci</span>
+          </div>
 
-      <div class="recDotUI" id="recDotUI">
-        <span class="dot"></span>
-        <span id="recTime">00:00</span>
+          <div class="pill" style="flex-direction:column; align-items:stretch; gap:10px;">
+            <div class="tpControls">
+              <button class="ghost" id="tpPlay">▶︎ Play</button>
+              <button class="ghost" id="tpPause">⏸︎ Pausa</button>
+              <button class="ghost" id="tpReset">↺ Reset</button>
+              <button class="ghost" id="tpMirror">Mirror: OFF</button>
+              <button class="ghost" id="tpPos">Pos: BASSO</button>
+              <button class="ghost" id="tpBurn">Burn-in: ON</button>
+            </div>
+
+            <div style="display:grid; gap:10px;">
+              <div>
+                <div class="tpLabel">Velocità (px/s)</div>
+                <input id="tpSpeed" type="range" min="10" max="220" value="70">
+              </div>
+              <div>
+                <div class="tpLabel">Dimensione testo</div>
+                <input id="tpFont" type="range" min="18" max="60" value="34">
+              </div>
+              <div>
+                <div class="tpLabel">Opacità box</div>
+                <input id="tpBoxOpacity" type="range" min="0" max="80" value="35">
+              </div>
+              <div>
+                <div class="tpLabel">Altezza teleprompter</div>
+                <input id="tpHeight" type="range" min="90" max="260" value="140">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div class="countdown" id="countdown">3</div>
 
       <div class="hud">
+      <!-- TEMPLATE SELECTOR -->
+      <div class="row">
+        <div class="templateBar" aria-label="Template rapidi">
+          <button class="templateBtn" id="tplMistake" type="button">❌ Errore</button>
+          <button class="templateBtn" id="tpl3Steps" type="button">✅ 3 Step</button>
+          <button class="templateBtn" id="tplMyth" type="button">🧨 Mito</button>
+        </div>
+      </div>
+
         <div class="row">
-          <div class="pill">
-            <span style="font-size:14px;">🏷️</span>
-            <input id="titleInput" placeholder="Titolo (sarà anche la caption)" maxlength="80" />
-            <span class="miniBtn" id="btnBack">← Feed</span>
+          <div class="pill" style="max-width:100%;">
+            <span style="font-size:14px;">🎯</span>
+            <input id="topicInput" placeholder="Argomento + hashtag (es: Spalle a casa #fitness #homeworkout)" maxlength="110" />
+            <span class="mini" id="btnClearTopic">Pulisci</span>
           </div>
         </div>
 
-        <div class="row">
-          <div class="pill" style="flex-direction:column; align-items:stretch; gap:10px;">
-            <div style="display:flex; gap:10px; align-items:center;">
-              <span style="font-size:14px;">📝</span>
-              <div style="font-weight:950; opacity:.92;">Teleprompter</div>
-              <span style="margin-left:auto;"></span>
-              <span class="miniBtn" id="btnLogo">Logo</span>
-              <span class="miniBtn" id="btnClear">Pulisci</span>
+        <div class="row" style="align-items:flex-end;">
+          <div style="display:flex; flex-direction:column; gap:8px; max-width:90%;">
+            <div class="topicOverlay" id="topicOverlay"></div>
+            <div class="metaOverlay" id="hashOverlay"></div>
+          </div>
+
+          <div class="side">
+            <button class="ghost" id="btnBack">← Feed</button>
+            <button id="btnStartCam">Attiva camera</button>
+            <button id="btnFlip" disabled>Flip</button>
+
+            <button class="ghost" id="btnMirrorPreview">Mirror preview: OFF</button>
+
+            <button class="ghost" id="btnTeleprompter">Teleprompter: OFF</button>
+            <button class="ghost" id="btnCountdownToggle">Countdown: ON</button>
+
+            <button class="ghost" id="btnMax15">Max 15s</button>
+            <button class="ghost" id="btnMax30">Max 30s</button>
+            <button class="ghost" id="btnMax60">Max 60s</button>
+
+            <div class="recBadge" id="recBadge" style="display:none;">
+              <span class="dot"></span>
+              <span id="recTime">00:00</span>
             </div>
-            <textarea id="tpScript" rows="4" placeholder="Testo teleprompter… (scorre automaticamente)"></textarea>
-            <div style="font-size:12px; opacity:.82; font-weight:850;">
-              Caption finale: <span id="captionPreview" style="font-weight:950;"></span>
-            </div>
+
+            <button class="primary" id="btnRecord" disabled>Registra</button>
+            <button id="btnStop" disabled>Stop</button>
+
+            <button id="btnSaveToFeed" disabled>Salva nel feed</button>
+            <button id="btnDownload" disabled>Download</button>
           </div>
         </div>
       </div>
 
-      <input id="logoInput" type="file" accept="image/*" style="display:none;" />
-
-      <div class="bottomActions" id="bottomActions">
-        <button class="primary" id="btnSaveToFeed" disabled>Salva nel feed</button>
-        <button id="btnDownload" disabled>Download</button>
-      </div>
-
-      <div class="recCenterWrap">
-        <div class="recToggle" id="btnRecToggle" role="button" aria-label="Registra/Stop">
-          <div class="inner"></div>
-        </div>
-      </div>
+      <div class="toast" id="toast"></div>
     </div>
 
   </div>
@@ -432,67 +541,220 @@
   const countdownEl = document.getElementById('countdown');
   const toast = document.getElementById('toast');
 
-  const btnBack = document.getElementById('btnBack');
-  const titleInput = document.getElementById('titleInput');
+  const topicInput = document.getElementById('topicInput');
+  const topicOverlay = document.getElementById('topicOverlay');
+  const hashOverlay = document.getElementById('hashOverlay');
+  const btnClearTopic = document.getElementById('btnClearTopic');
 
+  // Template buttons
+  const tplMistake = document.getElementById('tplMistake');
+  const tpl3Steps = document.getElementById('tpl3Steps');
+  const tplMyth = document.getElementById('tplMyth');
+
+
+  const btnBack = document.getElementById('btnBack');
+  const btnStartCam = document.getElementById('btnStartCam');
+  const btnFlip = document.getElementById('btnFlip');
+  const btnMirrorPreview = document.getElementById('btnMirrorPreview');
+
+  const btnTeleprompter = document.getElementById('btnTeleprompter');
+  const tpPanel = document.getElementById('tpPanel');
   const tpOverlay = document.getElementById('tpOverlay');
+  const tpBox = document.getElementById('tpBox');
   const tpViewport = document.getElementById('tpViewport');
   const tpText = document.getElementById('tpText');
+
   const tpScript = document.getElementById('tpScript');
-  const btnClear = document.getElementById('btnClear');
+  const tpClear = document.getElementById('tpClear');
+  const tpPlay = document.getElementById('tpPlay');
+  const tpPause = document.getElementById('tpPause');
+  const tpReset = document.getElementById('tpReset');
+  const tpMirror = document.getElementById('tpMirror');
+  const tpPos = document.getElementById('tpPos');
+  const tpBurn = document.getElementById('tpBurn');
+  const tpSpeed = document.getElementById('tpSpeed');
+  const tpFont = document.getElementById('tpFont');
+  const tpBoxOpacity = document.getElementById('tpBoxOpacity');
+  const tpHeight = document.getElementById('tpHeight');
 
-  const captionPreview = document.getElementById('captionPreview');
+  const btnCountdownToggle = document.getElementById('btnCountdownToggle');
 
-  const btnLogo = document.getElementById('btnLogo');
-  const logoInput = document.getElementById('logoInput');
+  const btnMax15 = document.getElementById('btnMax15');
+  const btnMax30 = document.getElementById('btnMax30');
+  const btnMax60 = document.getElementById('btnMax60');
 
-  const recDotUI = document.getElementById('recDotUI');
+  const recBadge = document.getElementById('recBadge');
   const recTimeEl = document.getElementById('recTime');
 
-  const btnRecToggle = document.getElementById('btnRecToggle');
-  const bottomActions = document.getElementById('bottomActions');
+  const btnRecord = document.getElementById('btnRecord');
+  const btnStop = document.getElementById('btnStop');
   const btnSaveToFeed = document.getElementById('btnSaveToFeed');
   const btnDownload = document.getElementById('btnDownload');
 
   // ---------------- STATE ----------------
   let stream = null;
+  let facingMode = 'user';
   let recorder = null;
   let chunks = [];
   let recordedBlob = null;
 
   let rafId = null;
+  let isCountdownOn = true;
 
-  const maxSeconds = 60;
+  let maxSeconds = 30;
   let recStartTs = 0;
   let recTimerId = null;
 
+  let mirrorPreview = false;
+
   // Feed clips (persisted in IndexedDB)
-  let clips = []; // { id, createdAt, caption, blob, mime, thumbBlob }
+  let clips = []; // { id, createdAt, topic, hashtags, blob, mime, thumbBlob, durationMs }
   const urlCache = new Map(); // id -> objectURL
   const thumbUrlCache = new Map();
 
-  // Teleprompter (always: auto scroll if text present)
+  // Teleprompter
+  let tpEnabled = false;
+  let tpPlaying = false;
+  let tpMirrorOn = false;
+  let tpPosition = 'bottom'; // 'bottom' | 'top'
+  let tpBurnIn = true;
+
   let tpScrollY = 0; // px
   let tpLastTs = 0;
-  const tpSpeed = 70; // px/s
-
-  // Logo (burn-in, persisted in IndexedDB)
-  let logoBlob = null;
-  let logoBitmap = null;
-  let logoReady = false;
-
-  // Hashtag di settore (default)
-  const sectorHashtags = ['#socialmedia', '#content', '#marketing'];
 
   // ---------------- HELPERS ----------------
   const pad2 = (n) => String(n).padStart(2,'0');
   const fmtTime = (sec) => `${pad2(Math.floor(sec/60))}:${pad2(sec%60)}`;
   const nowIso = () => new Date().toISOString();
 
-  function showToast(html, ms=2500){
+  // ---------------- PER-TE RULES (hard constraints) ----------------
+  const DEFAULT_SECTOR_TAGS = ['#socialmedia', '#content', '#marketing'];
+
+  function force60Seconds(){
+    maxSeconds = 60;
+  }
+
+  function forceTeleprompterOn(){
+    tpEnabled = true;
+    tpBurnIn = true;
+    tpPlaying = true;
+    setTpText();
+    applyTpUI();
+    tpResetScroll();
+  }
+
+  function requireNonEmptyBeforeRec(){
+    const title = (topicInput.value || '').trim();
+    const script = (tpScript.value || '').trim();
+
+    if (!title){
+      showToast(`⚠️ Inserisci un <b>titolo/hook</b> prima di registrare.`);
+      topicInput.focus();
+      return false;
+    }
+    if (!script){
+      showToast(`⚠️ Inserisci lo <b>testo teleprompter</b> prima di registrare.`);
+      tpScript.focus();
+      return false;
+    }
+    return true;
+  }
+
+  // ---------------- SCRIPT TEMPLATES ----------------
+  const SCRIPT_TEMPLATES = [
+    {
+      id: 'mistake',
+      hook: 'Stai sbagliando {X}.',
+      body:
+`Fermati un attimo: se stai facendo {X} così, ti stai sabotando.
+Ecco l’errore: {MISTAKE}.
+La soluzione semplice è: {FIX}.
+Se vuoi, prova oggi stesso e dimmi nei commenti cosa cambia.`,
+      loop: 'Ed è per questo che stai sbagliando {X}.'
+    },
+    {
+      id: '3steps',
+      hook: 'Ecco {N} step per {GOAL}.',
+      body:
+`Step 1: {S1}.
+Step 2: {S2}.
+Step 3: {S3}.
+Se fai solo questo, sei già avanti al 90% delle persone.`,
+      loop: 'Ricapitolando: {N} step per {GOAL}.'
+    },
+    {
+      id: 'myth',
+      hook: 'No, {MYTH} non funziona.',
+      body:
+`Te lo dico subito: {MYTH} è una trappola.
+Il motivo è: {WHY}.
+Al posto di quello, fai: {DO_THIS}.
+Risultato: {RESULT}.`,
+      loop: 'Quindi no: {MYTH} non funziona.'
+    }
+  ];
+
+  const DEFAULT_TEMPLATE_DATA = {
+    X: 'le caption',
+    MISTAKE: 'scrivere frasi generiche senza un punto chiaro',
+    FIX: 'usa promessa + esempio + CTA in una frase',
+    N: '3',
+    GOAL: 'aumentare la retention',
+    S1: 'Hook chiaro entro 2 secondi',
+    S2: 'Frasi corte + ritmo costante',
+    S3: 'Finale che richiama l’inizio (loop)',
+    MYTH: 'postare ogni giorno',
+    WHY: 'se la retention è bassa, aumenti solo i flop',
+    DO_THIS: 'posta meno ma con hook + ritmo + loop',
+    RESULT: 'più completion e più spinta nel Per Te'
+  };
+
+  function fillTemplate(str, data){
+    return String(str).replace(/\{([A-Z0-9_]+)\}/g, (_, key) => (data[key] ?? `{${key}}`));
+  }
+
+  function setTemplateActive(id){
+    const map = [
+      [tplMistake, 'mistake'],
+      [tpl3Steps, '3steps'],
+      [tplMyth, 'myth']
+    ];
+    map.forEach(([btn, tid]) => {
+      if (!btn) return;
+      btn.classList.toggle('on', tid === id);
+    });
+  }
+
+  function applyTemplate(templateId, data){
+    const t = SCRIPT_TEMPLATES.find(x => x.id === templateId);
+    if (!t) return;
+
+    const hook = fillTemplate(t.hook, data);
+    const body = fillTemplate(t.body, data);
+    const loop = fillTemplate(t.loop, data);
+
+    topicInput.value = hook;
+    tpScript.value = `${body}\n\n${loop}\n\n${DEFAULT_SECTOR_TAGS.join(' ')}`;
+
+    syncOverlays();
+    setTpText();
+    forceTeleprompterOn();
+    setTemplateActive(templateId);
+
+    showToast(`🧠 Template applicato: <b>${templateId}</b>`, 1200);
+  }
+
+
+  function showToast(html, ms=3500){
     toast.innerHTML = html;
     toast.style.display = 'block';
     if (ms) setTimeout(() => toast.style.display = 'none', ms);
+  }
+
+  function parseHashtags(text){
+    const tags = (text.match(/#[\p{L}\p{N}_]+/gu) || [])
+      .map(t => t.toLowerCase());
+    return [...new Set(tags)];
   }
 
   function escapeHtml(s){
@@ -513,71 +775,39 @@
     return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
   }
 
-  function buildCaption(){
-    const t = (titleInput.value || '').trim();
-    const tags = sectorHashtags.join(' ');
-    return (t ? `${t} ${tags}` : tags).trim();
-  }
-
-  function syncCaptionPreview(){
-    captionPreview.textContent = buildCaption();
-  }
-  titleInput.addEventListener('input', syncCaptionPreview);
-  syncCaptionPreview();
-
-  function setTpText(){
-    tpText.textContent = tpScript.value || '';
-    tpOverlay.classList.toggle('show', !!(tpScript.value || '').trim());
-  }
-
-  function tpResetScroll(){
-    const viewportH = tpViewport.clientHeight || 150;
-    tpScrollY = viewportH;
-    tpLastTs = performance.now();
-    tpText.style.top = `${tpScrollY}px`;
-  }
-
-  function tpTick(ts){
-    const hasText = !!(tpScript.value || '').trim();
-    if (!hasText) { tpLastTs = ts; return; }
-    const dt = Math.max(0, (ts - tpLastTs) / 1000);
-    tpLastTs = ts;
-
-    tpScrollY -= tpSpeed * dt;
-    tpText.style.top = `${tpScrollY}px`;
-
-    const textHeight = tpText.scrollHeight;
-    if (tpScrollY < -textHeight - 20){
-      tpResetScroll();
+  function setMaxButtons(){
+    const map = [[btnMax15,15],[btnMax30,30],[btnMax60,60]];
+    for (const [btn,val] of map){
+      const on = (maxSeconds === val);
+      btn.style.borderColor = on ? '#ff2d55' : 'rgba(255,255,255,.18)';
+      btn.style.background = on ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
     }
   }
 
-  tpScript.addEventListener('input', () => { setTpText(); tpResetScroll(); });
-  btnClear.addEventListener('click', () => {
-    tpScript.value = '';
-    setTpText();
-    tpResetScroll();
-  });
+  function syncOverlays(){
+    const raw = (topicInput.value || '').trim();
+    const topic = raw.replace(/#[\s\S]*$/,'').trim();
+    const tags = parseHashtags(raw);
+    topicOverlay.textContent = topic;
+    hashOverlay.textContent = tags.length ? tags.join(' ') : '';
+  }
+
+  topicInput.addEventListener('input', syncOverlays);
+  btnClearTopic.addEventListener('click', () => { topicInput.value=''; syncOverlays(); });
 
   // ---------------- IndexedDB ----------------
   const DB_NAME = 'webtok_pro_db';
-  const DB_VER = 2;
-  const STORE_CLIPS = 'clips';
-  const STORE_SETTINGS = 'settings';
+  const DB_VER = 1;
+  const STORE = 'clips';
 
   function openDB(){
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VER);
       req.onupgradeneeded = () => {
         const db = req.result;
-
-        if (!db.objectStoreNames.contains(STORE_CLIPS)){
-          const os = db.createObjectStore(STORE_CLIPS, { keyPath: 'id' });
+        if (!db.objectStoreNames.contains(STORE)){
+          const os = db.createObjectStore(STORE, { keyPath: 'id' });
           os.createIndex('createdAt', 'createdAt', { unique:false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_SETTINGS)){
-          db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -585,31 +815,21 @@
     });
   }
 
-  async function dbPut(store, value){
+  async function dbPutClip(clip){
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(store, 'readwrite');
-      tx.objectStore(store).put(value);
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(clip);
       tx.oncomplete = () => { db.close(); resolve(true); };
       tx.onerror = () => { const e = tx.error; db.close(); reject(e); };
-    });
-  }
-
-  async function dbGet(store, key){
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(store, 'readonly');
-      const req = tx.objectStore(store).get(key);
-      req.onsuccess = () => { db.close(); resolve(req.result || null); };
-      req.onerror = () => { const e = req.error; db.close(); reject(e); };
     });
   }
 
   async function dbGetAllClips(){
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_CLIPS, 'readonly');
-      const req = tx.objectStore(STORE_CLIPS).getAll();
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).getAll();
       req.onsuccess = () => { db.close(); resolve(req.result || []); };
       req.onerror = () => { const e = req.error; db.close(); reject(e); };
     });
@@ -618,37 +838,11 @@
   async function dbDeleteClip(id){
     const db = await openDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_CLIPS, 'readwrite');
-      tx.objectStore(STORE_CLIPS).delete(id);
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(id);
       tx.oncomplete = () => { db.close(); resolve(true); };
       tx.onerror = () => { const e = tx.error; db.close(); reject(e); };
     });
-  }
-
-  async function loadLogoFromDB(){
-    try{
-      const rec = await dbGet(STORE_SETTINGS, 'logo');
-      if (rec && rec.blob){
-        logoBlob = rec.blob;
-        await buildLogoBitmap();
-      }
-    }catch(err){
-      console.error(err);
-    }
-  }
-
-  async function buildLogoBitmap(){
-    logoReady = false;
-    logoBitmap = null;
-    if (!logoBlob) return;
-
-    try{
-      logoBitmap = await createImageBitmap(logoBlob);
-      logoReady = true;
-    }catch(err){
-      console.error(err);
-      logoReady = false;
-    }
   }
 
   // ---------------- FEED RENDER ----------------
@@ -682,8 +876,8 @@
     [...feed.querySelectorAll('.page')].forEach(p => p.remove());
   }
 
-  function downloadBlob(blob, caption){
-    const safe = (caption || 'video').replace(/[^\w\-]+/g,'_').slice(0,40);
+  function downloadBlob(blob, topic){
+    const safe = (topic || 'video').replace(/[^\w\-]+/g,'_').slice(0,40);
     const filename = `${safe}_${nowIso().replace(/[:.]/g,'-')}.webm`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -695,6 +889,7 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
+  // Autoplay/pause which page is visible
   const io = new IntersectionObserver((entries) => {
     entries.forEach(ent => {
       const v = ent.target.querySelector('video');
@@ -751,8 +946,8 @@
               ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:100%; height:100%; object-fit:cover;">` : ''}
             </div>
             <div style="display:flex; flex-direction:column; gap:2px; width:100%;">
-              <div style="font-weight:950; font-size:14px;">${escapeHtml(clip.caption || 'Clip')}</div>
-              <div style="opacity:.82; font-weight:850; font-size:12px;">${new Date(clip.createdAt).toLocaleString()}</div>
+              <div style="font-weight:950; font-size:14px;">${escapeHtml(clip.topic || 'Senza titolo')}</div>
+              <div style="opacity:.85; font-weight:850; font-size:12px;">${(clip.hashtags?.length ? escapeHtml(clip.hashtags.join(' ')) : '')}</div>
             </div>
           </div>
         `;
@@ -766,13 +961,11 @@
         spacer.style.maxWidth = '90%';
 
         const side = document.createElement('div');
-        side.style.display = 'flex';
-        side.style.flexDirection = 'column';
-        side.style.gap = '10px';
+        side.className = 'side';
         side.innerHTML = `
-          <button data-action="mute">🔊 Audio</button>
-          <button data-action="download">⬇️ Download</button>
-          <button data-action="delete">🗑️ Elimina</button>
+          <button class="ghost" data-action="mute">🔊 Audio</button>
+          <button class="ghost" data-action="download">⬇️ Download</button>
+          <button class="ghost" data-action="delete">🗑️ Elimina</button>
         `;
 
         bottomRow.appendChild(spacer);
@@ -802,7 +995,7 @@
             b.textContent = v.muted ? '🔇 Muto' : '🔊 Audio';
           }
           if (action === 'download'){
-            downloadBlob(clip.blob, clip.caption || 'video');
+            downloadBlob(clip.blob, clip.topic || 'video');
           }
           if (action === 'delete'){
             try{
@@ -829,26 +1022,19 @@
     recScreen.classList.add('active');
     feed.style.display = 'none';
 
-    // auto start camera
-    await startCamera();
+    force60Seconds();
+    forceTeleprompterOn();
 
-    // reset UI
-    recordedBlob = null;
-    btnSaveToFeed.disabled = true;
-    btnDownload.disabled = true;
-    bottomActions.classList.remove('show');
-    btnRecToggle.classList.remove('recording');
-
-    showToast(`🎥 Camera attiva. Premi il pulsante rosso per registrare (max 60s).`, 2600);
+    try{
+      await startCamera();
+      showToast(`✅ Pronto: inserisci <b>titolo</b> + <b>testo</b> e premi <b>REC</b>.`, 1800);
+    }catch{
+      // startCamera already shows toast on error
+    }
   }
-
   function closeRecorder(){
     recScreen.classList.remove('active');
     feed.style.display = 'block';
-    stopStream();
-    stopDrawingLoop();
-    stopRecTimer();
-    recDotUI.classList.remove('show');
   }
 
   // ---------------- CAMERA/RECORD ----------------
@@ -863,21 +1049,23 @@
     stopStream();
     try{
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
+        video: { facingMode },
         audio: true
       });
       livePreview.srcObject = stream;
-      await new Promise(r => {
-        if (livePreview.readyState >= 2) return r();
-        livePreview.onloadedmetadata = () => r();
-      });
 
-      fitCanvasToVideo();
-      setTpText();
-      tpResetScroll();
+      btnFlip.disabled = false;
+      btnRecord.disabled = false;
+      btnStop.disabled = true;
+
+      recordedBlob = null;
+      btnDownload.disabled = true;
+      btnSaveToFeed.disabled = true;
+
+      showToast(`Camera attiva (${facingMode === 'user' ? 'frontale' : 'posteriore'}).`);
     }catch(e){
       console.error(e);
-      showToast(`⚠️ Camera non disponibile. Usa https o localhost e concedi i permessi.`);
+      showToast(`⚠️ Camera non disponibile. Apri su <b>https</b> o <b>localhost</b> e concedi i permessi.`);
     }
   }
 
@@ -886,6 +1074,21 @@
     const h = livePreview.videoHeight || 1280;
     canvas.width = w;
     canvas.height = h;
+  }
+
+  function setRecordingUI(isRec){
+    btnRecord.disabled = isRec;
+    btnStop.disabled = !isRec;
+    btnFlip.disabled = isRec;
+    btnStartCam.disabled = isRec;
+    btnBack.disabled = isRec;
+
+    if (isRec){
+      recBadge.style.display = 'inline-flex';
+    } else {
+      recBadge.style.display = 'none';
+      recTimeEl.textContent = '00:00';
+    }
   }
 
   function startRecTimer(){
@@ -904,6 +1107,7 @@
   }
 
   async function runCountdown(){
+    if (!isCountdownOn) return true;
     countdownEl.classList.add('show');
     for (const n of [3,2,1]){
       countdownEl.textContent = n;
@@ -913,59 +1117,156 @@
     return true;
   }
 
+  // ---------------- Teleprompter behavior ----------------
+  function applyTpUI(){
+    tpOverlay.classList.toggle('show', tpEnabled);
+    tpPanel.classList.toggle('show', tpEnabled);
+
+    btnTeleprompter.textContent = `Teleprompter: ${tpEnabled ? 'ON' : 'OFF'}`;
+    btnTeleprompter.style.borderColor = tpEnabled ? '#ff2d55' : 'rgba(255,255,255,.18)';
+    btnTeleprompter.style.background = tpEnabled ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
+
+    tpMirror.textContent = `Mirror: ${tpMirrorOn ? 'ON' : 'OFF'}`;
+    tpPos.textContent = `Pos: ${tpPosition === 'bottom' ? 'BASSO' : 'ALTO'}`;
+    tpBurn.textContent = `Burn-in: ${tpBurnIn ? 'ON' : 'OFF'}`;
+
+    // overlay placement
+    tpOverlay.style.top = (tpPosition === 'top') ? '90px' : 'auto';
+    tpOverlay.style.bottom = (tpPosition === 'bottom') ? '90px' : 'auto';
+
+    // box opacity and viewport height and font size
+    const opacity = Number(tpBoxOpacity.value) / 100;
+    tpBox.style.background = `rgba(0,0,0,${opacity})`;
+    tpViewport.style.height = `${Number(tpHeight.value)}px`;
+    tpText.style.fontSize = `${Number(tpFont.value)}px`;
+
+    // mirror overlay text if desired
+    tpText.style.transform = tpMirrorOn ? 'scaleX(-1)' : 'none';
+  }
+
+  function setTpText(){
+    tpText.textContent = tpScript.value || '';
+  }
+
+  function tpResetScroll(){
+    tpScrollY = Number(tpViewport.style.height.replace('px','') || tpViewport.clientHeight);
+    tpLastTs = performance.now();
+    tpText.style.top = `${tpScrollY}px`;
+  }
+
+  function tpTick(ts){
+    if (!tpEnabled) return;
+    if (!tpPlaying){
+      tpLastTs = ts;
+      return;
+    }
+    const dt = Math.max(0, (ts - tpLastTs) / 1000);
+    tpLastTs = ts;
+
+    const speed = Number(tpSpeed.value); // px/s
+    tpScrollY -= speed * dt;
+    tpText.style.top = `${tpScrollY}px`;
+
+    // loop when fully passed
+    const textHeight = tpText.scrollHeight;
+    if (tpScrollY < -textHeight - 20){
+      tpResetScroll();
+    }
+  }
+
+  tpScript.addEventListener('input', () => { setTpText(); });
+  tpClear.addEventListener('click', () => { tpScript.value=''; setTpText(); tpResetScroll(); });
+
+  tpPlay.addEventListener('click', () => { tpPlaying = true; showToast(`▶️ Teleprompter play`, 1200); });
+  tpPause.addEventListener('click', () => { tpPlaying = false; showToast(`⏸️ Teleprompter pausa`, 1200); });
+  tpReset.addEventListener('click', () => { tpResetScroll(); showToast(`↺ Reset`, 1200); });
+
+  tpMirror.addEventListener('click', () => { tpMirrorOn = !tpMirrorOn; applyTpUI(); });
+  tpPos.addEventListener('click', () => { tpPosition = (tpPosition === 'bottom') ? 'top' : 'bottom'; applyTpUI(); });
+  tpBurn.addEventListener('click', () => { tpBurnIn = !tpBurnIn; applyTpUI(); });
+
+  [tpSpeed, tpFont, tpBoxOpacity, tpHeight].forEach(el => el.addEventListener('input', applyTpUI));
+
   // ---------------- Drawing (burn-in) ----------------
-  function drawCaptionBurnIn(){
-    const caption = buildCaption();
-    if (!caption) return;
+  function drawTopicAndTags(){
+    const raw = (topicInput.value || '').trim();
+    const topic = raw.replace(/#[\s\S]*$/,'').trim();
+    const tags = parseHashtags(raw);
 
     const pad = Math.round(canvas.width * 0.06);
     const maxWidth = canvas.width - pad*2;
 
-    const fontSize = Math.max(24, Math.round(canvas.width * 0.055));
-    ctx.save();
-    ctx.font = `900 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-    ctx.textBaseline = 'bottom';
-    ctx.textAlign = 'left';
-    ctx.shadowColor = 'rgba(0,0,0,0.78)';
-    ctx.shadowBlur = Math.round(fontSize * 0.55);
-    ctx.fillStyle = '#fff';
+    if (topic){
+      const fontSize = Math.max(28, Math.round(canvas.width * 0.07));
+      ctx.font = `900 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'left';
 
-    const words = caption.split(/\s+/);
-    const lines = [];
-    let line = '';
-    for (const w of words){
-      const test = line ? line + ' ' + w : w;
-      if (ctx.measureText(test).width <= maxWidth) line = test;
-      else { if (line) lines.push(line); line = w; }
+      const words = topic.split(/\s+/);
+      const lines = [];
+      let line = '';
+      for (const w of words){
+        const test = line ? line + ' ' + w : w;
+        if (ctx.measureText(test).width <= maxWidth) line = test;
+        else { if (line) lines.push(line); line = w; }
+      }
+      if (line) lines.push(line);
+
+      const finalLines = lines.slice(0, 3);
+      const lineH = Math.round(fontSize * 1.12);
+      const x = pad;
+      const yBase = canvas.height - pad;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.75)';
+      ctx.shadowBlur = Math.round(fontSize * 0.55);
+      ctx.fillStyle = '#fff';
+
+      for (let i=0;i<finalLines.length;i++){
+        const idx = finalLines.length - 1 - i;
+        const y = yBase - (i * lineH);
+        ctx.fillText(finalLines[idx], x, y);
+      }
+      ctx.restore();
     }
-    if (line) lines.push(line);
 
-    const finalLines = lines.slice(0, 3);
-    const lineH = Math.round(fontSize * 1.12);
-    const x = pad;
-    const yBase = canvas.height - pad;
+    if (tags.length){
+      const fontSize2 = Math.max(18, Math.round(canvas.width * 0.045));
+      ctx.save();
+      ctx.font = `850 ${fontSize2}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'left';
+      ctx.shadowColor = 'rgba(0,0,0,0.75)';
+      ctx.shadowBlur = Math.round(fontSize2 * 0.55);
+      ctx.fillStyle = '#fff';
 
-    for (let i=0;i<finalLines.length;i++){
-      const idx = finalLines.length - 1 - i;
-      const y = yBase - (i * lineH);
-      ctx.fillText(finalLines[idx], x, y);
+      const y = canvas.height - pad - Math.max(0, Math.round(canvas.width * 0.07)) * 1.3 - 10;
+      const text = tags.join(' ');
+      ctx.fillText(text.slice(0, 160), pad, y);
+      ctx.restore();
     }
-    ctx.restore();
   }
 
   function drawTeleprompterBurnIn(){
-    const script = (tpScript.value || '').trim();
-    if (!script) return;
+    if (!tpEnabled || !tpBurnIn) return;
+    const script = tpScript.value || '';
+    if (!script.trim()) return;
 
-    const viewportH = 150;
-    const fontSize = 34;
-    const opacity = 0.35;
+    // Build visible window similar to overlay (but independent)
+    const viewportH = Number(tpHeight.value);
+    const fontSize = Number(tpFont.value);
+    const opacity = Number(tpBoxOpacity.value)/100;
 
+    // Place
     const margin = Math.round(canvas.width * 0.04);
-    const boxW = Math.min(canvas.width - margin*2, 900);
+    const boxW = Math.min(canvas.width - margin*2, 900); // cap
     const boxX = Math.round((canvas.width - boxW)/2);
-    const boxY = canvas.height - margin - viewportH - 28 - 96; // keep above center button
 
+    const boxY = (tpPosition === 'bottom')
+      ? canvas.height - margin - viewportH - 28
+      : margin + 70;
+
+    // Box
     ctx.save();
     ctx.fillStyle = `rgba(0,0,0,${opacity})`;
     ctx.strokeStyle = 'rgba(255,255,255,0.16)';
@@ -976,10 +1277,12 @@
     ctx.fill();
     ctx.stroke();
 
+    // Clip to viewport
     ctx.beginPath();
     roundRect(ctx, boxX, boxY, boxW, viewportH + 28, r);
     ctx.clip();
 
+    // Text
     ctx.font = `900 ${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
@@ -989,8 +1292,16 @@
 
     const innerPad = 18;
     const textX = boxX + innerPad;
-    const textYTop = boxY + 14 + tpScrollY;
+    const textYTop = boxY + 14 + tpScrollY; // use same scroll
 
+    // Mirror: easiest is flip context around box center
+    if (tpMirrorOn){
+      ctx.translate(boxX + boxW/2, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-(boxX + boxW/2), 0);
+    }
+
+    // Wrap text
     const maxTextW = boxW - innerPad*2;
     const lines = wrapText(ctx, script, maxTextW);
     const lineH = Math.round(fontSize * 1.22);
@@ -1001,32 +1312,6 @@
       y += lineH;
     }
 
-    ctx.restore();
-  }
-
-  function drawLogoBurnIn(){
-    if (!logoReady || !logoBitmap) return;
-
-    const margin = Math.round(canvas.width * 0.04);
-    const maxW = Math.round(canvas.width * 0.22);
-    const maxH = Math.round(canvas.height * 0.12);
-
-    const bw = logoBitmap.width;
-    const bh = logoBitmap.height;
-
-    const scale = Math.min(maxW / bw, maxH / bh, 1);
-    const w = Math.round(bw * scale);
-    const h = Math.round(bh * scale);
-
-    const x = canvas.width - margin - w;
-    const y = margin;
-
-    ctx.save();
-    ctx.globalAlpha = 0.92;
-    // subtle shadow for readability
-    ctx.shadowColor = 'rgba(0,0,0,0.55)';
-    ctx.shadowBlur = Math.round(Math.max(6, canvas.width * 0.01));
-    ctx.drawImage(logoBitmap, x, y, w, h);
     ctx.restore();
   }
 
@@ -1049,7 +1334,6 @@
 
   function roundRect(context, x, y, w, h, r){
     const rr = Math.min(r, w/2, h/2);
-    context.beginPath();
     context.moveTo(x+rr, y);
     context.arcTo(x+w, y, x+w, y+h, rr);
     context.arcTo(x+w, y+h, x, y+h, rr);
@@ -1059,15 +1343,17 @@
   }
 
   function drawFrame(ts){
+    // Teleprompter tick (for overlay + burn-in)
     tpTick(ts);
 
+    // Video base
     ctx.drawImage(livePreview, 0, 0, canvas.width, canvas.height);
 
-    drawLogoBurnIn();
-    drawCaptionBurnIn();
+    // Overlays burn-in
+    drawTopicAndTags();
     drawTeleprompterBurnIn();
 
-    // recording dot (burn-in) top-left
+    // Recording dot (optional)
     if (recorder && recorder.state === 'recording'){
       ctx.save();
       ctx.fillStyle = 'rgba(255,45,85,1)';
@@ -1080,26 +1366,41 @@
 
   function startDrawingLoop(){
     const loop = (ts) => {
-      if (stream) drawFrame(ts);
+      drawFrame(ts);
       rafId = requestAnimationFrame(loop);
     };
     rafId = requestAnimationFrame(loop);
   }
-
   function stopDrawingLoop(){
     if (rafId) cancelAnimationFrame(rafId);
     rafId = null;
   }
 
   async function startRecording(){
+    if (!requireNonEmptyBeforeRec()) return;
+
+    // hard constraints every take
+    force60Seconds();
+    forceTeleprompterOn();
+
     if (!stream) return;
 
+    if (!livePreview.videoWidth){
+      await new Promise(r => livePreview.onloadedmetadata = () => r());
+    }
     fitCanvasToVideo();
-    setTpText();
-    tpResetScroll();
+
+    // reset teleprompter scroll start if enabled
+    if (tpEnabled){
+      setTpText();
+      applyTpUI();
+      if (!tpPlaying) tpResetScroll(); // prepare even if paused
+      if (tpScrollY === 0) tpResetScroll();
+    }
 
     await runCountdown();
 
+    // start drawing to canvas (record source)
     startDrawingLoop();
 
     const canvasStream = canvas.captureStream(30);
@@ -1117,26 +1418,21 @@
     recorder.onstop = () => {
       stopDrawingLoop();
       stopRecTimer();
+      setRecordingUI(false);
 
       recordedBlob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
 
       btnDownload.disabled = false;
       btnSaveToFeed.disabled = false;
-      bottomActions.classList.add('show');
-      btnRecToggle.classList.remove('recording');
-      recDotUI.classList.remove('show');
 
       const mb = (recordedBlob.size/(1024*1024)).toFixed(2);
-      showToast(`✅ Clip pronto (${mb} MB).`, 2200);
+      showToast(`✅ Clip pronto (${mb} MB). Premi <b>Salva nel feed</b> o <b>Download</b>.`);
     };
 
     recorder.start(250);
-    btnRecToggle.classList.add('recording');
-    bottomActions.classList.remove('show');
+    setRecordingUI(true);
     btnDownload.disabled = true;
     btnSaveToFeed.disabled = true;
-
-    recDotUI.classList.add('show');
     startRecTimer();
   }
 
@@ -1146,19 +1442,17 @@
     }
   }
 
-  function toggleRec(){
-    if (recorder && recorder.state === 'recording') stopRecording();
-    else startRecording();
-  }
-
   function downloadRecorded(){
     if (!recordedBlob) return;
-    downloadBlob(recordedBlob, buildCaption());
-    showToast(`⬇️ Download avviato.`, 1400);
+    const raw = (topicInput.value || '').trim();
+    const topic = raw.replace(/#[\s\S]*$/,'').trim() || 'video';
+    downloadBlob(recordedBlob, topic);
+    showToast(`⬇️ Download avviato.`);
   }
 
   // ---------------- Thumbnail from blob ----------------
   async function makeThumbnailPng(videoBlob){
+    // Create a hidden video element to seek first frame
     return new Promise((resolve) => {
       const v = document.createElement('video');
       v.playsInline = true;
@@ -1200,84 +1494,139 @@
   async function saveToFeed(){
     if (!recordedBlob) return;
 
+    const raw = (topicInput.value || '').trim();
+    const topic = raw.replace(/#[\s\S]*$/,'').trim() || 'Senza titolo';
+    const hashtags = parseHashtags(raw);
+
     const id = (crypto.randomUUID ? crypto.randomUUID() : (String(Date.now()) + Math.random().toString(16).slice(2)));
     const createdAt = nowIso();
     const mime = recordedBlob.type || 'video/webm';
-    const caption = buildCaption();
 
     showToast(`💾 Salvataggio…`, 1200);
 
     const thumbBlob = await makeThumbnailPng(recordedBlob);
 
-    const clip = { id, createdAt, caption, mime, blob: recordedBlob, thumbBlob: thumbBlob || null };
+    const clip = {
+      id,
+      createdAt,
+      topic,
+      hashtags,
+      mime,
+      blob: recordedBlob,
+      thumbBlob: thumbBlob || null
+    };
 
     try{
-      await dbPut(STORE_CLIPS, clip);
+      await dbPutClip(clip);
       clips.unshift(clip);
       renderFeed();
       closeRecorder();
+      feed.scrollTo({ top: 0, behavior: 'smooth' });
 
       // reset recorded slot
       recordedBlob = null;
       btnDownload.disabled = true;
       btnSaveToFeed.disabled = true;
-      bottomActions.classList.remove('show');
 
-      showToast(`📌 Salvato nel feed.`, 1800);
+      showToast(`📌 Salvato nel feed (persistente).`);
     }catch(err){
       console.error(err);
       showToast(`⚠️ Errore salvataggio (spazio pieno?).`);
     }
   }
 
-  // ---------------- LOGO UPLOAD ----------------
-  btnLogo.addEventListener('click', () => logoInput.click());
-
-  logoInput.addEventListener('change', async () => {
-    const f = logoInput.files && logoInput.files[0];
-    if (!f) return;
-
-    // store blob in IndexedDB
-    try{
-      logoBlob = f;
-      await dbPut(STORE_SETTINGS, { key: 'logo', blob: logoBlob, type: f.type, updatedAt: nowIso() });
-      await buildLogoBitmap();
-      showToast(`✅ Logo salvato. Verrà impresso nel video.`, 2000);
-    }catch(err){
-      console.error(err);
-      showToast(`⚠️ Non riesco a salvare il logo in IndexedDB.`);
-    } finally {
-      logoInput.value = '';
-    }
-  });
-
   // ---------------- UI EVENTS ----------------
   btnOpenRec.addEventListener('click', openRecorder);
-  btnBack.addEventListener('click', () => closeRecorder());
-  btnRecToggle.addEventListener('click', toggleRec);
 
+  // Templates (one tap -> hook + script + loop)
+  if (tplMistake) tplMistake.addEventListener('click', () => applyTemplate('mistake', DEFAULT_TEMPLATE_DATA));
+  if (tpl3Steps) tpl3Steps.addEventListener('click', () => applyTemplate('3steps', DEFAULT_TEMPLATE_DATA));
+  if (tplMyth) tplMyth.addEventListener('click', () => applyTemplate('myth', DEFAULT_TEMPLATE_DATA));
+
+  btnBack.addEventListener('click', () => closeRecorder());
+
+  btnStartCam.addEventListener('click', startCamera);
+  btnFlip.addEventListener('click', async () => {
+    facingMode = (facingMode === 'user') ? 'environment' : 'user';
+    await startCamera();
+  });
+
+  btnMirrorPreview.addEventListener('click', () => {
+    mirrorPreview = !mirrorPreview;
+    livePreview.classList.toggle('mirrorPreview', mirrorPreview);
+    btnMirrorPreview.textContent = `Mirror preview: ${mirrorPreview ? 'ON' : 'OFF'}`;
+    btnMirrorPreview.style.borderColor = mirrorPreview ? '#ff2d55' : 'rgba(255,255,255,.18)';
+    btnMirrorPreview.style.background = mirrorPreview ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
+  });
+
+  btnTeleprompter.addEventListener('click', () => {
+    tpEnabled = !tpEnabled;
+    if (tpEnabled){
+      setTpText();
+      applyTpUI();
+      tpResetScroll();
+      tpPlaying = true; // default play when enabled
+      showToast(`📝 Teleprompter ON`, 1200);
+    } else {
+      tpPanel.classList.remove('show');
+      tpOverlay.classList.remove('show');
+      tpPlaying = false;
+      showToast(`📝 Teleprompter OFF`, 1200);
+    }
+    applyTpUI();
+  });
+
+  btnCountdownToggle.addEventListener('click', () => {
+    isCountdownOn = !isCountdownOn;
+    btnCountdownToggle.textContent = `Countdown: ${isCountdownOn ? 'ON' : 'OFF'}`;
+    btnCountdownToggle.style.borderColor = isCountdownOn ? '#ff2d55' : 'rgba(255,255,255,.18)';
+    btnCountdownToggle.style.background = isCountdownOn ? 'rgba(255,45,85,.18)' : 'rgba(0,0,0,.22)';
+  });
+
+  btnMax15.addEventListener('click', () => { maxSeconds = 15; setMaxButtons(); showToast(`⏱️ Max durata: 15s`, 1200); });
+  btnMax30.addEventListener('click', () => { maxSeconds = 30; setMaxButtons(); showToast(`⏱️ Max durata: 30s`, 1200); });
+  btnMax60.addEventListener('click', () => { maxSeconds = 60; setMaxButtons(); showToast(`⏱️ Max durata: 60s`, 1200); });
+
+  btnRecord.addEventListener('click', startRecording);
+  btnStop.addEventListener('click', stopRecording);
   btnDownload.addEventListener('click', downloadRecorded);
   btnSaveToFeed.addEventListener('click', saveToFeed);
 
-  // keyboard shortcuts
+  // keyboard shortcuts (desktop)
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
-    if (k === 'r') toggleRec();
-    if (k === 'escape') closeRecorder();
+    if (k === 'r' && !btnRecord.disabled) startRecording();
+    if (k === 's' && !btnStop.disabled) stopRecording();
+    if (k === 't') btnTeleprompter.click();
   });
 
   // ---------------- INIT ----------------
+  force60Seconds();
+  syncOverlays();
+  setMaxButtons();
+
+  // Start in feed
+  recScreen.classList.remove('active');
+  feed.style.display = 'block';
+
+  // Load DB clips
   (async () => {
     try{
-      await loadLogoFromDB();
       clips = await dbGetAllClips();
+      // newest first
       clips.sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       renderFeed();
+      showToast(`✅ Caricati ${clips.length} clip (IndexedDB).`, 1800);
     }catch(err){
       console.error(err);
       showToast(`⚠️ IndexedDB non disponibile in questo browser.`);
     }
   })();
+
+  // hint
+  setTimeout(() => {
+    showToast(`Tip teleprompter: scrivi lo script, Play, regola velocità. <b>Burn-in</b> ON = testo anche nel video esportato.`, 5200);
+  }, 900);
 
 })();
 </script>
