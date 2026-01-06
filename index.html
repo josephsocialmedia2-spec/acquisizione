@@ -354,6 +354,20 @@
       white-space:pre-wrap;
       word-break:break-word;
     }
+  
+    /* Caption panel */
+    .capPanel{
+      position:absolute;
+      left:16px; right:16px;
+      top:16px;
+      z-index:30;
+      pointer-events:auto;
+    }
+    .capPanel .pill textarea{
+      font-weight:800;
+      font-size:13px;
+    }
+
   </style>
 </head>
 <body>
@@ -483,6 +497,16 @@
             <button id="btnSaveToFeed" disabled>Salva nel feed</button>
             <button id="btnDownload" disabled>Download</button>
           </div>
+        </div>
+      </div>
+
+
+      <!-- CAPTION SCRIVIBILE -->
+      <div class="capPanel" id="capPanel">
+        <div class="pill" style="gap:10px;">
+          <span style="font-size:14px;">💬</span>
+          <textarea id="captionInput" rows="2" placeholder="Scrivi qui la caption… (es: testo + call to action + #hashtag)"></textarea>
+          <span class="mini" id="btnCopyCaption">Copia</span>
         </div>
       </div>
 
@@ -1449,5 +1473,134 @@
 
 })();
 </script>
+
+<script>
+(() => {
+  // Caption + WhatsApp integration (added block)
+  const captionInput = document.getElementById('captionInput');
+  const btnCopyCaption = document.getElementById('btnCopyCaption');
+  const topicInput = document.getElementById('topicInput');
+
+  const WA_PHONE = '393713708294';
+
+  function parseHashtagsLocal(text){
+    const tags = (String(text).match(/#[\p{L}\p{N}_]+/gu) || []).map(t => t.toLowerCase());
+    return [...new Set(tags)];
+  }
+
+  function buildWaText(){
+    const raw = (topicInput && topicInput.value ? topicInput.value : '').trim();
+    const topic = raw.replace(/#[\s\S]*$/,'').trim();
+    const tags = parseHashtagsLocal(raw);
+    const cap = (captionInput && captionInput.value ? captionInput.value : '').trim();
+
+    const parts = [];
+    if (cap) parts.push(cap);
+    if (topic) parts.push(topic);
+    if (tags.length) parts.push(tags.join(' '));
+
+    return parts.join('\n');
+  }
+
+  function waUrl(){
+    const text = buildWaText();
+    const qs = text ? ('?text=' + encodeURIComponent(text)) : '';
+    return `https://wa.me/${WA_PHONE}${qs}`;
+  }
+
+  // Persist caption locally
+  try{
+    if (captionInput){
+      const saved = localStorage.getItem('webtok_caption') || '';
+      if (saved && !captionInput.value) captionInput.value = saved;
+      captionInput.addEventListener('input', () => {
+        try{ localStorage.setItem('webtok_caption', captionInput.value || ''); }catch{}
+      });
+    }
+  }catch{}
+
+  // Copy caption
+  async function copyText(txt){
+    try{
+      await navigator.clipboard.writeText(txt);
+      return true;
+    }catch{
+      // fallback
+      try{
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        return true;
+      }catch{
+        return false;
+      }
+    }
+  }
+
+  if (btnCopyCaption){
+    btnCopyCaption.addEventListener('click', async () => {
+      const ok = await copyText(buildWaText());
+      // Try to reuse existing toast if present
+      const toast = document.getElementById('toast');
+      if (toast){
+        toast.innerHTML = ok ? '✅ Copiato negli appunti.' : '⚠️ Copia non riuscita.';
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 1600);
+      }
+    });
+  }
+
+  // Add WhatsApp button in recorder side
+  function addWaButtonToRecorder(){
+    const side = document.querySelector('#recScreen .side');
+    if (!side) return;
+    if (side.querySelector('#btnWhatsApp')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'btnWhatsApp';
+    btn.className = 'ghost';
+    btn.textContent = '💚 WhatsApp';
+    btn.addEventListener('click', () => {
+      window.open(waUrl(), '_blank', 'noopener');
+    });
+    side.appendChild(btn);
+  }
+
+  // Add WhatsApp button in feed top bar (next to + Registra)
+  function addWaButtonToFeed(){
+    const topBar = document.querySelector('.topBar');
+    if (!topBar) return;
+    if (topBar.querySelector('#btnWhatsAppFeed')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'btnWhatsAppFeed';
+    btn.className = 'fab';
+    btn.textContent = 'WhatsApp';
+    btn.style.marginLeft = '10px';
+    btn.addEventListener('click', () => {
+      window.open(waUrl(), '_blank', 'noopener');
+    });
+
+    topBar.appendChild(btn);
+  }
+
+  // Keep WhatsApp text updated (optional)
+  function wireUpdates(){
+    const update = () => {};
+    if (captionInput) captionInput.addEventListener('input', update);
+    if (topicInput) topicInput.addEventListener('input', update);
+  }
+
+  addWaButtonToRecorder();
+  addWaButtonToFeed();
+  wireUpdates();
+})();
+</script>
+
 </body>
 </html>
