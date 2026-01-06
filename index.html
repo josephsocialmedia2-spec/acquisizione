@@ -509,6 +509,7 @@ body{
             <span style="font-size:14px;">🎯</span>
             <label class="sr-only" for="topicInput">Argomento e hashtag</label>
             <input id="topicInput" placeholder="Argomento + hashtag (es: Spalle a casa #fitness #homeworkout)" maxlength="110" />
+            <button class="mini" id="btnSendTopic" type="button">Invia</button>
             <button class="mini" id="btnClearTopic" type="button">Pulisci</button>
           </div>
         </div>
@@ -516,6 +517,7 @@ body{
           <div class="pill" style="max-width:100%; flex-direction:column; align-items:stretch; gap:8px;">
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
               <strong style="font-size:12px; opacity:.9;">Caption</strong>
+              <button class="mini" id="btnSendCaption" type="button">Invia</button>
               <button class="mini" id="btnCopyCaption" type="button">Copia</button>
             </div>
             <label class="sr-only" for="captionBox">Testo caption</label>
@@ -585,6 +587,9 @@ body{
 
   const captionBox = document.getElementById('captionBox');
   const btnCopyCaption = document.getElementById('btnCopyCaption');
+  let appliedTopicText = '';
+  let appliedHashText = '';
+
   const DEFAULT_CAPTION =
 `Geometra Christian Raimondi Immobiliare La Sacra
 📞 346 256 8685
@@ -599,6 +604,43 @@ body{
     }catch(e){
       showToast('⚠️ Impossibile copiare (permessi browser)', 1600);
     }
+  });
+
+  const btnSendTopic = document.getElementById('btnSendTopic');
+  const btnSendCaption = document.getElementById('btnSendCaption');
+
+  function shareOnWhatsApp(text){
+    const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  btnSendTopic?.addEventListener('click', () => {
+    const live = parseTopicInput(topicInput.value);
+    const topicText = appliedTopicText || live.topicText;
+    const hashText = appliedHashText || live.hashText;
+    appliedTopicText = topicText || '';
+    appliedHashText = hashText || '';
+    // Update on-screen overlays immediately
+    topicOverlay.textContent = appliedTopicText;
+    hashOverlay.textContent = appliedHashText;
+    showToast('✅ Argomento inviato a video', 1200);
+  });
+
+  btnSendCaption?.addEventListener('click', async () => {
+    const txt = (captionBox?.value || DEFAULT_CAPTION).trim();
+    if (!txt){
+      showToast('⚠️ Caption vuota', 1200);
+      return;
+    }
+    // Copy + open WhatsApp share
+    try{ await navigator.clipboard.writeText(txt); }catch(e){}
+    shareOnWhatsApp(txt);
+
+    // Hide the caption box to "go away" after sending (user request)
+    const capRow = captionBox?.closest('.row');
+    if (capRow) capRow.style.display = 'none';
+
+    showToast('📨 Caption inviata su WhatsApp', 1400);
   });
 
   function drawBrandLogo(){
