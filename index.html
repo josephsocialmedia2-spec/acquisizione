@@ -8,7 +8,29 @@
   <style>
     :root { color-scheme: dark; }
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    body{
+    
+    /* A11y helper */
+    .sr-only{
+      position:absolute !important;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0);
+      white-space:nowrap; border:0;
+    }
+
+    /* Brand logo overlay (visible + non-interactive) */
+    .brandLogo{
+      position:absolute;
+      left:14px;
+      top:14px;
+      width:160px;
+      height:auto;
+      z-index:5;
+      opacity:.95;
+      pointer-events:none;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.5));
+    }
+body{
       margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:#07070a; color:#fff;
       height:100vh; overflow:hidden;
@@ -392,10 +414,10 @@
   <div class="app">
 
     <!-- FEED -->
-    <div class="feed" id="feed" aria-label="Feed verticale">
+    <div class="feed" id="feed" role="region" aria-label="Feed verticale">
       <div class="topBar">
         <div class="brand">🎬 WebTok <small>PRO</small></div>
-        <button class="fab" id="btnOpenRec">+ Registra</button>
+        <button class="fab" id="btnOpenRec" type="button">+ Registra</button>
       </div>
 
       <div class="empty" id="emptyState">
@@ -415,6 +437,7 @@
       <div class="recStage">
         <video id="livePreview" playsinline muted autoplay></video>
         <canvas id="recCanvas"></canvas>
+        <img id="brandLogo" alt="Immobiliare La Sacra" class="brandLogo" src="assets/immobiliare-lasacra.png">
       </div>
 
       <!-- Teleprompter overlay (visual) -->
@@ -432,17 +455,17 @@
           <div class="pill">
             <span style="font-size:14px;">📝</span>
             <textarea id="tpScript" rows="3" placeholder="Script teleprompter… (va a capo quando vuoi)"></textarea>
-            <span class="mini" id="tpClear">Pulisci</span>
+            <button class="mini" id="tpClear" type="button">Pulisci</button>
           </div>
 
           <div class="pill" style="flex-direction:column; align-items:stretch; gap:10px;">
             <div class="tpControls">
-              <button class="ghost" id="tpPlay">▶︎ Play</button>
-              <button class="ghost" id="tpPause">⏸︎ Pausa</button>
-              <button class="ghost" id="tpReset">↺ Reset</button>
-              <button class="ghost" id="tpMirror">Mirror: OFF</button>
-              <button class="ghost" id="tpPos">Pos: BASSO</button>
-              <button class="ghost" id="tpBurn">Burn-in: ON</button>
+              <button class="ghost" id="tpPlay" type="button">▶︎ Play</button>
+              <button class="ghost" id="tpPause" type="button">⏸︎ Pausa</button>
+              <button class="ghost" id="tpReset" type="button">↺ Reset</button>
+              <button class="ghost" id="tpMirror" type="button">Mirror: OFF</button>
+              <button class="ghost" id="tpPos" type="button">Pos: BASSO</button>
+              <button class="ghost" id="tpBurn" type="button">Burn-in: ON</button>
             </div>
 
             <div style="display:grid; gap:10px;">
@@ -482,10 +505,22 @@
         <div class="row">
           <div class="pill" style="max-width:100%;">
             <span style="font-size:14px;">🎯</span>
+            <label class="sr-only" for="topicInput">Argomento e hashtag</label>
             <input id="topicInput" placeholder="Argomento + hashtag (es: Spalle a casa #fitness #homeworkout)" maxlength="110" />
-            <span class="mini" id="btnClearTopic">Pulisci</span>
+            <button class="mini" id="btnClearTopic" type="button">Pulisci</button>
           </div>
         </div>
+        <div class="row">
+          <div class="pill" style="max-width:100%; flex-direction:column; align-items:stretch; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+              <strong style="font-size:12px; opacity:.9;">Caption</strong>
+              <button class="mini" id="btnCopyCaption" type="button">Copia</button>
+            </div>
+            <label class="sr-only" for="captionBox">Testo caption</label>
+            <textarea id="captionBox" rows="4" readonly></textarea>
+          </div>
+        </div>
+
 
         <div class="row" style="align-items:flex-end;">
           <div style="display:flex; flex-direction:column; gap:8px; max-width:90%;">
@@ -494,34 +529,34 @@
           </div>
 
           <div class="side">
-            <button class="ghost" id="btnBack">← Feed</button>
-            <button id="btnStartCam">Attiva camera</button>
-            <button id="btnFlip" disabled>Flip</button>
+            <button class="ghost" id="btnBack" type="button">← Feed</button>
+            <button id="btnStartCam" type="button">Attiva camera</button>
+            <button id="btnFlip" disabled type="button">Flip</button>
 
-            <button class="ghost" id="btnMirrorPreview">Mirror preview: OFF</button>
+            <button class="ghost" id="btnMirrorPreview" type="button">Mirror preview: OFF</button>
 
-            <button class="ghost" id="btnTeleprompter">Teleprompter: OFF</button>
-            <button class="ghost" id="btnCountdownToggle">Countdown: ON</button>
+            <button class="ghost" id="btnTeleprompter" type="button">Teleprompter: OFF</button>
+            <button class="ghost" id="btnCountdownToggle" type="button">Countdown: ON</button>
 
-            <button class="ghost" id="btnMax15">Max 15s</button>
-            <button class="ghost" id="btnMax30">Max 30s</button>
-            <button class="ghost" id="btnMax60">Max 60s</button>
+            <button class="ghost" id="btnMax15" type="button">Max 15s</button>
+            <button class="ghost" id="btnMax30" type="button">Max 30s</button>
+            <button class="ghost" id="btnMax60" type="button">Max 60s</button>
 
             <div class="recBadge" id="recBadge" style="display:none;">
               <span class="dot"></span>
               <span id="recTime">00:00</span>
             </div>
 
-            <button class="primary" id="btnRecord" disabled>Registra</button>
-            <button id="btnStop" disabled>Stop</button>
+            <button class="primary" id="btnRecord" disabled type="button">Registra</button>
+            <button id="btnStop" disabled type="button">Stop</button>
 
-            <button id="btnSaveToFeed" disabled>Salva nel feed</button>
-            <button id="btnDownload" disabled>Download</button>
+            <button id="btnSaveToFeed" disabled type="button">Salva nel feed</button>
+            <button id="btnDownload" disabled type="button">Download</button>
           </div>
         </div>
       </div>
 
-      <div class="toast" id="toast"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
 
   </div>
@@ -540,6 +575,52 @@
 
   const countdownEl = document.getElementById('countdown');
   const toast = document.getElementById('toast');
+  const brandLogoEl = document.getElementById('brandLogo');
+  const brandImg = new Image();
+  if (brandLogoEl && brandLogoEl.getAttribute('src')) brandImg.src = brandLogoEl.getAttribute('src');
+  let brandReady = false;
+  brandImg.onload = () => { brandReady = true; };
+
+  const captionBox = document.getElementById('captionBox');
+  const btnCopyCaption = document.getElementById('btnCopyCaption');
+  const DEFAULT_CAPTION =
+`Geometra Christian Raimondi Immobiliare La Sacra
+📞 346 256 8685
+📧 immobiliarelasacra@gmail.com`;
+
+  if (captionBox) captionBox.value = DEFAULT_CAPTION;
+
+  btnCopyCaption?.addEventListener('click', async () => {
+    try{
+      await navigator.clipboard.writeText(captionBox?.value || DEFAULT_CAPTION);
+      showToast('✅ Caption copiata', 1200);
+    }catch(e){
+      showToast('⚠️ Impossibile copiare (permessi browser)', 1600);
+    }
+  });
+
+  function drawBrandLogo(){
+    if (!brandReady) return;
+    const targetW = Math.min(canvas.width * 0.28, 220);
+    const ratio = brandImg.height / brandImg.width || 1;
+    const w = targetW;
+    const h = w * ratio;
+    const x = 18;
+    const y = 18;
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.drawImage(brandImg, x, y, w, h);
+    ctx.restore();
+  }
+
+  // Tap sul video per Pausa/Play teleprompter (quando ON)
+  livePreview.addEventListener('click', () => {
+    if (!tpEnabled) return;
+    tpPlaying = !tpPlaying;
+    applyTpUI();
+    showToast(tpPlaying ? '▶️ Teleprompter play' : '⏸️ Teleprompter pausa', 900);
+  });
+
 
   const topicInput = document.getElementById('topicInput');
   const topicOverlay = document.getElementById('topicOverlay');
@@ -963,9 +1044,9 @@ Risultato: {RESULT}.`,
         const side = document.createElement('div');
         side.className = 'side';
         side.innerHTML = `
-          <button class="ghost" data-action="mute">🔊 Audio</button>
-          <button class="ghost" data-action="download">⬇️ Download</button>
-          <button class="ghost" data-action="delete">🗑️ Elimina</button>
+          <button class="ghost" data-action="mute" type="button">🔊 Audio</button>
+          <button class="ghost" data-action="download" type="button">⬇️ Download</button>
+          <button class="ghost" data-action="delete" type="button">🗑️ Elimina</button>
         `;
 
         bottomRow.appendChild(spacer);
@@ -1120,7 +1201,7 @@ Risultato: {RESULT}.`,
   // ---------------- Teleprompter behavior ----------------
   function applyTpUI(){
     tpOverlay.classList.toggle('show', tpEnabled);
-    tpPanel.classList.toggle('show', tpEnabled);
+    tpPanel.classList.toggle('show', tpEnabled && !tpPlaying);
 
     btnTeleprompter.textContent = `Teleprompter: ${tpEnabled ? 'ON' : 'OFF'}`;
     btnTeleprompter.style.borderColor = tpEnabled ? '#ff2d55' : 'rgba(255,255,255,.18)';
@@ -1149,7 +1230,8 @@ Risultato: {RESULT}.`,
   }
 
   function tpResetScroll(){
-    tpScrollY = Number(tpViewport.style.height.replace('px','') || tpViewport.clientHeight);
+    const textHeight = tpText.scrollHeight;
+    tpScrollY = -textHeight - 20; // start above viewport
     tpLastTs = performance.now();
     tpText.style.top = `${tpScrollY}px`;
   }
@@ -1164,12 +1246,12 @@ Risultato: {RESULT}.`,
     tpLastTs = ts;
 
     const speed = Number(tpSpeed.value); // px/s
-    tpScrollY -= speed * dt;
+    tpScrollY += speed * dt;
     tpText.style.top = `${tpScrollY}px`;
 
-    // loop when fully passed
     const textHeight = tpText.scrollHeight;
-    if (tpScrollY < -textHeight - 20){
+    const viewportH = tpViewport.clientHeight;
+    if (tpScrollY > viewportH + 20){
       tpResetScroll();
     }
   }
@@ -1177,9 +1259,20 @@ Risultato: {RESULT}.`,
   tpScript.addEventListener('input', () => { setTpText(); });
   tpClear.addEventListener('click', () => { tpScript.value=''; setTpText(); tpResetScroll(); });
 
-  tpPlay.addEventListener('click', () => { tpPlaying = true; showToast(`▶️ Teleprompter play`, 1200); });
-  tpPause.addEventListener('click', () => { tpPlaying = false; showToast(`⏸️ Teleprompter pausa`, 1200); });
-  tpReset.addEventListener('click', () => { tpResetScroll(); showToast(`↺ Reset`, 1200); });
+  tpPlay.addEventListener('click', () => {
+    tpEnabled = true;
+    tpPlaying = true;
+    setTpText();
+    tpResetScroll();
+    applyTpUI();
+    showToast(`▶️ Teleprompter play`, 1200);
+  });
+tpPause.addEventListener('click', () => {
+    tpPlaying = false;
+    applyTpUI();
+    showToast(`⏸️ Teleprompter pausa`, 1200);
+  });
+tpReset.addEventListener('click', () => { tpResetScroll(); showToast(`↺ Reset`, 1200); });
 
   tpMirror.addEventListener('click', () => { tpMirrorOn = !tpMirrorOn; applyTpUI(); });
   tpPos.addEventListener('click', () => { tpPosition = (tpPosition === 'bottom') ? 'top' : 'bottom'; applyTpUI(); });
@@ -1348,6 +1441,9 @@ Risultato: {RESULT}.`,
 
     // Video base
     ctx.drawImage(livePreview, 0, 0, canvas.width, canvas.height);
+
+    // Brand logo burn-in
+    drawBrandLogo();
 
     // Overlays burn-in
     drawTopicAndTags();
