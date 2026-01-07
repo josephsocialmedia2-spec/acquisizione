@@ -7,7 +7,6 @@
   <style>
     :root{
       --bg:#0b0c10;
-      --panel:#12141a;
       --text:#eef1ff;
       --muted:rgba(238,241,255,.72);
       --line:rgba(255,255,255,.10);
@@ -33,7 +32,6 @@
       gap:10px;
       overflow:hidden;
     }
-
     .topbar{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:10px 12px;
@@ -68,7 +66,6 @@
       border-color: rgba(255,45,85,.35);
       color: var(--text);
     }
-
     .screen{ flex: 1 1 auto; min-height:0; display:none; overflow:hidden; }
     .screen.active{ display:block; }
 
@@ -91,7 +88,7 @@
       display:flex; justify-content:space-between; align-items:center;
       color: var(--muted); font-size:12px; margin: 0 0 6px 2px;
     }
-    .field input, .field textarea{
+    .field textarea{
       width:100%;
       border:1px solid var(--line);
       background: rgba(0,0,0,.25);
@@ -100,11 +97,10 @@
       padding: 12px 12px;
       font-size: 15px;
       outline:none;
+      min-height: 140px;
+      resize: vertical;
     }
-    .field textarea{ min-height: 140px; resize: vertical; }
-
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-
     .btn{
       appearance:none;
       border:1px solid var(--line);
@@ -123,11 +119,11 @@
     .btn.good{ background: rgba(49,209,88,.14); border-color: rgba(49,209,88,.35); }
     .btn.warn{ background: rgba(255,204,0,.12); border-color: rgba(255,204,0,.35); }
     .btn.ghost{ background: transparent; border-color: var(--line); color: var(--muted); font-weight: 750; }
-    .btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
 
     .templates{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
     .templates .btn{ padding: 14px 10px; border-radius: 18px; font-size: 14px; }
 
+    /* Overlay */
     .overlay{
       position:fixed; inset:0; display:none; align-items:center; justify-content:center;
       padding: 18px calc(18px + var(--safeRight)) calc(18px + var(--safeBottom)) calc(18px + var(--safeLeft));
@@ -187,7 +183,6 @@
       box-shadow: inset 0 0 0 9999px rgba(0,0,0,.02);
     }
 
-    /* Hook pill (UI) */
     .hookUi{
       position:absolute; top: 14px; left: 14px; right: 14px;
       display:flex; justify-content:center;
@@ -207,7 +202,6 @@
       white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
     }
 
-    /* REC HUD (UI) */
     .recHud{
       position:absolute;
       top: 14px; right: 14px;
@@ -225,12 +219,11 @@
     .recHud.on{ opacity:1; transform: translateY(0); }
     .recBadge{
       width:10px; height:10px; border-radius:50%;
-      background: var(--accent);
+      background: #ff2d55;
       box-shadow: 0 0 0 6px rgba(255,45,85,.16);
     }
     .recText{ font-weight: 900; letter-spacing:.6px; font-size: 12px; }
 
-    /* Countdown */
     .countdown{
       position:absolute; inset:0;
       display:none; align-items:center; justify-content:center;
@@ -246,15 +239,15 @@
       text-shadow: 0 10px 35px rgba(0,0,0,.6);
     }
 
-    /* Subtitle / karaoke strip (UI overlay) */
+    /* Karaoke UI overlay (bigger + higher) */
     .subUi{
       position:absolute;
       left: 50%;
-      bottom: calc(14px + var(--safeBottom));
+      bottom: calc(64px + var(--safeBottom)); /* << alzato */
       transform: translateX(-50%);
-      width: min(94%, 720px);
-      padding: 10px 12px;
-      border-radius: 16px;
+      width: min(94%, 760px);
+      padding: 12px 14px;
+      border-radius: 18px;
       background: rgba(0,0,0,.46);
       border: 1px solid rgba(255,255,255,.14);
       backdrop-filter: blur(10px);
@@ -263,9 +256,9 @@
       box-shadow: 0 14px 40px rgba(0,0,0,.35);
     }
     .subLine{
-      font-size: 22px;
-      line-height: 1.22;
-      font-weight: 950;
+      font-size: 26px; /* << più grande in UI */
+      line-height: 1.2;
+      font-weight: 1000;
       text-align:center;
       color: rgba(255,255,255,.92);
       text-shadow: 0 2px 14px rgba(0,0,0,.55);
@@ -285,20 +278,13 @@
       opacity:1;
     }
 
-    /* Controls under stage */
     .controls{ display:grid; grid-template-columns: 1fr; gap: 10px; }
     .tiny{ font-size:12px; color: var(--muted); }
-    .sliders{
-      display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center;
-    }
+    .sliders{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center; }
     .sliders .s{ display:flex; flex-direction:column; gap:6px; }
-    .sliders label{
-      font-size:12px; color: var(--muted);
-      display:flex; justify-content:space-between;
-    }
-    input[type="range"]{ width:100%; accent-color: var(--accent); }
+    .sliders label{ font-size:12px; color: var(--muted); display:flex; justify-content:space-between; }
+    input[type="range"]{ width:100%; accent-color: #ff2d55; }
 
-    /* Big REC button */
     .recBtnWrap{ display:flex; justify-content:center; padding: 6px 0; }
     .recBtn{
       width: 86px; height: 86px;
@@ -315,7 +301,7 @@
     .recCore{
       width: 62px; height: 62px;
       border-radius: 999px;
-      background: var(--accent);
+      background: #ff2d55;
       display:grid; place-items:center;
       box-shadow: 0 12px 30px rgba(255,45,85,.25);
       border: 1px solid rgba(0,0,0,.25);
@@ -463,14 +449,14 @@
       </div>
     </div>
 
-    <!-- SCREEN: SCRIPT BUILDER -->
+    <!-- SCRIPT -->
     <section class="screen active" id="screenScript">
       <div class="grid two" style="height:100%; min-height:0;">
         <div class="card" style="min-height:0; display:flex; flex-direction:column;">
           <div class="hd">
             <div>
               <h2>Flusso forzato: Domanda → Risposta → Invia al teleprompter</h2>
-              <div class="hint">Premi <b>INVIA</b>, guarda l’overlay, poi <b>CHIUDI</b>. Poi invia al teleprompter.</div>
+              <div class="hint">Premi <b>INVIA</b>, guarda l’overlay, poi <b>CHIUDI</b>.</div>
             </div>
           </div>
           <div class="body" style="min-height:0; overflow:auto;">
@@ -541,14 +527,14 @@
             <div style="height:12px;"></div>
 
             <div class="card" style="padding:12px;">
-              <div style="font-weight:950; margin-bottom:6px;">Teleprompter “sottotitolo karaoke”</div>
-              <div class="hint">Sempre ON nel recorder: una riga alla volta in basso, parole evidenziate automaticamente (stile karaoke).</div>
+              <div style="font-weight:950; margin-bottom:6px;">Karaoke leggibile (burn-in)</div>
+              <div class="hint">Ora è più grande e più alto (safe area). In esportazione resta leggibile.</div>
             </div>
 
             <div style="height:12px;"></div>
 
             <div class="card" style="padding:12px;">
-              <div style="font-weight:950; margin-bottom:6px;">Gate di registrazione (hard)</div>
+              <div style="font-weight:950; margin-bottom:6px;">Gate (hard)</div>
               <div class="hint">Hook min <b>12</b> · Script min <b>40</b> · Countdown sempre ON · Durata max <b>60s</b>.</div>
             </div>
           </div>
@@ -556,29 +542,23 @@
       </div>
     </section>
 
-    <!-- SCREEN: RECORDER -->
+    <!-- RECORDER -->
     <section class="screen" id="screenRecorder">
       <div class="recWrap">
-        <div class="stage" id="stage">
+        <div class="stage">
           <video id="livePreview" class="preview" autoplay playsinline muted></video>
 
-          <div class="hookUi">
-            <div class="hookPill" id="hookUiText">Hook…</div>
-          </div>
+          <div class="hookUi"><div class="hookPill" id="hookUiText">Hook…</div></div>
 
           <div class="recHud" id="recHud">
             <div class="recBadge"></div><div class="recText">REC</div>
           </div>
 
-          <!-- Karaoke subtitles overlay (UI) -->
           <div class="subUi" aria-hidden="true">
             <div class="subLine" id="subUiLine">—</div>
           </div>
 
-          <div class="countdown" id="countdown">
-            <div class="num" id="countNum">3</div>
-          </div>
-
+          <div class="countdown" id="countdown"><div class="num" id="countNum">3</div></div>
           <div class="frame" aria-hidden="true"></div>
         </div>
 
@@ -598,7 +578,7 @@
 
           <div class="card">
             <div class="row" style="justify-content:space-between;">
-              <div class="tiny" id="recStatus">Pronto. Sottotitolo karaoke sempre ON.</div>
+              <div class="tiny" id="recStatus">Pronto. Karaoke sempre ON.</div>
               <div class="tiny" id="timeLeft">60s</div>
             </div>
             <div class="recBtnWrap">
@@ -615,7 +595,7 @@
       </div>
     </section>
 
-    <!-- SCREEN: FEED -->
+    <!-- FEED -->
     <section class="screen" id="screenFeed">
       <div class="feedWrap">
         <div class="card" style="padding:12px;">
@@ -635,7 +615,7 @@
     </section>
   </div>
 
-  <!-- Overlay sheet -->
+  <!-- Overlay -->
   <div class="overlay" id="textOverlay" aria-hidden="true">
     <div class="sheet">
       <div class="sheet-hd">
@@ -646,7 +626,7 @@
     </div>
   </div>
 
-  <!-- Review modal -->
+  <!-- Review -->
   <div class="modal" id="reviewModal" aria-hidden="true">
     <div class="box">
       <div class="hd">
@@ -673,20 +653,18 @@
     </div>
   </div>
 
-  <!-- Hidden inputs -->
   <input id="logoInput" type="file" accept="image/*" hidden />
 
   <script>
     /*****************************************************************
-     * 0) Utils (toast, sleep, download)
+     * 0) Utils
      *****************************************************************/
     const $ = (s)=>document.querySelector(s);
     const $$ = (s)=>Array.from(document.querySelectorAll(s));
     const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
     const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
-    const toastEl = $("#toast");
-    const toastMsg = $("#toastMsg");
+    const toastEl=$("#toast"), toastMsg=$("#toastMsg");
     let toastTimer=null;
     function showToast(msg,type="bad"){
       toastEl.classList.remove("good","bad");
@@ -704,12 +682,14 @@
       a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),1200);
     }
+    function escapeHtml(s){
+      return (s||"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+    }
 
     /*****************************************************************
-     * 1) IndexedDB (logo + clips)
+     * 1) IndexedDB
      *****************************************************************/
-    const DB_NAME="vertical_recorder_db";
-    const DB_VER=1;
+    const DB_NAME="vertical_recorder_db", DB_VER=1;
     let db=null;
 
     function openDB(){
@@ -764,9 +744,9 @@
     });
 
     /*****************************************************************
-     * 2) Product rules / constants
+     * 2) Rules / constants
      *****************************************************************/
-    const DEFAULT_TAGS=["#immobiliare","#realestate","#marketing","#socialmedia","#content"]; // max 5
+    const DEFAULT_TAGS=["#immobiliare","#realestate","#marketing","#socialmedia","#content"];
     const FIXED_SIGNATURE=
 `geometra Christian Raimondi
 Immobiliare La Sacra
@@ -779,7 +759,7 @@ Immobiliare La Sacra
     const COUNTDOWN_ON=true;
 
     /*****************************************************************
-     * 3) App state
+     * 3) State
      *****************************************************************/
     const state={
       hook:"",
@@ -789,32 +769,28 @@ Immobiliare La Sacra
       logoBlob:null,
       logoBitmap:null,
       logoAspect:1,
-      // karaoke (teleprompter)
-      words:[],                // token list
-      tokenIndex:0,            // global word index
-      wpm:150,                 // speed control
-      wps:150/60,              // derived
-      phraseSize:10,           // words visible at once
-      phraseShiftEvery:1,      // shift by 1 word per step
-      karaokeStartTs:0,        // performance.now baseline
-      karaokeRunning:false,    // always ON in recorder
+      // karaoke
+      words:[],
+      tokenIndex:0,
+      wpm:150,
+      wps:150/60,
+      phraseSize:10,
+      karaokeStartTs:0,
+      karaokeRunning:false,
+      uiRaf:null,
       // recorder
       stream:null,
       audioTrack:null,
-      cameraReady:false,
       recording:false,
       recorder:null,
       chunks:[],
       recordedBlob:null,
       recordStartTs:0,
       stopTimer:null,
-      // canvas render
+      // canvas
       canvas:null,
       ctx:null,
-      rafId:null,
-      lastFrameTs:0,
-      // ui loop
-      uiRaf:null
+      rafId:null
     };
 
     function buildCaption(){
@@ -824,7 +800,6 @@ Immobiliare La Sacra
       state.caption=`${firstLine}\n${tags}\n\n${FIXED_SIGNATURE}`;
       $("#captionPreview").textContent=state.caption;
     }
-
     function ensureLoopLine(){
       const hook=(state.hook||"").trim();
       if(!hook) return;
@@ -835,29 +810,25 @@ Immobiliare La Sacra
         state.script=s.replace(/\s+$/,"")+"\n\n"+loopLine;
       }
     }
-
     function updateRecorderUITexts(){
       $("#hookUiText").textContent=(state.hook||"Hook…").trim()||"Hook…";
       buildCaption();
-      // rebuild karaoke tokens anytime script changes (keeps it readable)
       rebuildKaraokeTokens();
     }
 
     /*****************************************************************
-     * 4) Hard gates (start REC only if ready)
+     * 4) Hard gate
      *****************************************************************/
     function canStartRec(){
       const hook=(state.hook||"").trim();
       const script=(state.script||"").trim();
       if(hook.length<12){
         showToast("Scrivi un hook chiaro (min 12 caratteri)","bad");
-        $("#questionInput").focus();
-        return false;
+        $("#questionInput").focus(); return false;
       }
       if(script.length<40){
         showToast("Scrivi uno script teleprompter (min 40 caratteri)","bad");
-        $("#answerInput").focus();
-        return false;
+        $("#answerInput").focus(); return false;
       }
       const v=$("#livePreview");
       if(!state.stream || !v.srcObject || !(v.videoWidth>0)){
@@ -881,10 +852,8 @@ Immobiliare La Sacra
     function openScript(){ setTab("script"); }
     async function openRecorder(){
       setTab("recorder");
-      // camera auto-start (required)
       await startCamera().catch(()=>{});
-      // karaoke always ON when recorder open
-      startKaraokeUI();
+      startKaraokeUI(); // sempre ON
       updateRecorderUITexts();
     }
     async function openFeed(){
@@ -893,11 +862,9 @@ Immobiliare La Sacra
     }
 
     /*****************************************************************
-     * 6) Overlay flow (Domanda/Risposta)
+     * 6) Overlay flow
      *****************************************************************/
-    const overlay=$("#textOverlay");
-    const overlayTitle=$("#overlayTitle");
-    const overlayContent=$("#overlayContent");
+    const overlay=$("#textOverlay"), overlayTitle=$("#overlayTitle"), overlayContent=$("#overlayContent");
     function showOverlay(title,text){
       overlayTitle.textContent=title;
       overlayContent.textContent=text;
@@ -912,7 +879,7 @@ Immobiliare La Sacra
     overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeOverlay(); });
 
     /*****************************************************************
-     * 7) Templates (social/marketing)
+     * 7) Templates
      *****************************************************************/
     function applyTemplate(kind){
       const t={
@@ -975,13 +942,12 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     $("#tplC").addEventListener("click",()=>applyTemplate("C"));
 
     /*****************************************************************
-     * 8) Logo upload (IndexedDB persist) + ImageBitmap
+     * 8) Logo (IndexedDB)
      *****************************************************************/
     const logoInput=$("#logoInput");
     $("#logoBtn").addEventListener("click",()=>logoInput.click());
     $("#removeLogoBtn").addEventListener("click",async ()=>{
-      state.logoBlob=null;
-      state.logoBitmap=null;
+      state.logoBlob=null; state.logoBitmap=null;
       if(db) await idbDel("settings","logo").catch(()=>{});
       $("#logoStatus").textContent="Nessun logo";
       showToast("Logo rimosso","good");
@@ -1007,18 +973,16 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
         state.logoBitmap=bmp;
         state.logoAspect=bmp.width/bmp.height;
       }catch(e){
-        state.logoBitmap=null;
-        state.logoAspect=1;
+        state.logoBitmap=null; state.logoAspect=1;
       }
     }
 
     /*****************************************************************
-     * 9) Camera (getUserMedia)
+     * 9) Camera
      *****************************************************************/
     async function startCamera(){
       const v=$("#livePreview");
       if(state.stream && v.srcObject) return;
-      state.cameraReady=false;
       $("#recStatus").textContent="Avvio camera…";
       try{
         const constraints={
@@ -1046,141 +1010,97 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
           v.addEventListener("canplay",on);
         });
 
-        state.cameraReady=true;
-        $("#recStatus").textContent="Pronto. Sottotitolo karaoke sempre ON.";
+        $("#recStatus").textContent="Pronto. Karaoke sempre ON.";
       }catch(err){
         console.error(err);
         state.stream=null;
-        state.cameraReady=false;
         $("#recStatus").textContent="Permesso camera negato o non disponibile.";
         showToast("Permesso camera/microfono necessario (solo https/localhost).","bad");
       }
     }
 
     /*****************************************************************
-     * 10) Karaoke subtitles (teleprompter orizzontale)
-     *     - Sempre ON nel recorder
-     *     - Evidenzia parola per parola in automatico (timing = WPM)
+     * 10) Karaoke tokens + UI loop
      *****************************************************************/
     function tokenizeScript(text){
-      // Keep punctuation with tokens for readability
-      const cleaned=(text||"")
-        .replace(/\s+/g," ")
-        .trim();
+      const cleaned=(text||"").replace(/\s+/g," ").trim();
       if(!cleaned) return [];
-      // Split by spaces, preserve punctuation attached
       return cleaned.split(" ").filter(Boolean);
     }
-
     function rebuildKaraokeTokens(){
       const s=(state.script||"").trim();
       state.words=tokenizeScript(s);
-      // keep index in range
-      state.tokenIndex = clamp(state.tokenIndex, 0, Math.max(0, state.words.length-1));
+      state.tokenIndex=clamp(state.tokenIndex,0,Math.max(0,state.words.length-1));
       renderKaraokeUI(performance.now());
     }
-
     function startKaraokeUI(){
       if(state.karaokeRunning) return;
       state.karaokeRunning=true;
-      state.karaokeStartTs = performance.now();
-      // Reset to start when opening recorder (for “easy scanning”)
+      state.karaokeStartTs=performance.now();
       state.tokenIndex=0;
-      renderKaraokeUI(performance.now());
       const tick=(ts)=>{
         if(!state.karaokeRunning) return;
-        // Always advance, even if not recording (requirement: play always ON)
         advanceKaraoke(ts);
         renderKaraokeUI(ts);
         state.uiRaf=requestAnimationFrame(tick);
       };
       state.uiRaf=requestAnimationFrame(tick);
     }
-
-    function stopKaraokeUI(){
-      state.karaokeRunning=false;
-      if(state.uiRaf) cancelAnimationFrame(state.uiRaf);
-      state.uiRaf=null;
-    }
-
     function advanceKaraoke(ts){
       if(!state.words.length) return;
-
-      // words per second derived from WPM
-      state.wps = state.wpm / 60;
-      const elapsed = (ts - state.karaokeStartTs) / 1000;
-
-      // One word step duration
-      const step = 1 / Math.max(0.8, state.wps);
-
-      // Determine current word index (karaoke highlight) based on elapsed
-      // Loop continuously (no stop)
-      const idx = Math.floor(elapsed / step) % state.words.length;
-      state.tokenIndex = idx;
+      state.wps = state.wpm/60;
+      const elapsed=(ts-state.karaokeStartTs)/1000;
+      const step=1/Math.max(0.8,state.wps);
+      state.tokenIndex = Math.floor(elapsed/step) % state.words.length;
     }
-
     function getPhraseWindow(){
-      const n = state.words.length;
+      const n=state.words.length;
       if(!n) return {start:0,end:0,idx:0};
-      const idx = state.tokenIndex;
-      const size = state.phraseSize;
-
-      // Keep idx roughly centered in the phrase (but stable)
-      const start = clamp(idx - Math.floor(size*0.35), 0, Math.max(0, n - size));
-      const end = clamp(start + size, 0, n);
-      return { start, end, idx };
+      const idx=state.tokenIndex;
+      const size=state.phraseSize;
+      const start=clamp(idx-Math.floor(size*0.35),0,Math.max(0,n-size));
+      const end=clamp(start+size,0,n);
+      return {start,end,idx};
     }
-
-    function renderKaraokeUI(ts){
+    function renderKaraokeUI(){
       const el=$("#subUiLine");
-      if(!state.words.length){
-        el.textContent="—";
-        return;
-      }
-      const {start,end,idx} = getPhraseWindow();
+      if(!state.words.length){ el.textContent="—"; return; }
+      const {start,end,idx}=getPhraseWindow();
       const parts=[];
       for(let i=start;i<end;i++){
-        const w = state.words[i];
-        const cls = (i===idx) ? "w on" : "w";
-        // Use span: highlight current word
-        parts.push(`<span class="${cls}">${escapeHtml(w)}</span>`);
+        const cls=(i===idx)?"w on":"w";
+        parts.push(`<span class="${cls}">${escapeHtml(state.words[i])}</span>`);
       }
-      el.innerHTML = parts.join(" ");
+      el.innerHTML=parts.join(" ");
     }
 
     /*****************************************************************
-     * 11) Recording pipeline: draw to canvas -> captureStream(30) + audio
+     * 11) Recording: canvas 1080x1920 + burn-in BIG + SAFE
      *****************************************************************/
     function chooseMimeType(){
-      const c=[
-        "video/webm;codecs=vp9,opus",
-        "video/webm;codecs=vp8,opus",
-        "video/webm"
-      ];
+      const c=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
       for(const t of c){
         if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
       }
       return "";
     }
-
     function setupCanvas(){
       if(!state.canvas){
         state.canvas=document.createElement("canvas");
         state.ctx=state.canvas.getContext("2d",{alpha:false,desynchronized:true});
       }
-      state.canvas.width=720;
-      state.canvas.height=1280;
+      // ✅ export più pulito
+      state.canvas.width=1080;
+      state.canvas.height=1920;
     }
-
     function drawCover(ctx, video, cw, ch, zoom=1.0){
       const vw=video.videoWidth||1280;
       const vh=video.videoHeight||720;
-      const scale=Math.max(cw/vw, ch/vh) * zoom;
+      const scale=Math.max(cw/vw, ch/vh)*zoom;
       const dw=vw*scale, dh=vh*scale;
       const dx=(cw-dw)/2, dy=(ch-dh)/2;
       ctx.drawImage(video, dx, dy, dw, dh);
     }
-
     function roundRect(ctx,x,y,w,h,r){
       const rr=Math.min(r,w/2,h/2);
       ctx.beginPath();
@@ -1191,156 +1111,139 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       ctx.arcTo(x,y,x+w,y,rr);
       ctx.closePath();
     }
-
     function ellipsizeToWidth(ctx,str,maxW){
       if(ctx.measureText(str).width<=maxW) return str;
-      const ell="…";
-      let s=str;
+      const ell="…"; let s=str;
       while(s.length>1 && ctx.measureText(s+ell).width>maxW) s=s.slice(0,-1);
       return s+ell;
     }
-
-    function drawPill(ctx, text, x, y, maxW, fontPx, align="center"){
+    function drawPill(ctx, text, x, y, maxW, fontPx){
       ctx.save();
-      ctx.font = `900 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
+      ctx.font=`900 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
       const padX=18, padY=10;
       const tw=ctx.measureText(text).width;
-      const w=clamp(tw+padX*2, 0, maxW);
+      const w=clamp(tw+padX*2,0,maxW);
       const h=fontPx+padY*2;
-      let rx=x;
-      if(align==="center") rx=x-w/2;
-      if(align==="right") rx=x-w;
+      const rx=x-w/2;
 
       ctx.fillStyle="rgba(0,0,0,0.38)";
       ctx.strokeStyle="rgba(255,255,255,0.14)";
       ctx.lineWidth=2;
-      roundRect(ctx, rx, y, w, h, 999);
+      roundRect(ctx,rx,y,w,h,999);
       ctx.fill(); ctx.stroke();
 
       ctx.fillStyle="rgba(255,255,255,0.95)";
+      ctx.textAlign="center";
       ctx.textBaseline="middle";
-      ctx.textAlign=align;
-      const tx = align==="center" ? x : (align==="right" ? x : rx+padX);
-      ctx.fillText(ellipsizeToWidth(ctx, text, w-padX*2), tx, y+h/2);
+      ctx.shadowColor="rgba(0,0,0,0.55)";
+      ctx.shadowBlur=12;
+      ctx.fillText(ellipsizeToWidth(ctx,text,w-padX*2), x, y+h/2);
       ctx.restore();
     }
-
     function drawRecIcon(ctx, x, y, size){
       ctx.save();
       ctx.translate(x,y);
       ctx.fillStyle="rgba(255,45,85,0.95)";
-      ctx.beginPath();
-      ctx.arc(0,0,size/2,0,Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0,0,size/2,0,Math.PI*2); ctx.fill();
       const sq=size*0.34;
       ctx.fillStyle="rgba(255,255,255,0.92)";
-      roundRect(ctx, -sq/2, -sq/2, sq, sq, Math.max(3,sq*0.18));
+      roundRect(ctx,-sq/2,-sq/2,sq,sq,Math.max(3,sq*0.18));
       ctx.fill();
       ctx.restore();
     }
-
     function drawLogo(ctx, cw){
       if(!state.logoBitmap) return;
-      const margin=26;
+      const margin=34;
       const targetW=cw*0.18;
-      const w=targetW;
-      const h=w/state.logoAspect;
-      const x=cw - margin - w;
-      const y=margin;
+      const w=targetW, h=w/state.logoAspect;
+      const x=cw - margin - w, y=margin;
+
       ctx.save();
       ctx.fillStyle="rgba(0,0,0,0.25)";
       ctx.strokeStyle="rgba(255,255,255,0.12)";
       ctx.lineWidth=2;
-      roundRect(ctx, x-10, y-10, w+20, h+20, 16);
+      roundRect(ctx,x-12,y-12,w+24,h+24,18);
       ctx.fill(); ctx.stroke();
-      ctx.drawImage(state.logoBitmap, x, y, w, h);
+      ctx.drawImage(state.logoBitmap,x,y,w,h);
       ctx.restore();
     }
 
+    // ✅ QUI IL FIX: sottotitolo più grande + più alto + proporzionale
     function drawKaraokeBurnIn(ctx, cw, ch){
-      // Subtitle strip bottom (horizontal, readable)
-      const pad=22;
-      const h=92;
-      const x=pad, y=ch - pad - h;
-      const w=cw - pad*2;
+      if(!state.words.length) return;
 
+      // Safe margins
+      const padX = Math.round(cw*0.06);           // 6% laterale
+      const safeBottom = Math.round(ch*0.14);     // 14% dal fondo (evita UI TikTok)
+      const boxH = Math.round(ch*0.12);           // 12% altezza box (grande)
+      const x = padX;
+      const w = cw - padX*2;
+      const y = ch - safeBottom - boxH;
+
+      // Background box
       ctx.save();
-      // background
-      ctx.fillStyle="rgba(0,0,0,0.46)";
-      ctx.strokeStyle="rgba(255,255,255,0.14)";
-      ctx.lineWidth=2;
-      roundRect(ctx, x, y, w, h, 20);
+      ctx.fillStyle="rgba(0,0,0,0.52)";
+      ctx.strokeStyle="rgba(255,255,255,0.16)";
+      ctx.lineWidth = Math.max(2, Math.round(ch*0.0018));
+      roundRect(ctx,x,y,w,boxH, Math.round(boxH*0.28));
       ctx.fill(); ctx.stroke();
 
-      // get phrase window + highlight current word
-      if(!state.words.length){
-        ctx.restore();
-        return;
-      }
-
-      const {start,end,idx}=getPhraseWindow();
-      const fontPx=Math.round(30 * state.tpZoom);
-      ctx.font = `950 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
-      ctx.textAlign="center";
+      // Font proporzionale (molto più leggibile in export)
+      const fontPx = Math.round(ch*0.042); // ~80px su 1920
+      ctx.font = `1000 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
+      ctx.textAlign="left";
       ctx.textBaseline="middle";
-      ctx.shadowColor="rgba(0,0,0,0.55)";
-      ctx.shadowBlur=16;
+      ctx.shadowColor="rgba(0,0,0,0.65)";
+      ctx.shadowBlur = Math.round(ch*0.01);
 
-      // Build text layout manually (centered tokens, current highlighted)
-      // We’ll measure each token to center the whole phrase.
-      const tokens=[];
-      for(let i=start;i<end;i++){
-        tokens.push({text: state.words[i], on: i===idx});
-      }
+      // Phrase window
+      const {start,end,idx}=getPhraseWindow();
+      let tokens=[];
+      for(let i=start;i<end;i++) tokens.push({t: state.words[i], on: i===idx});
 
-      // measure widths
+      // Measure and trim if needed (keep readable)
       const spaceW = ctx.measureText(" ").width;
-      const widths = tokens.map(t=>ctx.measureText(t.text).width);
-      const totalW = widths.reduce((a,b)=>a+b,0) + spaceW*(tokens.length-1);
-
-      // If too wide, reduce phrase size by trimming ends (hard clamp)
-      // (keeps it readable on small screens)
-      let trimmed=tokens, trimmedW=totalW;
-      while(trimmed.length>4 && trimmedW > w - 24){
-        // drop one from the far end (prefer drop from start/end away from highlight)
-        const highlightIdx = trimmed.findIndex(t=>t.on);
-        const dropFromStart = highlightIdx > (trimmed.length/2);
-        trimmed = dropFromStart ? trimmed.slice(1) : trimmed.slice(0,-1);
-        const tw = trimmed.map(t=>ctx.measureText(t.text).width).reduce((a,b)=>a+b,0);
-        trimmedW = tw + spaceW*(trimmed.length-1);
+      const measurePhrase=(arr)=>{
+        const tw = arr.reduce((sum,tt)=>sum + ctx.measureText(tt.t).width,0);
+        return tw + spaceW*(arr.length-1);
+      };
+      let totalW = measurePhrase(tokens);
+      while(tokens.length>5 && totalW > w - Math.round(cw*0.06)){
+        const hi = tokens.findIndex(z=>z.on);
+        const dropFromStart = hi > tokens.length/2;
+        tokens = dropFromStart ? tokens.slice(1) : tokens.slice(0,-1);
+        totalW = measurePhrase(tokens);
       }
 
-      const cx = x + w/2;
-      const cy = y + h/2;
-      let cursorX = cx - trimmedW/2;
+      // Center horizontally
+      let cursorX = x + (w - totalW)/2;
+      const cy = y + boxH/2;
 
-      // draw tokens
-      for(let i=0;i<trimmed.length;i++){
-        const t=trimmed[i];
-        const ww=ctx.measureText(t.text).width;
+      for(const token of tokens){
+        const ww = ctx.measureText(token.t).width;
 
-        if(t.on){
-          // highlight box behind word (karaoke)
-          const rx = cursorX - 6;
-          const ry = cy - fontPx/2 - 8;
-          const rw = ww + 12;
-          const rh = fontPx + 16;
+        if(token.on){
+          // Highlight pill
+          const pad = Math.round(fontPx*0.22);
+          const rx = cursorX - pad;
+          const ry = cy - fontPx/2 - Math.round(fontPx*0.28);
+          const rw = ww + pad*2;
+          const rh = fontPx + Math.round(fontPx*0.56);
 
           ctx.save();
-          ctx.shadowBlur=0;
-          ctx.fillStyle="rgba(255,204,0,0.92)";
-          roundRect(ctx, rx, ry, rw, rh, 14);
+          ctx.shadowBlur = 0;
+          ctx.fillStyle="rgba(255,204,0,0.95)";
+          roundRect(ctx, rx, ry, rw, rh, Math.round(rh*0.28));
           ctx.fill();
           ctx.restore();
 
           ctx.fillStyle="rgba(0,0,0,0.92)";
-          ctx.fillText(t.text, cursorX + ww/2, cy);
-          ctx.fillStyle="rgba(255,255,255,0.92)";
+          ctx.fillText(token.t, cursorX, cy);
+          ctx.fillStyle="rgba(255,255,255,0.94)";
         }else{
-          ctx.fillStyle="rgba(255,255,255,0.92)";
-          ctx.fillText(t.text, cursorX + ww/2, cy);
+          ctx.fillStyle="rgba(255,255,255,0.94)";
+          ctx.fillText(token.t, cursorX, cy);
         }
-
         cursorX += ww + spaceW;
       }
 
@@ -1348,42 +1251,30 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     }
 
     function renderFrame(ts){
-      const ctx=state.ctx;
-      const c=state.canvas;
-      const v=$("#livePreview");
+      const ctx=state.ctx, c=state.canvas, v=$("#livePreview");
       if(!ctx || !c || !v) return;
 
       const cw=c.width, ch=c.height;
-      state.lastFrameTs = ts;
 
-      // background
-      ctx.fillStyle="#000";
-      ctx.fillRect(0,0,cw,ch);
+      ctx.fillStyle="#000"; ctx.fillRect(0,0,cw,ch);
+      if(v.videoWidth>0) drawCover(ctx, v, cw, ch, state.tpZoom || 1);
 
-      // video cover with zoom
-      if(v.videoWidth>0) drawCover(ctx, v, cw, ch, state.tpZoom);
-
-      // Hook burn-in from second 0
       const hook=(state.hook||"").trim();
-      if(hook) drawPill(ctx, hook, cw/2, 22, cw*0.94, 28, "center");
+      if(hook) drawPill(ctx, hook, cw/2, Math.round(ch*0.02), cw*0.94, Math.round(ch*0.03));
 
-      // Logo burn-in
       drawLogo(ctx, cw);
-
-      // Karaoke burn-in (horizontal subtitles)
       drawKaraokeBurnIn(ctx, cw, ch);
 
-      // REC burn-in while recording
       if(state.recording){
-        drawRecIcon(ctx, cw - 42, 52, 30);
+        drawRecIcon(ctx, cw - Math.round(cw*0.05), Math.round(ch*0.05), Math.round(ch*0.018));
         ctx.save();
-        ctx.font = `900 20px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.font=`900 ${Math.round(ch*0.016)}px ${getComputedStyle(document.body).fontFamily}`;
         ctx.fillStyle="rgba(255,255,255,0.92)";
         ctx.textAlign="right";
         ctx.textBaseline="middle";
         ctx.shadowColor="rgba(0,0,0,0.55)";
-        ctx.shadowBlur=12;
-        ctx.fillText("REC", cw - 70, 52);
+        ctx.shadowBlur=Math.round(ch*0.008);
+        ctx.fillText("REC", cw - Math.round(cw*0.08), Math.round(ch*0.05));
         ctx.restore();
       }
 
@@ -1391,13 +1282,9 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     }
 
     async function runCountdown(){
-      const cd=$("#countdown");
-      const n=$("#countNum");
+      const cd=$("#countdown"), n=$("#countNum");
       cd.classList.add("show");
-      for(const v of [3,2,1]){
-        n.textContent=v;
-        await sleep(700);
-      }
+      for(const v of [3,2,1]){ n.textContent=v; await sleep(700); }
       cd.classList.remove("show");
     }
 
@@ -1411,13 +1298,11 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
       if(COUNTDOWN_ON) await runCountdown();
 
-      // Reset karaoke timing so highlight starts from first word at REC
-      state.karaokeStartTs = performance.now();
-      state.tokenIndex = 0;
+      // reset karaoke timing on REC
+      state.karaokeStartTs=performance.now();
+      state.tokenIndex=0;
 
       setupCanvas();
-      state.lastFrameTs=0;
-
       if(state.rafId) cancelAnimationFrame(state.rafId);
       state.rafId=requestAnimationFrame(renderFrame);
 
@@ -1428,13 +1313,8 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
       const mimeType=chooseMimeType();
       let mr=null;
-      try{
-        mr = mimeType ? new MediaRecorder(streamOut,{mimeType}) : new MediaRecorder(streamOut);
-      }catch(err){
-        console.error(err);
-        showToast("MediaRecorder non disponibile in questo browser.","bad");
-        return;
-      }
+      try{ mr = mimeType ? new MediaRecorder(streamOut,{mimeType}) : new MediaRecorder(streamOut); }
+      catch(err){ console.error(err); showToast("MediaRecorder non disponibile.","bad"); return; }
 
       state.recorder=mr;
       state.chunks=[];
@@ -1482,21 +1362,17 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
       $("#recBtn").classList.remove("recording");
       $("#recHud").classList.remove("on");
-      $("#recStatus").textContent="Pronto. Sottotitolo karaoke sempre ON.";
+      $("#recStatus").textContent="Pronto. Karaoke sempre ON.";
       $("#timeLeft").textContent=`${MAX_SECONDS}s`;
 
       try{ state.recorder && state.recorder.state!=="inactive" && state.recorder.stop(); }catch(e){}
-
       setTimeout(()=>{
-        if(state.rafId){
-          cancelAnimationFrame(state.rafId);
-          state.rafId=null;
-        }
+        if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId=null; }
       },120);
     }
 
     /*****************************************************************
-     * 12) Review modal (save / download / discard)
+     * 12) Review modal
      *****************************************************************/
     const reviewModal=$("#reviewModal");
     const reviewVideo=$("#reviewVideo");
@@ -1507,15 +1383,12 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       buildCaption();
       const hook=(state.hook||"").trim();
       const tags=DEFAULT_TAGS.slice(0,5).join(" ");
-
       if(reviewUrl) URL.revokeObjectURL(reviewUrl);
       reviewUrl=URL.createObjectURL(blob);
       reviewVideo.src=reviewUrl;
       reviewVideo.loop=true;
       reviewVideo.play().catch(()=>{});
-
       reviewMeta.textContent=`Titolo: ${hook||"—"}\nHashtag: ${tags}\n\nCaption:\n${state.caption}`;
-
       reviewModal.classList.add("show");
       reviewModal.setAttribute("aria-hidden","false");
     }
@@ -1525,23 +1398,16 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       reviewVideo.pause();
     }
     $("#closeReviewBtn").addEventListener("click",closeReview);
-    $("#discardClipBtn").addEventListener("click",()=>{
-      state.recordedBlob=null;
-      closeReview();
-      showToast("Clip scartata","good");
-    });
+    $("#discardClipBtn").addEventListener("click",()=>{ state.recordedBlob=null; closeReview(); showToast("Clip scartata","good"); });
     $("#downloadClipBtn").addEventListener("click",()=>{
       if(!state.recordedBlob) return;
       const ts=new Date();
-      const name=`clip_${ts.toISOString().replace(/[:.]/g,"-")}.webm`;
-      downloadBlob(state.recordedBlob,name);
+      downloadBlob(state.recordedBlob, `clip_${ts.toISOString().replace(/[:.]/g,"-")}.webm`);
     });
     $("#saveClipBtn").addEventListener("click",async ()=>{
       if(!state.recordedBlob) return;
-      const hook=(state.hook||"").trim();
-      const hashtags=DEFAULT_TAGS.slice(0,5);
       buildCaption();
-      const clip={ title:hook, caption:state.caption, hashtags, blob:state.recordedBlob, createdAt:Date.now() };
+      const clip={ title:(state.hook||"").trim(), caption:state.caption, hashtags:DEFAULT_TAGS.slice(0,5), blob:state.recordedBlob, createdAt:Date.now() };
       try{
         await idbAddClip(clip);
         showToast("Salvato nel feed ✅","good");
@@ -1551,12 +1417,12 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
         setTab("feed");
       }catch(e){
         console.error(e);
-        showToast("Errore nel salvataggio in archivio","bad");
+        showToast("Errore salvataggio feed","bad");
       }
     });
 
     /*****************************************************************
-     * 13) Feed (autoplay visible)
+     * 13) Feed + autoplay
      *****************************************************************/
     const feedList=$("#feedList");
     let feedObserver=null;
@@ -1577,10 +1443,7 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       clips.forEach((clip)=>{
         const item=document.createElement("div");
         item.className="feedItem";
-        item.dataset.id=clip.id;
-
         const url=URL.createObjectURL(clip.blob);
-        item.dataset.url=url;
 
         const vid=document.createElement("video");
         vid.src=url;
@@ -1591,12 +1454,11 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
         const meta=document.createElement("div");
         meta.className="feedMeta";
-        const tagsStr=(clip.hashtags||[]).join(" ");
         meta.innerHTML=`
           <div class="pill">
             <div style="min-width:0;">
               <div class="title">${escapeHtml(clip.title||"—")}</div>
-              <div class="tags">${escapeHtml(tagsStr)}</div>
+              <div class="tags">${escapeHtml((clip.hashtags||[]).join(" "))}</div>
             </div>
           </div>
         `;
@@ -1604,15 +1466,17 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
         const actions=document.createElement("div");
         actions.className="feedActions";
         actions.innerHTML=`
-          <div class="fab" data-act="download" title="Download">⬇️<br><small>DL</small></div>
-          <div class="fab" data-act="delete" title="Elimina">🗑️<br><small>DEL</small></div>
+          <div class="fab" data-act="download">⬇️<br><small>DL</small></div>
+          <div class="fab" data-act="delete">🗑️<br><small>DEL</small></div>
         `;
         actions.addEventListener("click",async (e)=>{
           const btn=e.target.closest("[data-act]");
           if(!btn) return;
-          const act=btn.dataset.act;
-          if(act==="download") downloadBlob(clip.blob,`clip_${clip.id}.webm`);
-          if(act==="delete") await deleteClip(clip.id);
+          if(btn.dataset.act==="download") downloadBlob(clip.blob,`clip_${clip.id}.webm`);
+          if(btn.dataset.act==="delete"){
+            try{ await idbDel("clips",clip.id); showToast("Eliminato","good"); await renderFeed(); }
+            catch(err){ console.error(err); showToast("Errore eliminazione","bad"); }
+          }
         });
 
         item.appendChild(vid);
@@ -1634,17 +1498,6 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       vids.forEach(v=>feedObserver.observe(v));
     }
 
-    async function deleteClip(id){
-      try{
-        await idbDel("clips",id);
-        showToast("Eliminato","good");
-        await renderFeed();
-      }catch(e){
-        console.error(e);
-        showToast("Errore eliminazione","bad");
-      }
-    }
-
     $("#wipeAllBtn").addEventListener("click",async ()=>{
       try{
         const clips=await idbGetAllClips();
@@ -1664,7 +1517,7 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     });
 
     /*****************************************************************
-     * 14) Script builder wiring
+     * 14) Wiring inputs + UI
      *****************************************************************/
     function updateCounts(){
       $("#qCount").textContent=`${($("#questionInput").value||"").trim().length}`;
@@ -1683,10 +1536,7 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
     $("#sendQuestionBtn").addEventListener("click",()=>{
       const q=$("#questionInput").value.trim();
-      if(!q){
-        showToast("Scrivi la domanda (hook) prima di inviare.","bad");
-        $("#questionInput").focus(); return;
-      }
+      if(!q){ showToast("Scrivi la domanda (hook) prima di inviare.","bad"); $("#questionInput").focus(); return; }
       state.hook=q;
       updateRecorderUITexts();
       showOverlay("DOMANDA (Hook)",q);
@@ -1695,10 +1545,7 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
 
     $("#sendAnswerBtn").addEventListener("click",()=>{
       const a=$("#answerInput").value.trim();
-      if(!a){
-        showToast("Scrivi la risposta (script) prima di inviare.","bad");
-        $("#answerInput").focus(); return;
-      }
+      if(!a){ showToast("Scrivi la risposta (script) prima di inviare.","bad"); $("#answerInput").focus(); return; }
       state.script=$("#answerInput").value;
       ensureLoopLine();
       $("#answerInput").value=state.script;
@@ -1728,11 +1575,11 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       catch(e){ showToast("Clipboard non disponibile","bad"); }
     });
 
-    $("#goRecorderBtn").addEventListener("click",openRecorder);
-
     /*****************************************************************
-     * 15) Recorder controls (sliders, REC, nav)
+     * 15) Recorder controls
      *****************************************************************/
+    state.tpZoom = 1.0;
+
     $("#zoomRange").addEventListener("input",()=>{
       state.tpZoom=parseFloat($("#zoomRange").value);
       $("#zoomVal").textContent=`${state.tpZoom.toFixed(2)}×`;
@@ -1742,11 +1589,7 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
       $("#spdVal").textContent=`${Math.round(state.wpm)} wpm`;
     });
 
-    $("#recBtn").addEventListener("click",async ()=>{
-      if(state.recording) stopRecording();
-      else await startRecording();
-    });
-
+    $("#recBtn").addEventListener("click",async ()=>{ state.recording ? stopRecording() : await startRecording(); });
     $("#backToScriptBtn").addEventListener("click",openScript);
     $("#openFeedBtn").addEventListener("click",openFeed);
     $("#feedToRecBtn").addEventListener("click",openRecorder);
@@ -1755,45 +1598,30 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     $("#tabRec").addEventListener("click",openRecorder);
     $("#tabFeed").addEventListener("click",openFeed);
 
+    $("#goRecorderBtn").addEventListener("click",openRecorder);
+
     /*****************************************************************
      * 16) Boot
      *****************************************************************/
-    function escapeHtml(s){
-      return (s||"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-    }
-
     async function boot(){
       if(!(location.protocol==="https:" || location.hostname==="localhost" || location.hostname==="127.0.0.1")){
         showToast("Nota: camera funziona solo su https/localhost.","bad");
       }
-      try{
-        db=await openDB();
-      }catch(e){
-        console.error(e);
-        showToast("IndexedDB non disponibile: logo/feed non persistono.","bad");
-      }
+      try{ db=await openDB(); }
+      catch(e){ console.error(e); showToast("IndexedDB non disponibile: logo/feed non persistono.","bad"); }
 
-      // restore logo
       if(db){
         const savedLogo=await idbGet("settings","logo").catch(()=>null);
         if(savedLogo){
           state.logoBlob=savedLogo;
           await loadLogoBitmapFromBlob(savedLogo);
           $("#logoStatus").textContent="Logo caricato (persistente)";
-        }else{
-          $("#logoStatus").textContent="Nessun logo";
         }
       }
 
       updateCounts();
       buildCaption();
       updateRecorderUITexts();
-
-      document.addEventListener("visibilitychange",()=>{
-        if(document.hidden){
-          try{ $("#reviewVideo").pause(); }catch(e){}
-        }
-      });
     }
     boot();
   </script>
