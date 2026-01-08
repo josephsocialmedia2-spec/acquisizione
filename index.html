@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -436,6 +437,41 @@
     }
     .modal .actions{ display:flex; gap:10px; flex-wrap:wrap; }
   </style>
+
+  <!-- Book Prompter (UI-only) -->
+  <style id="bookPrompterStyle">
+    #bookPrompter{
+      position:absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(112px + var(--safeBottom));
+      width: min(94%, 760px);
+      max-height: 34%;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(10px);
+      z-index: 9;
+      pointer-events: none;
+      box-shadow: 0 14px 40px rgba(0,0,0,.28);
+      display:none;
+      overflow:hidden;
+    }
+    #bookPrompter .page{
+      font-size: 20px;
+      line-height: 1.35;
+      font-weight: 850;
+      text-align:left;
+      color: rgba(255,255,255,.94);
+      text-shadow: 0 2px 14px rgba(0,0,0,.55);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    body.bookMode .subUi{ display:none; }
+    body.bookMode #bookPrompter{ display:block; }
+  </style>
+
 </head>
 
 <body>
@@ -1625,5 +1661,607 @@ Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
     }
     boot();
   </script>
+
+  <!-- QA Archive Add-on (CSV import + per-topic archives) -->
+  <script>
+  (function(){
+    try{
+      // -----------------------------
+      // QA DB (separato, non tocca DB esistente)
+      // -----------------------------
+      const QA_DB_NAME = "vertical_recorder_qa_db";
+      const QA_DB_VER  = 1;
+      let qaDb = null;
+
+      function qaOpenDB(){
+        return new Promise((resolve,reject)=>{
+          const req = indexedDB.open(QA_DB_NAME, QA_DB_VER);
+          req.onupgradeneeded = ()=>{
+            const d = req.result;
+            if(!d.objectStoreNames.contains("items")){
+              const st = d.createObjectStore("items",{keyPath:"id",autoIncrement:true});
+              st.createIndex("topic","topic",{unique:false});
+              st.createIndex("topic_qkey","topic_qkey",{unique:true});
+            }
+          };
+          req.onsuccess = ()=>resolve(req.result);
+          req.onerror = ()=>reject(req.error);
+        });
+      }
+
+      function qaTx(store, mode="readonly"){ return qaDb.transaction(store, mode).objectStore(store); }
+
+      function qaGetAll(){
+        return new Promise((resolve,reject)=>{
+          const st = qaTx("items","readonly");
+          const req = st.getAll();
+          req.onsuccess = ()=>resolve(req.result||[]);
+          req.onerror = ()=>reject(req.error);
+        });
+      }
+
+      function qaAddMany(rows){
+        return new Promise((resolve,reject)=>{
+          const tx = qaDb.transaction("items","readwrite");
+          const st = tx.objectStore("items");
+          let added=0, skipped=0;
+
+          function qkey(topic, question){
+            return (String(topic||"").trim().toLowerCase()+"||"+String(question||"").trim().toLowerCase()).slice(0, 800);
+          }
+
+          tx.oncomplete = ()=>resolve({added,skipped});
+          tx.onerror = ()=>reject(tx.error);
+
+          for(const r of rows){
+            const topic = String(r.topic||"").trim();
+            const question = String(r.question||"").trim();
+            if(!topic || !question){ skipped++; continue; }
+            const item = {
+              topic,
+              question,
+              caption: String(r.caption||"").trim(),
+              script: String(r.script||""),
+              createdAt: Date.now()
+            };
+            item.topic_qkey = qkey(item.topic, item.question);
+            const req = st.add(item);
+            req.onsuccess = ()=>{ added++; };
+            req.onerror = ()=>{ skipped++; /* dup o altro */ };
+          }
+        });
+      }
+
+      function qaClearAll(){
+        return new Promise((resolve,reject)=>{
+          const tx = qaDb.transaction("items","readwrite");
+          const st = tx.objectStore("items");
+          const req = st.clear();
+          req.onsuccess = ()=>resolve(true);
+          req.onerror = ()=>reject(req.error);
+        });
+      }
+
+      // -----------------------------
+      // CSV parser (supporta quote, virgole, newline nei campi)
+      // -----------------------------
+      function parseCSV(text){
+        const out=[];
+        let i=0, field="", row=[], inQuotes=false;
+        const pushField=()=>{ row.push(field); field=""; };
+        const pushRow=()=>{ out.push(row); row=[]; };
+
+        while(i < text.length){
+          const c = text[i];
+
+          if(inQuotes){
+            if(c === '"'){
+              if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+              inQuotes = false; i++; continue;
+            }
+            field += c; i++; continue;
+          }
+
+          if(c === '"'){ inQuotes = true; i++; continue; }
+
+          if(c === ','){ pushField(); i++; continue; }
+
+          if(c === '\r'){
+            if(text[i+1] === '\n'){ i += 2; } else { i++; }
+            pushField(); pushRow(); continue;
+          }
+          if(c === '\n'){ i++; pushField(); pushRow(); continue; }
+
+          field += c; i++;
+        }
+        pushField();
+        if(row.length && !(row.length===1 && row[0]==="")) pushRow();
+
+        // rimuovi righe vuote
+        return out.filter(r=>r.some(x=>String(x||"").trim()!==""));
+      }
+
+      function normalizeHeader(h){
+        return String(h||"").trim().toLowerCase()
+          .replace(/\s+/g," ")
+          .replace(/[^\wàèéìòóù0-9 ]/g,"");
+      }
+
+      function topicFromArgomento(raw){
+        const v = String(raw||"").trim().toLowerCase();
+        if(v === "errore comune") return "errore comune";
+        if(v === "3 step") return "3 step";
+        if(v === "sfata un mito") return "sfata un mito";
+        // tolleranze minime
+        if(v === "errore" || v === "errorecomune") return "errore comune";
+        if(v === "3step" || v === "tre step") return "3 step";
+        if(v === "mito" || v === "sfataunmito") return "sfata un mito";
+        return null;
+      }
+
+      // -----------------------------
+      // UI injection (non modifica HTML esistente)
+      // -----------------------------
+      function el(tag, attrs={}, children=[]){
+        const n=document.createElement(tag);
+        Object.keys(attrs||{}).forEach(k=>{
+          if(k==="class") n.className=attrs[k];
+          else if(k==="style") n.setAttribute("style", attrs[k]);
+          else if(k.startsWith("on") && typeof attrs[k]==="function") n.addEventListener(k.slice(2), attrs[k]);
+          else n.setAttribute(k, attrs[k]);
+        });
+        (children||[]).forEach(ch=>{
+          if(ch==null) return;
+          if(typeof ch==="string") n.appendChild(document.createTextNode(ch));
+          else n.appendChild(ch);
+        });
+        return n;
+      }
+
+      let qaCache = []; // all items
+      let qaByTopic = { "errore comune": [], "3 step": [], "sfata un mito": [] };
+
+      function rebuildCache(){
+        qaByTopic = { "errore comune": [], "3 step": [], "sfata un mito": [] };
+        for(const it of qaCache){
+          const t = topicFromArgomento(it.topic) || it.topic;
+          if(!qaByTopic[t]) qaByTopic[t]=[];
+          qaByTopic[t].push(it);
+        }
+      }
+
+      function shuffle(arr){
+        for(let i=arr.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [arr[i],arr[j]]=[arr[j],arr[i]];
+        }
+        return arr;
+      }
+
+      let customCaptionText = "";
+      let suppressCaptionClear = false;
+
+      function applyQAItem(item){
+        if(!item) return;
+        suppressCaptionClear = true;
+        try{
+          const q = (item.question||"").trim();
+          const cap = (item.caption||"").trim();
+          const scr = (item.script||"");
+
+          // hook
+          const qEl = document.querySelector("#questionInput");
+          if(qEl){ qEl.value = q; }
+          if(window.state){ window.state.hook = q; }
+
+          // script opzionale
+          const aEl = document.querySelector("#answerInput");
+          if(aEl){
+            if(scr && String(scr).trim()){
+              aEl.value = scr;
+              if(window.state) window.state.script = aEl.value;
+              if(typeof window.ensureLoopLine === "function") window.ensureLoopLine();
+              aEl.value = window.state ? window.state.script : aEl.value;
+            }
+          }
+
+          // caption custom
+          customCaptionText = cap || "";
+          if(typeof window.buildCaption === "function") window.buildCaption();
+          if(typeof window.updateCounts === "function") window.updateCounts();
+          if(typeof window.updateRecorderUITexts === "function") window.updateRecorderUITexts();
+
+          if(typeof window.showToast === "function") window.showToast("Caricato dall’archivio ✅","good");
+        } finally {
+          setTimeout(()=>{ suppressCaptionClear = false; }, 0);
+        }
+      }
+
+      function randomFromTopic(topic){
+        const list = qaByTopic[topic] || [];
+        if(!list.length) return null;
+        return list[Math.floor(Math.random()*list.length)];
+      }
+
+      // Monkey-patch buildCaption: mantiene la caption standard, ma se c'è caption custom la usa
+      if(typeof window.buildCaption === "function"){
+        const _origBuildCaption = window.buildCaption;
+        window.buildCaption = function(){
+          _origBuildCaption();
+          if(customCaptionText && String(customCaptionText).trim()){
+            const cap = String(customCaptionText).trim();
+            // se FIXED_SIGNATURE esiste, lo aggiungiamo sempre in fondo (coerente col flusso)
+            let finalCap = cap;
+            try{
+              if(typeof window.FIXED_SIGNATURE === "string" && window.FIXED_SIGNATURE.trim()){
+                if(!finalCap.includes(window.FIXED_SIGNATURE.trim())){
+                  finalCap = finalCap.replace(/\s+$/,"") + "\n\n" + window.FIXED_SIGNATURE;
+                }
+              }
+            }catch(e){}
+            if(window.state) window.state.caption = finalCap;
+            const prev = document.querySelector("#captionPreview");
+            if(prev) prev.textContent = finalCap;
+          }
+        };
+      }
+
+      // Clear custom caption when user edits manually
+      const qInput = document.querySelector("#questionInput");
+      if(qInput){
+        qInput.addEventListener("input", ()=>{
+          if(suppressCaptionClear) return;
+          customCaptionText = "";
+        });
+      }
+
+      // Monkey-patch applyTemplate: se c'è archivio per quel topic, usa random; altrimenti comportamento originale
+      if(typeof window.applyTemplate === "function"){
+        const _origApplyTemplate = window.applyTemplate;
+        window.applyTemplate = function(kind){
+          const map = { "A":"errore comune", "B":"3 step", "C":"sfata un mito" };
+          const topic = map[kind];
+          const pick = topic ? randomFromTopic(topic) : null;
+          if(pick){
+            applyQAItem(pick);
+            return;
+          }
+          return _origApplyTemplate(kind);
+        };
+      }
+
+      // Build UI card in Script screen, right column
+      const templatesEl = document.querySelector(".templates");
+      if(templatesEl && templatesEl.parentElement){
+        const wrap = el("div", { class:"card", style:"padding:12px; margin-top:12px;" }, [
+          el("div", { style:"font-weight:950; margin-bottom:6px;" }, ["Archivio domande (CSV)"]),
+          el("div", { class:"hint", style:"margin-bottom:10px;" }, [
+            "Importa un CSV con colonne: argomento, domanda, caption, script (opzionale). Poi scegli argomento e tocca “Usa”."
+          ])
+        ]);
+
+        const row1 = el("div", { class:"row" }, []);
+        const sel = el("select", { id:"qaTopicSel", class:"btn", style:"padding:12px 14px; border-radius:16px; font-weight:900; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color: rgba(238,241,255,.92);" }, []);
+        ["errore comune","3 step","sfata un mito"].forEach(v=>{
+          const opt = document.createElement("option");
+          opt.value=v; opt.textContent=v;
+          sel.appendChild(opt);
+        });
+
+        const search = el("input", { id:"qaSearch", placeholder:"Cerca…", type:"text", class:"btn", style:"flex:1; padding:12px 14px; border-radius:16px; font-weight:800; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color: rgba(238,241,255,.92); text-align:left;" }, []);
+        row1.appendChild(sel);
+        row1.appendChild(search);
+
+        const row2 = el("div", { class:"row", style:"justify-content:space-between;" }, []);
+        const leftBtns = el("div", { class:"row" }, []);
+        const importBtn = el("button", { class:"btn good", id:"qaImportBtn", type:"button" }, ["Importa CSV"]);
+        const clearBtn = el("button", { class:"btn ghost", id:"qaClearBtn", type:"button" }, ["Svuota archivio"]);
+        leftBtns.appendChild(importBtn);
+        leftBtns.appendChild(clearBtn);
+
+        const stat = el("span", { class:"tiny", id:"qaStat" }, ["0 elementi"]);
+
+        row2.appendChild(leftBtns);
+        row2.appendChild(stat);
+
+        const list = el("div", { id:"qaList", style:"margin-top:10px; display:grid; gap:10px;" }, []);
+
+        wrap.appendChild(row1);
+        wrap.appendChild(row2);
+        wrap.appendChild(list);
+
+        templatesEl.parentElement.appendChild(wrap);
+
+        // hidden file input
+        const fileInput = el("input", { id:"qaCsvInput", type:"file", accept:".csv,text/csv", hidden:"" }, []);
+        document.body.appendChild(fileInput);
+
+        function setStat(){
+          const t = sel.value;
+          const n = (qaByTopic[t]||[]).length;
+          stat.textContent = `${n} elementi`;
+        }
+
+        function renderList(){
+          const topic = sel.value;
+          const q = (search.value||"").trim().toLowerCase();
+          const items = (qaByTopic[topic]||[]);
+          const filtered = q ? items.filter(it=>{
+            const s = ((it.question||"")+" "+(it.caption||"")+" "+(it.script||"")).toLowerCase();
+            return s.includes(q);
+          }) : items;
+
+          list.innerHTML = "";
+          const maxShow = 24;
+          const showItems = filtered.slice(0, maxShow);
+
+          if(!showItems.length){
+            list.appendChild(el("div", { class:"hint" }, ["Nessun elemento per questo argomento (o filtro troppo stretto)."]));
+            return;
+          }
+
+          showItems.forEach((it)=>{
+            const box = el("div", { class:"card", style:"padding:12px; background: rgba(255,255,255,.03);" }, []);
+            const title = el("div", { style:"font-weight:950; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" }, [it.question||"—"]);
+            const cap = el("div", { class:"hint", style:"white-space:pre-wrap; margin-bottom:10px;" }, [(it.caption||"").trim() ? (it.caption||"") : "—"]);
+            const actions = el("div", { class:"row" }, []);
+            const useBtn = el("button", { class:"btn primary", type:"button" }, ["Usa"]);
+            const rndBtn = el("button", { class:"btn ghost", type:"button" }, ["Random"]);
+            useBtn.addEventListener("click", ()=>applyQAItem(it));
+            rndBtn.addEventListener("click", ()=>{
+              const pick = randomFromTopic(topic);
+              if(pick) applyQAItem(pick);
+            });
+            actions.appendChild(useBtn);
+            actions.appendChild(rndBtn);
+            box.appendChild(title);
+            box.appendChild(cap);
+            box.appendChild(actions);
+            list.appendChild(box);
+          });
+
+          if(filtered.length > maxShow){
+            list.appendChild(el("div", { class:"tiny" }, [`Mostrati ${maxShow} di ${filtered.length}. Usa la ricerca per restringere.`]));
+          }
+        }
+
+        sel.addEventListener("change", ()=>{ setStat(); renderList(); });
+        search.addEventListener("input", ()=>{ renderList(); });
+
+        importBtn.addEventListener("click", ()=>fileInput.click());
+        clearBtn.addEventListener("click", async ()=>{
+          try{
+            await qaClearAll();
+            qaCache = [];
+            rebuildCache();
+            setStat(); renderList();
+            if(typeof window.showToast==="function") window.showToast("Archivio domande svuotato","good");
+          }catch(e){
+            console.error(e);
+            if(typeof window.showToast==="function") window.showToast("Errore nello svuotamento","bad");
+          }
+        });
+
+        fileInput.addEventListener("change", async (e)=>{
+          const file = e.target.files && e.target.files[0];
+          fileInput.value="";
+          if(!file) return;
+          try{
+            const text = await file.text();
+            const rows = parseCSV(text);
+
+            if(!rows.length){
+              if(typeof window.showToast==="function") window.showToast("CSV vuoto","bad");
+              return;
+            }
+
+            const header = rows[0].map(normalizeHeader);
+            const idx = {
+              argomento: header.indexOf("argomento"),
+              domanda: header.indexOf("domanda"),
+              caption: header.indexOf("caption"),
+              script: header.indexOf("script")
+            };
+
+            if(idx.argomento<0 || idx.domanda<0 || idx.caption<0){
+              if(typeof window.showToast==="function") window.showToast("Intestazioni richieste: argomento, domanda, caption (script opzionale)","bad");
+              return;
+            }
+
+            const mapped=[];
+            for(let r=1;r<rows.length;r++){
+              const row = rows[r];
+              const topic = topicFromArgomento(row[idx.argomento]);
+              if(!topic) continue;
+              const question = String(row[idx.domanda]||"").trim();
+              if(!question) continue;
+              const caption = String(row[idx.caption]||"").trim();
+              const script = idx.script>=0 ? (row[idx.script]||"") : "";
+              mapped.push({ topic, question, caption, script });
+            }
+
+            if(!mapped.length){
+              if(typeof window.showToast==="function") window.showToast("Nessuna riga valida trovata (argomento/domanda).","bad");
+              return;
+            }
+
+            const res = await qaAddMany(mapped);
+            qaCache = await qaGetAll();
+            rebuildCache();
+            setStat(); renderList();
+
+            if(typeof window.showToast==="function"){
+              window.showToast(`Import completato ✅ (${res.added} aggiunti, ${res.skipped} ignorati)`, "good");
+            }
+          }catch(err){
+            console.error(err);
+            if(typeof window.showToast==="function") window.showToast("Errore import CSV","bad");
+          }
+        });
+
+        // init data
+        (async ()=>{
+          try{
+            qaDb = await qaOpenDB();
+            qaCache = await qaGetAll();
+            rebuildCache();
+            setStat();
+            renderList();
+          }catch(e){
+            console.error(e);
+            if(typeof window.showToast==="function") window.showToast("Archivio domande non disponibile (IndexedDB).","bad");
+          }
+        })();
+      }
+
+    }catch(err){
+      console.error(err);
+    }
+  })();
+  </script>
+
+
+  <!-- Book Prompter (UI-only) -->
+  <script id="bookPrompterScript">
+    (function(){
+      try{
+        const stage = document.querySelector(".stage");
+        if(!stage) return;
+
+        const book = document.createElement("div");
+        book.id = "bookPrompter";
+        const page = document.createElement("div");
+        page.className = "page";
+        book.appendChild(page);
+        stage.appendChild(book);
+
+        const BM = {
+          enabled: true,
+          pages: [],
+          pageIndex: 0,
+          pageStartTs: 0,
+          pageDuration: 0,
+          running: false,
+          raf: null,
+          wordsPerPage: 44
+        };
+
+        const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+        const getWps = ()=> {
+          const speed = document.querySelector("#speedRange");
+          const wpm = speed ? parseFloat(speed.value||"150") : 150;
+          return Math.max(1.0, wpm/60);
+        };
+        const normalize = (s)=> (s||"").replace(/\s+/g," ").trim();
+
+        function splitIntoPages(script){
+          const txt = normalize(script);
+          if(!txt) return [];
+          const words = txt.split(" ").filter(Boolean);
+          const per = clamp(BM.wordsPerPage, 18, 90);
+          const out = [];
+          for(let i=0;i<words.length;i+=per){
+            out.push(words.slice(i,i+per));
+          }
+          return out;
+        }
+
+        function formatPage(words){
+          // blocco stile libro: a capo ogni ~28-32 caratteri
+          const cpl = 30;
+          let lines = [];
+          let cur = "";
+          for(const w of words){
+            const add = cur ? (cur + " " + w) : w;
+            if(add.length <= cpl){
+              cur = add;
+            }else{
+              if(cur) lines.push(cur);
+              cur = w;
+            }
+            if(lines.length >= 5) break;
+          }
+          if(cur && lines.length < 5) lines.push(cur);
+          return lines.join("\n");
+        }
+
+        function renderBookPage(){
+          if(!BM.pages.length){
+            page.textContent = "—";
+            return;
+          }
+          const w = BM.pages[BM.pageIndex] || [];
+          page.textContent = formatPage(w);
+        }
+
+        function startBookPrompter(){
+          const script = (window.state && window.state.script) ? window.state.script : (document.querySelector("#answerInput")?.value||"");
+          BM.pages = splitIntoPages(script);
+          BM.pageIndex = 0;
+          BM.pageStartTs = performance.now();
+          BM.pageDuration = (BM.pages[0] ? BM.pages[0].length : 0) / getWps() * 1000;
+          BM.running = true;
+          renderBookPage();
+          document.body.classList.add("bookMode");
+
+          const tick = (ts)=>{
+            if(!BM.running) return;
+            const dur = BM.pageDuration || 1;
+            const elapsed = ts - BM.pageStartTs;
+
+            if(elapsed >= dur){
+              if(BM.pageIndex < BM.pages.length - 1){
+                BM.pageIndex++;
+                BM.pageStartTs = ts;
+                BM.pageDuration = (BM.pages[BM.pageIndex] ? BM.pages[BM.pageIndex].length : 0) / getWps() * 1000;
+                renderBookPage();
+              }else{
+                BM.pageDuration = 1e9;
+              }
+            }
+            BM.raf = requestAnimationFrame(tick);
+          };
+          BM.raf = requestAnimationFrame(tick);
+        }
+
+        function stopBookPrompter(){
+          BM.running = false;
+          if(BM.raf) cancelAnimationFrame(BM.raf);
+          BM.raf = null;
+          document.body.classList.remove("bookMode");
+        }
+
+        const recBtn = document.querySelector("#recBtn");
+        if(recBtn){
+          recBtn.addEventListener("click", ()=>{
+            setTimeout(()=>{
+              const isRec = recBtn.classList.contains("recording");
+              if(BM.enabled && isRec) startBookPrompter();
+              if(!isRec) stopBookPrompter();
+            }, 40);
+          }, true);
+        }
+
+        const speedRange = document.querySelector("#speedRange");
+        if(speedRange){
+          speedRange.addEventListener("input", ()=>{
+            if(!BM.running) return;
+            BM.pageStartTs = performance.now();
+            BM.pageDuration = (BM.pages[BM.pageIndex] ? BM.pages[BM.pageIndex].length : 0) / getWps() * 1000;
+          }, true);
+        }
+
+        // Burn-in: 1 riga più leggibile (riduce finestra parole)
+        try{
+          if(window.state){
+            window.state.phraseSize = 7;
+          }
+        }catch(e){}
+      }catch(e){
+        console.error(e);
+      }
+    })();
+  </script>
+
 </body>
 </html>
