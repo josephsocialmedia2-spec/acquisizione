@@ -1,2267 +1,511 @@
-
 <!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Vertical Recorder + Karaoke Subtitles (9:16)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema Acquisizione Incarichi — Timeline Interattiva</title>
   <style>
     :root{
-      --bg:#0b0c10;
-      --text:#eef1ff;
-      --muted:rgba(238,241,255,.72);
-      --line:rgba(255,255,255,.10);
-      --accent:#ff2d55;
-      --good:#31d158;
-      --warn:#ffcc00;
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
-      --r:18px;
-      --safeTop: env(safe-area-inset-top);
-      --safeBottom: env(safe-area-inset-bottom);
-      --safeLeft: env(safe-area-inset-left);
-      --safeRight: env(safe-area-inset-right);
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --bg:#0b0f17;
+      --panel:#111827;
+      --panel2:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --border:#243045;
+      --accent:#60a5fa;
+      --accent2:#34d399;
+      --warn:#fbbf24;
+      --danger:#f87171;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --radius2: 20px;
+      --max: 1100px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-family:var(--font); }
-    button,input,textarea{ font-family:inherit; }
-    .app{
-      height:100%;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,.20), transparent 55%),
+                  radial-gradient(1000px 500px at 80% 0%, rgba(52,211,153,.14), transparent 55%),
+                  radial-gradient(900px 500px at 50% 110%, rgba(248,113,113,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(12px);
+      background: rgba(11,15,23,.70);
+      border-bottom:1px solid rgba(36,48,69,.6);
+    }
+    .wrap{max-width:var(--max); margin:0 auto; padding:18px 16px;}
+    .top{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(96,165,250,.9), rgba(52,211,153,.9));
+      box-shadow: var(--shadow);
+    }
+    h1{font-size:18px; margin:0;}
+    .sub{margin:2px 0 0; font-size:12px; color:var(--muted);}
+    .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(17,24,39,.65);
+      border-radius:999px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    }
+    .pill label{font-size:12px; color:var(--muted);}
+    input[type="datetime-local"]{
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      min-width: 210px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(17,24,39,.7);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      font-size:12px;
+      display:inline-flex; align-items:center; gap:8px;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.9);}
+    .btn.primary{background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.55);}
+    .btn.ok{background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.55);}
+    .btn.warn{background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.55);}
+    .btn.danger{background: rgba(248,113,113,.12); border-color: rgba(248,113,113,.55);}
+    main{padding: 18px 0 50px;}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(17,24,39,.78), rgba(15,23,42,.70));
+      border: 1px solid rgba(36,48,69,.9);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding: 14px 14px 12px;
+      border-bottom:1px solid rgba(36,48,69,.75);
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .card .head h2{margin:0; font-size:14px;}
+    .tag{
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(36,48,69,.9);
+      color: var(--muted);
+      background: rgba(11,15,23,.25);
+    }
+    .card .body{padding: 14px;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      cursor:pointer;
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(11,15,23,.20);
+      color: var(--muted);
+      font-size:12px;
+      transition: all .12s ease;
+      user-select:none;
+    }
+    .tab.active{
+      background: rgba(96,165,250,.18);
+      border-color: rgba(96,165,250,.55);
+      color: var(--text);
+    }
+
+    .timeline{
       display:flex;
       flex-direction:column;
-      padding: calc(10px + var(--safeTop)) calc(10px + var(--safeRight)) calc(10px + var(--safeBottom)) calc(10px + var(--safeLeft));
       gap:10px;
-      overflow:hidden;
+      padding: 10px 0 0;
     }
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding:10px 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      flex: 0 0 auto;
-    }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
-    .dot{
-      width:10px; height:10px; border-radius:50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 6px rgba(255,45,85,.14);
-      flex:0 0 auto;
-    }
-    .tabs{ display:flex; gap:8px; }
-    .tab{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      padding:10px 12px;
-      border-radius: 14px;
-      font-weight:700;
-      user-select:none;
-      cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
-    }
-    .tab:active{ transform: scale(.98); }
-    .tab.active{
-      background: rgba(255,45,85,.12);
-      border-color: rgba(255,45,85,.35);
-      color: var(--text);
-    }
-    .screen{ flex: 1 1 auto; min-height:0; display:none; overflow:hidden; }
-    .screen.active{ display:block; }
-
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{ padding:12px 12px 0 12px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-    .card h2{ margin:0; font-size:14px; letter-spacing:.2px; opacity:.95; }
-    .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
-    .body{ padding:12px; }
-
-    .grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
-    @media (min-width: 920px){ .grid.two{ grid-template-columns: 1.05fr .95fr; } }
-
-    .field label{
-      display:flex; justify-content:space-between; align-items:center;
-      color: var(--muted); font-size:12px; margin: 0 0 6px 2px;
-    }
-    .field textarea{
-      width:100%;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      border-radius: 14px;
+    .event{
+      display:flex;
+      gap:12px;
       padding: 12px 12px;
-      font-size: 15px;
-      outline:none;
-      min-height: 140px;
-      resize: vertical;
-    }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .btn{
-      appearance:none;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 800;
-      letter-spacing:.2px;
+      border-radius: var(--radius);
+      border:1px solid rgba(36,48,69,.85);
+      background: rgba(11,15,23,.20);
       cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+      transition: transform .10s ease, border-color .10s ease, background .10s ease;
     }
-    .btn:active{ transform: scale(.98); }
-    .btn.primary{ background: rgba(255,45,85,.16); border-color: rgba(255,45,85,.35); }
-    .btn.good{ background: rgba(49,209,88,.14); border-color: rgba(49,209,88,.35); }
-    .btn.warn{ background: rgba(255,204,0,.12); border-color: rgba(255,204,0,.35); }
-    .btn.ghost{ background: transparent; border-color: var(--line); color: var(--muted); font-weight: 750; }
-
-    .templates{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
-    .templates .btn{ padding: 14px 10px; border-radius: 18px; font-size: 14px; }
-
-    /* Overlay */
-    .overlay{
-      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-      padding: 18px calc(18px + var(--safeRight)) calc(18px + var(--safeBottom)) calc(18px + var(--safeLeft));
-      background: rgba(0,0,0,.62);
-      backdrop-filter: blur(10px);
-      z-index: 60;
+    .event:hover{
+      transform: translateY(-1px);
+      border-color: rgba(96,165,250,.65);
+      background: rgba(96,165,250,.06);
     }
-    .overlay.show{ display:flex; }
-    .overlay .sheet{
-      width:min(680px, 100%);
-      background: rgba(18,20,26,.92);
-      border:1px solid rgba(255,255,255,.16);
+    .event .left{
+      min-width: 125px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .event .left .rel{
+      font-weight:700;
+      color: rgba(229,231,235,.95);
+    }
+    .event .title{
+      font-weight:700;
+      font-size:13px;
+      margin: 0 0 4px;
+    }
+    .event .desc{
+      margin:0;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      color: var(--muted);
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(11,15,23,.25);
+      padding:4px 8px;
+      border-radius:999px;
+      width: fit-content;
+    }
+    .badge .dot{width:7px;height:7px;border-radius:99px;background: var(--accent);}
+    .badge.ok .dot{background: var(--accent2);}
+    .badge.warn .dot{background: var(--warn);}
+    .badge.danger .dot{background: var(--danger);}
+
+    .rules{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .rule{
+      border:1px solid rgba(36,48,69,.85);
+      background: rgba(11,15,23,.18);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+    .rule h3{margin:0 0 6px; font-size:13px;}
+    .rule p{margin:0; color: var(--muted); font-size:12px; line-height:1.35;}
+    .kpi{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+    .stat{
+      border:1px solid rgba(36,48,69,.85);
+      background: rgba(11,15,23,.18);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+    .stat .label{font-size:11px;color:var(--muted); margin-bottom:6px;}
+    .stat .value{font-family: var(--mono); font-size: 12px;}
+    .small{font-size:11px;color:var(--muted);}
+
+    /* Modal */
+    .backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 999;
+    }
+    .backdrop.show{display:flex;}
+    .modal{
+      width: min(980px, 100%);
+      max-height: min(86vh, 860px);
+      overflow:auto;
+      background: linear-gradient(180deg, rgba(17,24,39,.95), rgba(15,23,42,.95));
+      border:1px solid rgba(36,48,69,.95);
       border-radius: 22px;
       box-shadow: var(--shadow);
-      overflow:hidden;
     }
-    .sheet .sheet-hd{ padding: 14px 14px 0 14px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    .sheet .sheet-hd .k{ font-weight:900; letter-spacing:.2px; }
-    .sheet .content{
-      padding: 10px 14px 14px 14px;
-      color: rgba(238,241,255,.9);
-      line-height:1.45;
-      font-size: 16px;
-      white-space: pre-wrap;
-      word-break: break-word;
+    .modal header{
+      position:sticky;
+      top:0;
+      background: rgba(17,24,39,.92);
+      border-bottom:1px solid rgba(36,48,69,.8);
+      padding: 14px 14px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
     }
-
-    /* Recorder */
-    .recWrap{ height:100%; display:grid; grid-template-rows: 1fr auto; gap: 10px; min-height:0; }
-    .stage{
-      position:relative;
-      min-height:0;
-      overflow:hidden;
-      border-radius: 22px;
-      border:1px solid var(--line);
-      background: #000;
-      box-shadow: var(--shadow);
-      touch-action: manipulation;
+    .modal header .m-title{
+      margin:0;
+      font-size:14px;
+      line-height:1.25;
     }
-    .preview{
-      position:absolute; inset:0; width:100%; height:100%;
-      object-fit: cover; transform: scaleX(-1);
-      background:#000;
+    .modal header .m-sub{
+      margin:4px 0 0;
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 12px;
     }
-    .frame{
-      position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      pointer-events:none;
-    }
-    .frame::before{
-      content:"";
-      width: min(100%, calc(100vh * 9 / 16));
-      height: min(100%, calc(100vw * 16 / 9));
-      aspect-ratio: 9/16;
-      border-radius: 26px;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 0 0 9999px rgba(0,0,0,.02);
-    }
-
-    .hookUi{
-      position:absolute; top: 14px; left: 14px; right: 14px;
-      display:flex; justify-content:center;
-      pointer-events:none; z-index: 6;
-    }
-    .hookPill{
-      max-width: 95%;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.36);
-      border:1px solid rgba(255,255,255,.14);
-      font-weight: 900;
-      letter-spacing:.2px;
-      text-align:center;
-      text-shadow: 0 2px 12px rgba(0,0,0,.55);
-      color: rgba(255,255,255,.95);
-      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
-    }
-
-    .recHud{
-      position:absolute;
-      top: 14px; right: 14px;
-      display:flex; align-items:center; gap:8px;
+    .close{
+      cursor:pointer;
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(11,15,23,.25);
+      color: var(--text);
       padding: 8px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,.42);
-      border:1px solid rgba(255,255,255,.14);
-      z-index: 7;
-      opacity: 0;
-      transform: translateY(-6px);
-      transition: opacity .16s ease, transform .16s ease;
-      pointer-events:none;
+      font-size:12px;
     }
-    .recHud.on{ opacity:1; transform: translateY(0); }
-    .recBadge{
-      width:10px; height:10px; border-radius:50%;
-      background: #ff2d55;
-      box-shadow: 0 0 0 6px rgba(255,45,85,.16);
+    .modal .content{padding: 14px;}
+    .section{
+      border:1px solid rgba(36,48,69,.85);
+      background: rgba(11,15,23,.18);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
-    .recText{ font-weight: 900; letter-spacing:.6px; font-size: 12px; }
-
-    .countdown{
-      position:absolute; inset:0;
-      display:none; align-items:center; justify-content:center;
-      z-index: 10;
-      background: rgba(0,0,0,.45);
-      backdrop-filter: blur(6px);
-    }
-    .countdown.show{ display:flex; }
-    .countdown .num{
-      font-size: 92px;
-      font-weight: 1000;
-      letter-spacing: -2px;
-      text-shadow: 0 10px 35px rgba(0,0,0,.6);
-    }
-
-    /* Karaoke UI overlay (bigger + higher) */
-    .subUi{
-      position:absolute;
-      left: 50%;
-      bottom: calc(64px + var(--safeBottom)); /* << alzato */
-      transform: translateX(-50%);
-      width: min(94%, 760px);
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(0,0,0,.46);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
-      z-index: 8;
-      pointer-events:none;
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
-    }
-    .subLine{
-      font-size: 26px; /* << più grande in UI */
-      line-height: 1.2;
-      font-weight: 1000;
-      text-align:center;
-      color: rgba(255,255,255,.92);
-      text-shadow: 0 2px 14px rgba(0,0,0,.55);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .subLine .w{ opacity:.92; }
-    .subLine .w.on{
-      color: rgba(0,0,0,.92);
-      background: rgba(255,204,0,.92);
-      border-radius: 10px;
-      padding: 2px 6px;
-      margin: 0 2px;
-      box-shadow: 0 8px 22px rgba(255,204,0,.18);
-      text-shadow:none;
-      opacity:1;
-    }
-
-    .controls{ display:grid; grid-template-columns: 1fr; gap: 10px; }
-    .tiny{ font-size:12px; color: var(--muted); }
-    .sliders{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center; }
-    .sliders .s{ display:flex; flex-direction:column; gap:6px; }
-    .sliders label{ font-size:12px; color: var(--muted); display:flex; justify-content:space-between; }
-    input[type="range"]{ width:100%; accent-color: #ff2d55; }
-
-    .recBtnWrap{ display:flex; justify-content:center; padding: 6px 0; }
-    .recBtn{
-      width: 86px; height: 86px;
-      border-radius: 999px;
-      border: 2px solid rgba(255,255,255,.22);
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), rgba(255,255,255,.03) 60%, rgba(0,0,0,.12));
-      display:grid; place-items:center;
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease;
-    }
-    .recBtn:active{ transform: scale(.98); }
-    .recCore{
-      width: 62px; height: 62px;
-      border-radius: 999px;
-      background: #ff2d55;
-      display:grid; place-items:center;
-      box-shadow: 0 12px 30px rgba(255,45,85,.25);
-      border: 1px solid rgba(0,0,0,.25);
-    }
-    .stopSquare{
-      width: 22px; height: 22px;
-      border-radius: 5px;
-      background: rgba(255,255,255,.92);
-      transition: all .12s ease;
-    }
-    .recBtn.recording .recCore{ background: rgba(255,45,85,.95); box-shadow: 0 16px 40px rgba(255,45,85,.35); }
-    .recBtn.recording .stopSquare{ width: 24px; height: 24px; }
-
-    /* Feed */
-    .feedWrap{ height:100%; overflow:hidden; display:grid; grid-template-rows: auto 1fr; gap:10px; min-height:0; }
-    .feedList{
-      min-height:0; overflow:auto;
-      scroll-snap-type: y mandatory;
-      border-radius: 22px;
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      background:#000;
-    }
-    .feedItem{
-      position:relative;
-      height: calc(100vh - 190px);
-      min-height: 560px;
-      scroll-snap-align: start;
-      background:#000;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      overflow:hidden;
-    }
-    .feedItem video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; }
-    .feedMeta{
-      position:absolute; left: 14px; right: 14px; bottom: 14px;
-      z-index: 5; display:flex; flex-direction:column; gap:10px; pointer-events:none;
-    }
-    .feedMeta .pill{
-      display:inline-flex; align-self:flex-start; gap:8px; align-items:center;
-      padding: 10px 12px; border-radius: 18px;
-      background: rgba(0,0,0,.42);
-      border:1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(8px);
-      max-width: 100%;
-    }
-    .feedMeta .title{ font-weight: 950; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-    .feedMeta .tags{ color: rgba(238,241,255,.8); font-size: 12px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-    .feedActions{
-      position:absolute; right: 12px; top: 50%;
-      transform: translateY(-50%);
-      z-index: 6;
-      display:flex; flex-direction:column; gap:10px; pointer-events:auto;
-    }
-    .fab{
-      width: 52px; height: 52px;
-      border-radius: 999px;
-      display:grid; place-items:center;
-      background: rgba(0,0,0,.42);
-      border:1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(8px);
-      cursor:pointer; user-select:none; font-weight: 1000;
-    }
-    .fab small{ font-size: 10px; opacity:.9; letter-spacing:.3px; }
-    .empty{
-      height:100%;
-      display:grid; place-items:center;
-      padding: 30px; color: var(--muted); text-align:center;
-    }
-    .empty .big{ color: rgba(238,241,255,.92); font-weight: 950; font-size: 18px; margin-bottom: 6px; }
-
-    /* Toast */
-    .toasts{
-      position: fixed; left: 0; right: 0;
-      bottom: calc(12px + var(--safeBottom));
-      display:flex; justify-content:center;
-      pointer-events:none; z-index: 80;
-      padding: 0 12px;
-    }
-    .toast{
-      max-width: min(720px, 100%);
-      background: rgba(18,20,26,.92);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-      display:flex; gap:10px; align-items:flex-start;
-      transform: translateY(12px);
-      opacity:0;
-      transition: opacity .18s ease, transform .18s ease;
-      backdrop-filter: blur(10px);
-    }
-    .toast.show{ opacity:1; transform: translateY(0); }
-    .toast .icon{
-      width: 10px; height: 10px; border-radius:50%;
-      margin-top: 4px;
-      background: var(--warn);
-      box-shadow: 0 0 0 6px rgba(255,204,0,.16);
-      flex:0 0 auto;
-    }
-    .toast.good .icon{ background: var(--good); box-shadow: 0 0 0 6px rgba(49,209,88,.16); }
-    .toast.bad .icon{ background: var(--accent); box-shadow: 0 0 0 6px rgba(255,45,85,.16); }
-    .toast .msg{ font-size: 14px; line-height: 1.25; color: rgba(238,241,255,.92); word-break: break-word; }
-
-    /* Review modal */
-    .modal{
-      position:fixed; inset:0;
-      display:none; align-items:center; justify-content:center;
-      background: rgba(0,0,0,.62);
-      backdrop-filter: blur(10px);
-      padding: 18px calc(18px + var(--safeRight)) calc(18px + var(--safeBottom)) calc(18px + var(--safeLeft));
-      z-index: 70;
-    }
-    .modal.show{ display:flex; }
-    .modal .box{
-      width: min(760px, 100%);
-      background: rgba(18,20,26,.94);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .modal .box .hd{ padding: 14px 14px 10px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .modal .box .hd strong{ font-weight: 1000; }
-    .modal .box .bd{ padding: 0 14px 14px 14px; display:grid; gap: 12px; }
-    .reviewVid{
-      width:100%;
-      aspect-ratio: 9/16;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.12);
-      background:#000;
-      object-fit:cover;
-    }
-    .modal .actions{ display:flex; gap:10px; flex-wrap:wrap; }
-  </style>
-
-  <!-- Book Prompter (UI-only) -->
-  <style id="bookPrompterStyle">
-    #bookPrompter{
-      position:absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: calc(112px + var(--safeBottom));
-      width: min(94%, 760px);
-      max-height: 34%;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
-      z-index: 9;
-      pointer-events: none;
-      box-shadow: 0 14px 40px rgba(0,0,0,.28);
-      display:none;
-      overflow:hidden;
-    }
-    #bookPrompter .page{
-      font-size: 20px;
-      line-height: 1.35;
-      font-weight: 850;
-      text-align:left;
-      color: rgba(255,255,255,.94);
-      text-shadow: 0 2px 14px rgba(0,0,0,.55);
+    .section h4{margin:0 0 8px; font-size:13px;}
+    .section ul{margin:0; padding-left: 18px; color: var(--muted); font-size:12px; line-height:1.45;}
+    .section .script{
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(36,48,69,.85);
+      border-radius: 14px;
+      padding: 10px;
+      font-family: var(--mono);
+      color: rgba(229,231,235,.92);
+      font-size: 12px;
       white-space: pre-wrap;
-      word-break: break-word;
     }
-    body.bookMode .subUi{ display:none; }
-    body.bookMode #bookPrompter{ display:block; }
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 860px){
+      .split{grid-template-columns: 1fr;}
+      .event .left{min-width: 110px;}
+      input[type="datetime-local"]{min-width: 180px;}
+    }
+    .footer-note{margin-top: 10px; color: var(--muted); font-size:11px; line-height:1.4;}
   </style>
-
 </head>
-
 <body>
-  <div class="app">
-    <div class="topbar">
-      <div class="brand"><div class="dot"></div><div>Vertical Recorder</div></div>
-      <div class="tabs">
-        <button class="tab active" id="tabScript">Script</button>
-        <button class="tab" id="tabRec">Recorder</button>
-        <button class="tab" id="tabFeed">Feed</button>
+<header>
+  <div class="wrap top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Sistema Acquisizione Incarichi — Timeline Interattiva</h1>
+        <div class="sub">Clicca un’ora → si apre il “popup” con cosa fare, cosa dire, cosa preparare, materiali e regole.</div>
       </div>
     </div>
+    <div class="controls">
+      <div class="pill">
+        <label for="appt">Appuntamento (a casa / in ufficio):</label>
+        <input id="appt" type="datetime-local" />
+      </div>
+      <button class="btn primary" id="apply">Applica orari</button>
+      <button class="btn" id="reset">Reset</button>
+      <button class="btn ok" id="exportTxt">Esporta (testo)</button>
+    </div>
+  </div>
+</header>
 
-    <!-- SCRIPT -->
-    <section class="screen active" id="screenScript">
-      <div class="grid two" style="height:100%; min-height:0;">
-        <div class="card" style="min-height:0; display:flex; flex-direction:column;">
-          <div class="hd">
-            <div>
-              <h2>Flusso forzato: Domanda → Risposta → Invia al teleprompter</h2>
-              <div class="hint">Premi <b>INVIA</b>, guarda l’overlay, poi <b>CHIUDI</b>.</div>
-            </div>
-          </div>
-          <div class="body" style="min-height:0; overflow:auto;">
-            <div class="grid">
-              <div class="field">
-                <label>Domanda (Hook) <span id="qCount">0</span></label>
-                <textarea id="questionInput" placeholder="Esempio: Perché il 90% delle case resta invenduto per mesi?"></textarea>
-              </div>
-              <div class="row">
-                <button class="btn primary" id="sendQuestionBtn">INVIA (Domanda)</button>
-                <span class="tiny">Obbligatorio: appare in overlay.</span>
-              </div>
-
-              <div class="field">
-                <label>Risposta (Script) <span id="aCount">0</span></label>
-                <textarea id="answerInput" placeholder="Incolla o scrivi la risposta completa..."></textarea>
-              </div>
-              <div class="row">
-                <button class="btn primary" id="sendAnswerBtn">INVIA (Risposta)</button>
-                <span class="tiny">Obbligatorio: appare in overlay.</span>
-              </div>
-
-              <div class="row">
-                <button class="btn good" id="pushToTeleprompterBtn">Invia al teleprompter</button>
-                <button class="btn ghost" id="goRecorderBtn">Apri Recorder</button>
-              </div>
-
-              <div class="card" style="padding:12px;">
-                <div class="row" style="justify-content:space-between;">
-                  <div>
-                    <div style="font-weight:950;">Caption standard (forzata)</div>
-                    <div class="tiny">Hook + hashtag + firma fissa.</div>
-                  </div>
-                  <button class="btn ghost" id="copyCaptionBtn">Copia</button>
-                </div>
-                <div id="captionPreview" class="hint" style="margin-top:10px; white-space:pre-wrap;"></div>
-              </div>
-            </div>
-          </div>
+<main class="wrap">
+  <div class="grid">
+    <section class="card">
+      <div class="head">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <h2>Timeline operativa</h2>
+          <span class="tag" id="modeTag">Processo: Standard (90–95%)</span>
         </div>
-
-        <div class="card" style="min-height:0; display:flex; flex-direction:column;">
-          <div class="hd">
-            <div>
-              <h2>Template rapidi (1 tap)</h2>
-              <div class="hint">Riempiono Hook + Script e aggiungono la frase di <b>loop</b>.</div>
-            </div>
-          </div>
-          <div class="body" style="min-height:0; overflow:auto;">
-            <div class="templates">
-              <button class="btn" id="tplA">Errore comune</button>
-              <button class="btn" id="tplB">3 Step</button>
-              <button class="btn" id="tplC">Sfata un mito</button>
-            </div>
-
-            <div style="height:12px;"></div>
-
-            <div class="card" style="padding:12px;">
-              <div style="font-weight:950; margin-bottom:6px;">Logo (persistente)</div>
-              <div class="hint" style="margin-bottom:10px;">Salvato in IndexedDB e burn-in nel video (alto a destra).</div>
-              <div class="row">
-                <button class="btn" id="logoBtn">Carica logo</button>
-                <button class="btn ghost" id="removeLogoBtn">Rimuovi</button>
-                <span class="tiny" id="logoStatus">Nessun logo</span>
-              </div>
-            </div>
-
-            <div style="height:12px;"></div>
-
-            <div class="card" style="padding:12px;">
-              <div style="font-weight:950; margin-bottom:6px;">Karaoke leggibile (burn-in)</div>
-              <div class="hint">Ora è più grande e più alto (safe area). In esportazione resta leggibile.</div>
-            </div>
-
-            <div style="height:12px;"></div>
-
-            <div class="card" style="padding:12px;">
-              <div style="font-weight:950; margin-bottom:6px;">Gate (hard)</div>
-              <div class="hint">Hook min <b>12</b> · Script min <b>40</b> · Countdown sempre ON · Durata max <b>60s</b>.</div>
-            </div>
-          </div>
+        <div class="tabs" role="tablist" aria-label="Seleziona processo">
+          <div class="tab active" id="tab-standard" role="tab" tabindex="0">Standard</div>
+          <div class="tab" id="tab-previsita" role="tab" tabindex="0">Con previsita</div>
+          <div class="tab" id="tab-materiali" role="tab" tabindex="0">Materiali & Script</div>
+        </div>
+      </div>
+      <div class="body">
+        <div id="timeline" class="timeline" aria-live="polite"></div>
+        <div class="footer-note">
+          Nota: se imposti data/ora dell’appuntamento in alto, qui vedi anche l’orario assoluto (calcolato).
+          Se non imposti nulla, resta la timeline relativa (-96h, -48h, ecc.).
         </div>
       </div>
     </section>
 
-    <!-- RECORDER -->
-    <section class="screen" id="screenRecorder">
-      <div class="recWrap">
-        <div class="stage">
-          <video id="livePreview" class="preview" autoplay playsinline muted></video>
-
-          <div class="hookUi"><div class="hookPill" id="hookUiText">Hook…</div></div>
-
-          <div class="recHud" id="recHud">
-            <div class="recBadge"></div><div class="recText">REC</div>
-          </div>
-
-          <div class="subUi" aria-hidden="true">
-            <div class="subLine" id="subUiLine">—</div>
-          </div>
-
-          <div class="countdown" id="countdown"><div class="num" id="countNum">3</div></div>
-          <div class="frame" aria-hidden="true"></div>
+    <aside class="card">
+      <div class="head">
+        <h2>Regole non negoziabili</h2>
+        <span class="tag">Sempre visibili</span>
+      </div>
+      <div class="body rules">
+        <div class="rule">
+          <h3>Se NON legge → si rinvia</h3>
+          <p>Se il venditore non ha letto il pacchetto/relazione, non ti presenti: sposti l’appuntamento finché non ha dato un’occhiata attenta.</p>
+        </div>
+        <div class="rule">
+          <h3>Relazione ≥ 48h prima</h3>
+          <p>Inviala/Consegna almeno due giorni prima per far “sbollire” le aspettative sul prezzo e anticipare il tuo metodo in modo professionale.</p>
+        </div>
+        <div class="rule">
+          <h3>Presentazione ≤ 30 minuti</h3>
+          <p>Oltre 30 minuti stai chiacchierando. Conduci, vai dritto, e in chiusura non tentennare.</p>
+        </div>
+        <div class="rule">
+          <h3>Tu selezioni</h3>
+          <p>Inverti il paradigma: non sei legato al risultato, non “apprezzi troppo” l’altra persona, mantieni status alto.</p>
         </div>
 
-        <div class="controls">
-          <div class="card">
-            <div class="sliders">
-              <div class="s">
-                <label>Zoom <span id="zoomVal">1.00×</span></label>
-                <input id="zoomRange" type="range" min="1" max="1.35" step="0.01" value="1.00" />
-              </div>
-              <div class="s">
-                <label>Velocità <span id="spdVal">150 wpm</span></label>
-                <input id="speedRange" type="range" min="110" max="200" step="1" value="150" />
-              </div>
-            </div>
+        <div class="kpi">
+          <div class="stat">
+            <div class="label">Mindset</div>
+            <div class="value">“Show time” &gt; chiusura trattativa</div>
+            <div class="small">Il proprietario sceglie l’agente: è il momento più importante.</div>
           </div>
-
-          <div class="card">
-            <div class="row" style="justify-content:space-between;">
-              <div class="tiny" id="recStatus">Pronto. Karaoke sempre ON.</div>
-              <div class="tiny" id="timeLeft">60s</div>
-            </div>
-            <div class="recBtnWrap">
-              <div class="recBtn" id="recBtn" role="button" aria-label="REC">
-                <div class="recCore"><div class="stopSquare"></div></div>
-              </div>
-            </div>
-            <div class="row" style="justify-content:space-between;">
-              <button class="btn ghost" id="backToScriptBtn">← Script</button>
-              <button class="btn ghost" id="openFeedBtn">Feed →</button>
-            </div>
+          <div class="stat">
+            <div class="label">Obiettivo</div>
+            <div class="value">Incarico firmato il giorno stesso</div>
+            <div class="small">La concorrenza non fa questo processo: tu sì.</div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- FEED -->
-    <section class="screen" id="screenFeed">
-      <div class="feedWrap">
-        <div class="card" style="padding:12px;">
-          <div class="row" style="justify-content:space-between; align-items:flex-start;">
-            <div>
-              <div style="font-weight:950;">Archivio</div>
-              <div class="hint">Scorri verticale. Autoplay solo del video visibile.</div>
-            </div>
-            <div class="row">
-              <button class="btn ghost" id="feedToRecBtn">← Recorder</button>
-              <button class="btn warn" id="wipeAllBtn">Svuota</button>
-            </div>
-          </div>
-        </div>
-        <div class="feedList" id="feedList"></div>
       </div>
-    </section>
+    </aside>
   </div>
+</main>
 
-  <!-- Overlay -->
-  <div class="overlay" id="textOverlay" aria-hidden="true">
-    <div class="sheet">
-      <div class="sheet-hd">
-        <div class="k" id="overlayTitle">Overlay</div>
-        <button class="btn ghost" id="closeOverlayBtn">Chiudi</button>
+<!-- Modal -->
+<div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Dettaglio operazione">
+  <div class="modal">
+    <header>
+      <div>
+        <p class="m-title" id="mTitle"></p>
+        <p class="m-sub" id="mSub"></p>
       </div>
-      <div class="content" id="overlayContent"></div>
-    </div>
+      <button class="close" id="close">Chiudi ✕</button>
+    </header>
+    <div class="content" id="mContent"></div>
   </div>
+</div>
 
-  <!-- Review -->
-  <div class="modal" id="reviewModal" aria-hidden="true">
-    <div class="box">
-      <div class="hd">
-        <strong>Clip pronta</strong>
-        <button class="btn ghost" id="closeReviewBtn">Chiudi</button>
-      </div>
-      <div class="bd">
-        <video class="reviewVid" id="reviewVideo" controls playsinline></video>
-        <div class="actions">
-          <button class="btn good" id="saveClipBtn">Salva nel feed</button>
-          <button class="btn primary" id="downloadClipBtn">Download</button>
-          <button class="btn ghost" id="discardClipBtn">Scarta</button>
-        </div>
-        <div class="hint" id="reviewMeta"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toasts" aria-live="polite" aria-atomic="true">
-    <div class="toast" id="toast">
-      <div class="icon"></div>
-      <div class="msg" id="toastMsg">—</div>
-    </div>
-  </div>
-
-  <input id="logoInput" type="file" accept="image/*" hidden />
-
-  <script>
-    /*****************************************************************
-     * 0) Utils
-     *****************************************************************/
-    const $ = (s)=>document.querySelector(s);
-    const $$ = (s)=>Array.from(document.querySelectorAll(s));
-    const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-    const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-
-    const toastEl=$("#toast"), toastMsg=$("#toastMsg");
-    let toastTimer=null;
-    function showToast(msg,type="bad"){
-      toastEl.classList.remove("good","bad");
-      toastEl.classList.add(type);
-      toastMsg.textContent=msg;
-      toastEl.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer=setTimeout(()=>toastEl.classList.remove("show"),2200);
-    }
-    function downloadBlob(blob, filename){
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename;
-      document.body.appendChild(a);
-      a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),1200);
-    }
-    function escapeHtml(s){
-      return (s||"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-    }
-
-    /*****************************************************************
-     * 1) IndexedDB
-     *****************************************************************/
-    const DB_NAME="vertical_recorder_db", DB_VER=1;
-    let db=null;
-
-    function openDB(){
-      return new Promise((resolve,reject)=>{
-        const req=indexedDB.open(DB_NAME,DB_VER);
-        req.onupgradeneeded=()=>{
-          const d=req.result;
-          if(!d.objectStoreNames.contains("settings")) d.createObjectStore("settings");
-          if(!d.objectStoreNames.contains("clips")){
-            const st=d.createObjectStore("clips",{keyPath:"id",autoIncrement:true});
-            st.createIndex("createdAt","createdAt");
-          }
-        };
-        req.onsuccess=()=>resolve(req.result);
-        req.onerror=()=>reject(req.error);
-      });
-    }
-    const idbGet=(store,key)=>new Promise((resolve,reject)=>{
-      const tx=db.transaction(store,"readonly");
-      const st=tx.objectStore(store);
-      const req=st.get(key);
-      req.onsuccess=()=>resolve(req.result);
-      req.onerror=()=>reject(req.error);
-    });
-    const idbPut=(store,key,val)=>new Promise((resolve,reject)=>{
-      const tx=db.transaction(store,"readwrite");
-      const st=tx.objectStore(store);
-      const req=st.put(val,key);
-      req.onsuccess=()=>resolve(true);
-      req.onerror=()=>reject(req.error);
-    });
-    const idbDel=(store,key)=>new Promise((resolve,reject)=>{
-      const tx=db.transaction(store,"readwrite");
-      const st=tx.objectStore(store);
-      const req=st.delete(key);
-      req.onsuccess=()=>resolve(true);
-      req.onerror=()=>reject(req.error);
-    });
-    const idbAddClip=(clip)=>new Promise((resolve,reject)=>{
-      const tx=db.transaction("clips","readwrite");
-      const st=tx.objectStore("clips");
-      const req=st.add(clip);
-      req.onsuccess=()=>resolve(req.result);
-      req.onerror=()=>reject(req.error);
-    });
-    const idbGetAllClips=()=>new Promise((resolve,reject)=>{
-      const tx=db.transaction("clips","readonly");
-      const st=tx.objectStore("clips");
-      const req=st.getAll();
-      req.onsuccess=()=>resolve(req.result||[]);
-      req.onerror=()=>reject(req.error);
-    });
-
-    /*****************************************************************
-     * 2) Rules / constants
-     *****************************************************************/
-    const DEFAULT_TAGS=["#immobiliare","#realestate","#marketing","#socialmedia","#content"];
-    const FIXED_SIGNATURE=
-`geometra Christian Raimondi
-Immobiliare La Sacra
-
-📞 346 256 8685
-📧 immobiliarelasacra@gmail.com`;
-
-    const LOOP_PREFIX="Se ti sei perso l’inizio, rivedilo:";
-    const MAX_SECONDS=60;
-    const COUNTDOWN_ON=true;
-
-    /*****************************************************************
-     * 3) State
-     *****************************************************************/
-    const state={
-      hook:"",
-      script:"",
-      caption:"",
-      // logo
-      logoBlob:null,
-      logoBitmap:null,
-      logoAspect:1,
-      // karaoke
-      words:[],
-      tokenIndex:0,
-      wpm:150,
-      wps:150/60,
-      phraseSize:10,
-      karaokeStartTs:0,
-      karaokeRunning:false,
-      uiRaf:null,
-      // recorder
-      stream:null,
-      audioTrack:null,
-      recording:false,
-      recorder:null,
-      chunks:[],
-      recordedBlob:null,
-      recordStartTs:0,
-      stopTimer:null,
-      // canvas
-      canvas:null,
-      ctx:null,
-      rafId:null
-    };
-
-    function buildCaption(){
-      const hook=(state.hook||"").trim();
-      const tags=DEFAULT_TAGS.slice(0,5).join(" ");
-      const firstLine=hook?hook:"—";
-      state.caption=`${firstLine}\n${tags}\n\n${FIXED_SIGNATURE}`;
-      $("#captionPreview").textContent=state.caption;
-    }
-    function ensureLoopLine(){
-      const hook=(state.hook||"").trim();
-      if(!hook) return;
-      const loopLine=`${LOOP_PREFIX} ${hook}`;
-      const s=(state.script||"").trim();
-      if(!s) return;
-      if(!s.toLowerCase().includes(LOOP_PREFIX.toLowerCase())){
-        state.script=s.replace(/\s+$/,"")+"\n\n"+loopLine;
+<script>
+/**
+ * Timeline data
+ * - relativeHours: negative = before appointment; positive = after; 0 = at appointment
+ * - importance: "ok" | "warn" | "danger" | "info"
+ */
+const DATA = {
+  standard: [
+    {
+      id: "std-96",
+      relativeHours: -96,
+      relLabel: "-96h",
+      title: "Primo contatto & fissaggio appuntamenti (≥ 4 giorni)",
+      short: "Blocca anticipo, imposta controllo: prequalifica + appuntamento a casa.",
+      importance: "info",
+      popup: {
+        obiettivo: [
+          "Impostare il controllo del processo e fissare due appuntamenti (telefonico + di persona) con almeno 4 giorni di anticipo."
+        ],
+        cosaFare: [
+          "Gestisci la chiamata con tono calmo, sicuro, professionale.",
+          "NON fissare l’appuntamento a breve: tieniti ≥ 4 giorni di anticipo (es. lunedì → non prima di giovedì).",
+          "Concorda subito 2 momenti: (1) chiamata di prequalifica (2) incontro dal vivo.",
+          "Spiega che lavori con metodo per far risparmiare tempo e arrivare preparati."
+        ],
+        cosaDire: [
+          `Apertura/posizionamento:\n"Perfetto. Prima di vederci dal vivo, lavoro sempre con una breve chiamata di prequalifica così da arrivare preparato e farle risparmiare tempo."`,
+          `Set degli appuntamenti:\n"Facciamo così: ci sentiamo al telefono per le domande mercoledì alle 18:30 e poi ci vediamo venerdì alle 16:00. In questo modo arrivo con tutto pronto e lei capisce esattamente come lavoro."`,
+          `Status & controllo:\n"Il mio obiettivo è darle un quadro chiaro e professionale del mercato, così che la decisione sia semplice e basata sui dati."`
+        ],
+        cosaPreparare: [
+          "Agenda con doppio slot (prequalifica + incontro).",
+          "Template SMS riepilogo + link al video informativo.",
+          "Modulo prequalifica (stampabile o digitale)."
+        ],
+        materiali: [
+          "Template SMS (riepilogo appuntamenti).",
+          "Video informativo (incarico/collaborazione e metodo operativo).",
+          "Modulo prequalifica."
+        ],
+        errori: [
+          "Fissare l’incontro troppo presto (perdi controllo e tempo).",
+          "Parlare subito di prezzo senza contesto.",
+          "Accettare appuntamenti vaghi senza prequalifica."
+        ]
       }
-    }
-    function updateRecorderUITexts(){
-      $("#hookUiText").textContent=(state.hook||"Hook…").trim()||"Hook…";
-      buildCaption();
-      rebuildKaraokeTokens();
-    }
-
-    /*****************************************************************
-     * 4) Hard gate
-     *****************************************************************/
-    function canStartRec(){
-      const hook=(state.hook||"").trim();
-      const script=(state.script||"").trim();
-      if(hook.length<12){
-        showToast("Scrivi un hook chiaro (min 12 caratteri)","bad");
-        $("#questionInput").focus(); return false;
+    },
+    {
+      id: "std-90",
+      relativeHours: -90,
+      relLabel: "-90h",
+      title: "SMS riepilogo + invio video informativo (subito dopo)",
+      short: "Riepiloga e informa: fai percepire metodo e professionalità prima di vederti.",
+      importance: "ok",
+      popup: {
+        obiettivo: [
+          "Rendere il venditore consapevole del tuo metodo e fissare aspettative professionali."
+        ],
+        cosaFare: [
+          "Invia SMS immediato con riepilogo appuntamenti (telefonico + dal vivo).",
+          "Allega/invia il video informativo: cosa significa incarico, collaborazione, affidarti la vendita.",
+          "Scrivi che lo richiamerai per la prequalifica e che è un passaggio fondamentale."
+        ],
+        cosaDire: [
+          `SMS pronto:\n"Come anticipato, ci sentiamo [DATA/ORA PREQUALIFICA] e ci vediamo [DATA/ORA INCONTRO]. Intanto le invio un breve video dove spiego come lavoro e cosa significa affidarmi l’incarico di vendita, così arriviamo all’appuntamento con le idee chiarissime."`
+        ],
+        cosaPreparare: [
+          "Link al video (WhatsApp/SMS).",
+          "Template SMS in note rapide.",
+          "Mini-check: consegna relazione ≥ 48h prima (da anticipare mentalmente)."
+        ],
+        materiali: [
+          "Video informativo (incarico/collaborazione).",
+          "Template SMS."
+        ],
+        errori: [
+          "Non inviare nulla: perdi l’effetto ‘novità’ e il posizionamento professionale.",
+          "Messaggi lunghi/confusi: deve essere pulito e deciso."
+        ]
       }
-      if(script.length<40){
-        showToast("Scrivi uno script teleprompter (min 40 caratteri)","bad");
-        $("#answerInput").focus(); return false;
-      }
-      const v=$("#livePreview");
-      if(!state.stream || !v.srcObject || !(v.videoWidth>0)){
-        showToast("Avvio camera… concedi i permessi.","bad");
-        startCamera().catch(()=>{});
-        return false;
-      }
-      return true;
-    }
-
-    /*****************************************************************
-     * 5) Navigation
-     *****************************************************************/
-    const screens={ script:$("#screenScript"), recorder:$("#screenRecorder"), feed:$("#screenFeed") };
-    function setTab(active){
-      $("#tabScript").classList.toggle("active",active==="script");
-      $("#tabRec").classList.toggle("active",active==="recorder");
-      $("#tabFeed").classList.toggle("active",active==="feed");
-      Object.keys(screens).forEach(k=>screens[k].classList.toggle("active",k===active));
-    }
-    function openScript(){ setTab("script"); }
-    async function openRecorder(){
-      setTab("recorder");
-      await startCamera().catch(()=>{});
-      startKaraokeUI(); // sempre ON
-      updateRecorderUITexts();
-    }
-    async function openFeed(){
-      setTab("feed");
-      await renderFeed();
-    }
-
-    /*****************************************************************
-     * 6) Overlay flow
-     *****************************************************************/
-    const overlay=$("#textOverlay"), overlayTitle=$("#overlayTitle"), overlayContent=$("#overlayContent");
-    function showOverlay(title,text){
-      overlayTitle.textContent=title;
-      overlayContent.textContent=text;
-      overlay.classList.add("show");
-      overlay.setAttribute("aria-hidden","false");
-    }
-    function closeOverlay(){
-      overlay.classList.remove("show");
-      overlay.setAttribute("aria-hidden","true");
-    }
-    $("#closeOverlayBtn").addEventListener("click",closeOverlay);
-    overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeOverlay(); });
-
-    /*****************************************************************
-     * 7) Templates
-     *****************************************************************/
-    function applyTemplate(kind){
-      const t={
-        A:{
-          hook:"L’errore più comune quando metti in vendita casa: puntare tutto sul prezzo.",
-          script:
-`Se vuoi vendere velocemente, il prezzo conta… ma non è l’unica leva.
-L’errore più comune è “tagliare” il prezzo senza sistemare il contesto.
-
-Ecco cosa funziona meglio:
-1) Foto e video che fanno percepire valore (luce, ordine, angoli giusti).
-2) Descrizione che risponde alle obiezioni (spese, zona, servizi, punti forti).
-3) Piano visite concentrato: poche visite ma qualificate.
-
-Risultato? Più richieste, più competizione, e trattativa più semplice.
-Se vuoi, scrivimi “CHECK” e ti dico cosa sistemare prima di pubblicare.`
-        },
-        B:{
-          hook:"Vuoi più contatti dal tuo annuncio? Fai questi 3 step prima di pubblicare.",
-          script:
-`Step 1: Apri con un beneficio chiaro (non con “vendo casa…”).
-Esempio: “A 2 minuti dai servizi, luminoso, pronto da abitare”.
-
-Step 2: Taglia tutto ciò che non serve.
-Metti solo: metratura, punti forti, spese, e 1 dettaglio che differenzia (terrazzo, box, vista).
-
-Step 3: Chiudi con una CTA semplice.
-“Scrivimi ‘PLAN’ e ti mando la scheda completa + disponibilità visite”.
-
-Questi 3 step aumentano qualità dei contatti e riducono perdite di tempo.
-Provali oggi sul prossimo post.`
-        },
-        C:{
-          hook:"Mito da sfatare: “Basta pubblicare ovunque e arrivano clienti”.",
-          script:
-`Pubblicare ovunque non basta. Se il messaggio è generico, l’algoritmo non ti aiuta.
-Quello che conta è: una promessa chiara + una prova + una CTA.
-
-Promessa: cosa ottiene la persona?
-Prova: un esempio reale (numeri, caso, prima/dopo).
-CTA: cosa deve fare subito (scrivere una parola, cliccare, salvare).
-
-Quando fai così, anche con pochi follower ottieni risultati.
-Se vuoi, dimmi il tuo settore e ti scrivo un hook su misura.`
-        }
-      }[kind];
-      if(!t) return;
-      $("#questionInput").value=t.hook;
-      $("#answerInput").value=t.script;
-      state.hook=t.hook;
-      state.script=t.script;
-      ensureLoopLine();
-      $("#answerInput").value=state.script;
-      updateCounts();
-      updateRecorderUITexts();
-      showToast("Template caricato ✅","good");
-    }
-    $("#tplA").addEventListener("click",()=>applyTemplate("A"));
-    $("#tplB").addEventListener("click",()=>applyTemplate("B"));
-    $("#tplC").addEventListener("click",()=>applyTemplate("C"));
-
-    /*****************************************************************
-     * 8) Logo (IndexedDB)
-     *****************************************************************/
-    const logoInput=$("#logoInput");
-    $("#logoBtn").addEventListener("click",()=>logoInput.click());
-    $("#removeLogoBtn").addEventListener("click",async ()=>{
-      state.logoBlob=null; state.logoBitmap=null;
-      if(db) await idbDel("settings","logo").catch(()=>{});
-      $("#logoStatus").textContent="Nessun logo";
-      showToast("Logo rimosso","good");
-    });
-    logoInput.addEventListener("change",async (e)=>{
-      const file=e.target.files && e.target.files[0];
-      logoInput.value="";
-      if(!file) return;
-      try{
-        if(db) await idbPut("settings","logo",file);
-        state.logoBlob=file;
-        await loadLogoBitmapFromBlob(file);
-        $("#logoStatus").textContent=`Logo: ${file.name}`;
-        showToast("Logo salvato ✅","good");
-      }catch(err){
-        console.error(err);
-        showToast("Errore nel salvataggio del logo","bad");
-      }
-    });
-    async function loadLogoBitmapFromBlob(blob){
-      try{
-        const bmp=await createImageBitmap(blob);
-        state.logoBitmap=bmp;
-        state.logoAspect=bmp.width/bmp.height;
-      }catch(e){
-        state.logoBitmap=null; state.logoAspect=1;
-      }
-    }
-
-    /*****************************************************************
-     * 9) Camera
-     *****************************************************************/
-    async function startCamera(){
-      const v=$("#livePreview");
-      if(state.stream && v.srcObject) return;
-      $("#recStatus").textContent="Avvio camera…";
-      try{
-        const constraints={
-          audio:true,
-          video:{ facingMode:"user", width:{ideal:1280}, height:{ideal:720} }
-        };
-        const stream=await navigator.mediaDevices.getUserMedia(constraints);
-        state.stream=stream;
-        state.audioTrack=stream.getAudioTracks()[0]||null;
-
-        v.srcObject=stream;
-        v.muted=true;
-        await v.play().catch(()=>{});
-
-        await new Promise((resolve)=>{
-          if(v.readyState>=2 && v.videoWidth>0) return resolve();
-          const on=()=>{
-            if(v.videoWidth>0){
-              v.removeEventListener("loadedmetadata",on);
-              v.removeEventListener("canplay",on);
-              resolve();
-            }
-          };
-          v.addEventListener("loadedmetadata",on);
-          v.addEventListener("canplay",on);
-        });
-
-        $("#recStatus").textContent="Pronto. Karaoke sempre ON.";
-      }catch(err){
-        console.error(err);
-        state.stream=null;
-        $("#recStatus").textContent="Permesso camera negato o non disponibile.";
-        showToast("Permesso camera/microfono necessario (solo https/localhost).","bad");
-      }
-    }
-
-    /*****************************************************************
-     * 10) Karaoke tokens + UI loop
-     *****************************************************************/
-    function tokenizeScript(text){
-      const cleaned=(text||"").replace(/\s+/g," ").trim();
-      if(!cleaned) return [];
-      return cleaned.split(" ").filter(Boolean);
-    }
-    function rebuildKaraokeTokens(){
-      const s=(state.script||"").trim();
-      state.words=tokenizeScript(s);
-      state.tokenIndex=clamp(state.tokenIndex,0,Math.max(0,state.words.length-1));
-      renderKaraokeUI(performance.now());
-    }
-    function startKaraokeUI(){
-      if(state.karaokeRunning) return;
-      state.karaokeRunning=true;
-      state.karaokeStartTs=performance.now();
-      state.tokenIndex=0;
-      const tick=(ts)=>{
-        if(!state.karaokeRunning) return;
-        advanceKaraoke(ts);
-        renderKaraokeUI(ts);
-        state.uiRaf=requestAnimationFrame(tick);
-      };
-      state.uiRaf=requestAnimationFrame(tick);
-    }
-    function advanceKaraoke(ts){
-      if(!state.words.length) return;
-      state.wps = state.wpm/60;
-      const elapsed=(ts-state.karaokeStartTs)/1000;
-      const step=1/Math.max(0.8,state.wps);
-      state.tokenIndex = Math.floor(elapsed/step) % state.words.length;
-    }
-    function getPhraseWindow(){
-      const n=state.words.length;
-      if(!n) return {start:0,end:0,idx:0};
-      const idx=state.tokenIndex;
-      const size=state.phraseSize;
-      const start=clamp(idx-Math.floor(size*0.35),0,Math.max(0,n-size));
-      const end=clamp(start+size,0,n);
-      return {start,end,idx};
-    }
-    function renderKaraokeUI(){
-      const el=$("#subUiLine");
-      if(!state.words.length){ el.textContent="—"; return; }
-      const {start,end,idx}=getPhraseWindow();
-      const parts=[];
-      for(let i=start;i<end;i++){
-        const cls=(i===idx)?"w on":"w";
-        parts.push(`<span class="${cls}">${escapeHtml(state.words[i])}</span>`);
-      }
-      el.innerHTML=parts.join(" ");
-    }
-
-    /*****************************************************************
-     * 11) Recording: canvas 1080x1920 + burn-in BIG + SAFE
-     *****************************************************************/
-    function chooseMimeType(){
-      const c=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
-      for(const t of c){
-        if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
-      }
-      return "";
-    }
-    function setupCanvas(){
-      if(!state.canvas){
-        state.canvas=document.createElement("canvas");
-        state.ctx=state.canvas.getContext("2d",{alpha:false,desynchronized:true});
-      }
-      // ✅ export più pulito
-      state.canvas.width=1080;
-      state.canvas.height=1920;
-    }
-    function drawCover(ctx, video, cw, ch, zoom=1.0){
-      const vw=video.videoWidth||1280;
-      const vh=video.videoHeight||720;
-      const scale=Math.max(cw/vw, ch/vh)*zoom;
-      const dw=vw*scale, dh=vh*scale;
-      const dx=(cw-dw)/2, dy=(ch-dh)/2;
-      ctx.drawImage(video, dx, dy, dw, dh);
-    }
-    function roundRect(ctx,x,y,w,h,r){
-      const rr=Math.min(r,w/2,h/2);
-      ctx.beginPath();
-      ctx.moveTo(x+rr,y);
-      ctx.arcTo(x+w,y,x+w,y+h,rr);
-      ctx.arcTo(x+w,y+h,x,y+h,rr);
-      ctx.arcTo(x,y+h,x,y,rr);
-      ctx.arcTo(x,y,x+w,y,rr);
-      ctx.closePath();
-    }
-    function ellipsizeToWidth(ctx,str,maxW){
-      if(ctx.measureText(str).width<=maxW) return str;
-      const ell="…"; let s=str;
-      while(s.length>1 && ctx.measureText(s+ell).width>maxW) s=s.slice(0,-1);
-      return s+ell;
-    }
-    function drawPill(ctx, text, x, y, maxW, fontPx){
-      ctx.save();
-      ctx.font=`900 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
-      const padX=18, padY=10;
-      const tw=ctx.measureText(text).width;
-      const w=clamp(tw+padX*2,0,maxW);
-      const h=fontPx+padY*2;
-      const rx=x-w/2;
-
-      ctx.fillStyle="rgba(0,0,0,0.38)";
-      ctx.strokeStyle="rgba(255,255,255,0.14)";
-      ctx.lineWidth=2;
-      roundRect(ctx,rx,y,w,h,999);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle="rgba(255,255,255,0.95)";
-      ctx.textAlign="center";
-      ctx.textBaseline="middle";
-      ctx.shadowColor="rgba(0,0,0,0.55)";
-      ctx.shadowBlur=12;
-      ctx.fillText(ellipsizeToWidth(ctx,text,w-padX*2), x, y+h/2);
-      ctx.restore();
-    }
-    function drawRecIcon(ctx, x, y, size){
-      ctx.save();
-      ctx.translate(x,y);
-      ctx.fillStyle="rgba(255,45,85,0.95)";
-      ctx.beginPath(); ctx.arc(0,0,size/2,0,Math.PI*2); ctx.fill();
-      const sq=size*0.34;
-      ctx.fillStyle="rgba(255,255,255,0.92)";
-      roundRect(ctx,-sq/2,-sq/2,sq,sq,Math.max(3,sq*0.18));
-      ctx.fill();
-      ctx.restore();
-    }
-    function drawLogo(ctx, cw){
-      if(!state.logoBitmap) return;
-      const margin=34;
-      const targetW=cw*0.18;
-      const w=targetW, h=w/state.logoAspect;
-      const x=cw - margin - w, y=margin;
-
-      ctx.save();
-      ctx.fillStyle="rgba(0,0,0,0.25)";
-      ctx.strokeStyle="rgba(255,255,255,0.12)";
-      ctx.lineWidth=2;
-      roundRect(ctx,x-12,y-12,w+24,h+24,18);
-      ctx.fill(); ctx.stroke();
-      ctx.drawImage(state.logoBitmap,x,y,w,h);
-      ctx.restore();
-    }
-
-    // ✅ QUI IL FIX: sottotitolo più grande + più alto + proporzionale
-    function drawKaraokeBurnIn(ctx, cw, ch){
-      if(!state.words.length) return;
-
-      // Safe margins
-      const padX = Math.round(cw*0.06);           // 6% laterale
-      const safeBottom = Math.round(ch*0.14);     // 14% dal fondo (evita UI TikTok)
-      const boxH = Math.round(ch*0.12);           // 12% altezza box (grande)
-      const x = padX;
-      const w = cw - padX*2;
-      const y = ch - safeBottom - boxH;
-
-      // Background box
-      ctx.save();
-      ctx.fillStyle="rgba(0,0,0,0.52)";
-      ctx.strokeStyle="rgba(255,255,255,0.16)";
-      ctx.lineWidth = Math.max(2, Math.round(ch*0.0018));
-      roundRect(ctx,x,y,w,boxH, Math.round(boxH*0.28));
-      ctx.fill(); ctx.stroke();
-
-      // Font proporzionale (molto più leggibile in export)
-      const fontPx = Math.round(ch*0.042); // ~80px su 1920
-      ctx.font = `1000 ${fontPx}px ${getComputedStyle(document.body).fontFamily}`;
-      ctx.textAlign="left";
-      ctx.textBaseline="middle";
-      ctx.shadowColor="rgba(0,0,0,0.65)";
-      ctx.shadowBlur = Math.round(ch*0.01);
-
-      // Phrase window
-      const {start,end,idx}=getPhraseWindow();
-      let tokens=[];
-      for(let i=start;i<end;i++) tokens.push({t: state.words[i], on: i===idx});
-
-      // Measure and trim if needed (keep readable)
-      const spaceW = ctx.measureText(" ").width;
-      const measurePhrase=(arr)=>{
-        const tw = arr.reduce((sum,tt)=>sum + ctx.measureText(tt.t).width,0);
-        return tw + spaceW*(arr.length-1);
-      };
-      let totalW = measurePhrase(tokens);
-      while(tokens.length>5 && totalW > w - Math.round(cw*0.06)){
-        const hi = tokens.findIndex(z=>z.on);
-        const dropFromStart = hi > tokens.length/2;
-        tokens = dropFromStart ? tokens.slice(1) : tokens.slice(0,-1);
-        totalW = measurePhrase(tokens);
-      }
-
-      // Center horizontally
-      let cursorX = x + (w - totalW)/2;
-      const cy = y + boxH/2;
-
-      for(const token of tokens){
-        const ww = ctx.measureText(token.t).width;
-
-        if(token.on){
-          // Highlight pill
-          const pad = Math.round(fontPx*0.22);
-          const rx = cursorX - pad;
-          const ry = cy - fontPx/2 - Math.round(fontPx*0.28);
-          const rw = ww + pad*2;
-          const rh = fontPx + Math.round(fontPx*0.56);
-
-          ctx.save();
-          ctx.shadowBlur = 0;
-          ctx.fillStyle="rgba(255,204,0,0.95)";
-          roundRect(ctx, rx, ry, rw, rh, Math.round(rh*0.28));
-          ctx.fill();
-          ctx.restore();
-
-          ctx.fillStyle="rgba(0,0,0,0.92)";
-          ctx.fillText(token.t, cursorX, cy);
-          ctx.fillStyle="rgba(255,255,255,0.94)";
-        }else{
-          ctx.fillStyle="rgba(255,255,255,0.94)";
-          ctx.fillText(token.t, cursorX, cy);
-        }
-        cursorX += ww + spaceW;
-      }
-
-      ctx.restore();
-    }
-
-    function renderFrame(ts){
-      const ctx=state.ctx, c=state.canvas, v=$("#livePreview");
-      if(!ctx || !c || !v) return;
-
-      const cw=c.width, ch=c.height;
-
-      ctx.fillStyle="#000"; ctx.fillRect(0,0,cw,ch);
-      if(v.videoWidth>0) drawCover(ctx, v, cw, ch, state.tpZoom || 1);
-
-      const hook=(state.hook||"").trim();
-      if(hook) drawPill(ctx, hook, cw/2, Math.round(ch*0.02), cw*0.94, Math.round(ch*0.03));
-
-      drawLogo(ctx, cw);
-      drawKaraokeBurnIn(ctx, cw, ch);
-
-      if(state.recording){
-        drawRecIcon(ctx, cw - Math.round(cw*0.05), Math.round(ch*0.05), Math.round(ch*0.018));
-        ctx.save();
-        ctx.font=`900 ${Math.round(ch*0.016)}px ${getComputedStyle(document.body).fontFamily}`;
-        ctx.fillStyle="rgba(255,255,255,0.92)";
-        ctx.textAlign="right";
-        ctx.textBaseline="middle";
-        ctx.shadowColor="rgba(0,0,0,0.55)";
-        ctx.shadowBlur=Math.round(ch*0.008);
-        ctx.fillText("REC", cw - Math.round(cw*0.08), Math.round(ch*0.05));
-        ctx.restore();
-      }
-
-      state.rafId=requestAnimationFrame(renderFrame);
-    }
-
-    async function runCountdown(){
-      const cd=$("#countdown"), n=$("#countNum");
-      cd.classList.add("show");
-      for(const v of [3,2,1]){ n.textContent=v; await sleep(700); }
-      cd.classList.remove("show");
-    }
-
-    async function startRecording(){
-      if(state.recording) return;
-      if(!canStartRec()) return;
-
-      ensureLoopLine();
-      $("#answerInput").value=state.script;
-      updateRecorderUITexts();
-
-      if(COUNTDOWN_ON) await runCountdown();
-
-      // reset karaoke timing on REC
-      state.karaokeStartTs=performance.now();
-      state.tokenIndex=0;
-
-      setupCanvas();
-      if(state.rafId) cancelAnimationFrame(state.rafId);
-      state.rafId=requestAnimationFrame(renderFrame);
-
-      const streamOut=state.canvas.captureStream(30);
-      if(state.audioTrack){
-        try{ streamOut.addTrack(state.audioTrack); }catch(e){}
-      }
-
-      const mimeType=chooseMimeType();
-      let mr=null;
-      try{ mr = mimeType ? new MediaRecorder(streamOut,{mimeType}) : new MediaRecorder(streamOut); }
-      catch(err){ console.error(err); showToast("MediaRecorder non disponibile.","bad"); return; }
-
-      state.recorder=mr;
-      state.chunks=[];
-      state.recording=true;
-      state.recordStartTs=performance.now();
-
-      $("#recBtn").classList.add("recording");
-      $("#recHud").classList.add("on");
-      $("#recStatus").textContent="Registrazione… (max 60s)";
-      $("#timeLeft").textContent=`${MAX_SECONDS}s`;
-
-      mr.ondataavailable=(e)=>{ if(e.data && e.data.size>0) state.chunks.push(e.data); };
-      mr.onstop=async ()=>{
-        try{
-          const blob=new Blob(state.chunks,{type: mr.mimeType || "video/webm"});
-          state.recordedBlob=blob;
-          state.chunks=[];
-          await openReview(blob);
-        }catch(e){
-          console.error(e);
-          showToast("Errore nel salvataggio del video","bad");
-        }
-      };
-
-      mr.start(250);
-      clearTimeout(state.stopTimer);
-      state.stopTimer=setTimeout(()=>stopRecording(), MAX_SECONDS*1000);
-      tickTimeLeft();
-    }
-
-    function tickTimeLeft(){
-      if(!state.recording) return;
-      const elapsed=(performance.now()-state.recordStartTs)/1000;
-      const left=Math.max(0,Math.ceil(MAX_SECONDS-elapsed));
-      $("#timeLeft").textContent=`${left}s`;
-      if(left<=0) return;
-      requestAnimationFrame(tickTimeLeft);
-    }
-
-    function stopRecording(){
-      if(!state.recording) return;
-      state.recording=false;
-      clearTimeout(state.stopTimer);
-      state.stopTimer=null;
-
-      $("#recBtn").classList.remove("recording");
-      $("#recHud").classList.remove("on");
-      $("#recStatus").textContent="Pronto. Karaoke sempre ON.";
-      $("#timeLeft").textContent=`${MAX_SECONDS}s`;
-
-      try{ state.recorder && state.recorder.state!=="inactive" && state.recorder.stop(); }catch(e){}
-      setTimeout(()=>{
-        if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId=null; }
-      },120);
-    }
-
-    /*****************************************************************
-     * 12) Review modal
-     *****************************************************************/
-    const reviewModal=$("#reviewModal");
-    const reviewVideo=$("#reviewVideo");
-    const reviewMeta=$("#reviewMeta");
-    let reviewUrl=null;
-
-    async function openReview(blob){
-      buildCaption();
-      const hook=(state.hook||"").trim();
-      const tags=DEFAULT_TAGS.slice(0,5).join(" ");
-      if(reviewUrl) URL.revokeObjectURL(reviewUrl);
-      reviewUrl=URL.createObjectURL(blob);
-      reviewVideo.src=reviewUrl;
-      reviewVideo.loop=true;
-      reviewVideo.play().catch(()=>{});
-      reviewMeta.textContent=`Titolo: ${hook||"—"}\nHashtag: ${tags}\n\nCaption:\n${state.caption}`;
-      reviewModal.classList.add("show");
-      reviewModal.setAttribute("aria-hidden","false");
-    }
-    function closeReview(){
-      reviewModal.classList.remove("show");
-      reviewModal.setAttribute("aria-hidden","true");
-      reviewVideo.pause();
-    }
-    $("#closeReviewBtn").addEventListener("click",closeReview);
-    $("#discardClipBtn").addEventListener("click",()=>{ state.recordedBlob=null; closeReview(); showToast("Clip scartata","good"); });
-    $("#downloadClipBtn").addEventListener("click",()=>{
-      if(!state.recordedBlob) return;
-      const ts=new Date();
-      downloadBlob(state.recordedBlob, `clip_${ts.toISOString().replace(/[:.]/g,"-")}.webm`);
-    });
-    $("#saveClipBtn").addEventListener("click",async ()=>{
-      if(!state.recordedBlob) return;
-      buildCaption();
-      const clip={ title:(state.hook||"").trim(), caption:state.caption, hashtags:DEFAULT_TAGS.slice(0,5), blob:state.recordedBlob, createdAt:Date.now() };
-      try{
-        await idbAddClip(clip);
-        showToast("Salvato nel feed ✅","good");
-        closeReview();
-        state.recordedBlob=null;
-        await renderFeed();
-        setTab("feed");
-      }catch(e){
-        console.error(e);
-        showToast("Errore salvataggio feed","bad");
-      }
-    });
-
-    /*****************************************************************
-     * 13) Feed + autoplay
-     *****************************************************************/
-    const feedList=$("#feedList");
-    let feedObserver=null;
-
-    async function renderFeed(){
-      const clips=(await idbGetAllClips()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-      if(feedObserver){ feedObserver.disconnect(); feedObserver=null; }
-      feedList.innerHTML="";
-
-      if(!clips.length){
-        const empty=document.createElement("div");
-        empty.className="empty";
-        empty.innerHTML=`<div><div class="big">Nessun video salvato</div><div>Registra un clip nel Recorder e salvalo qui. 👇</div></div>`;
-        feedList.appendChild(empty);
-        return;
-      }
-
-      clips.forEach((clip)=>{
-        const item=document.createElement("div");
-        item.className="feedItem";
-        const url=URL.createObjectURL(clip.blob);
-
-        const vid=document.createElement("video");
-        vid.src=url;
-        vid.playsInline=true;
-        vid.loop=true;
-        vid.muted=true;
-        vid.preload="metadata";
-
-        const meta=document.createElement("div");
-        meta.className="feedMeta";
-        meta.innerHTML=`
-          <div class="pill">
-            <div style="min-width:0;">
-              <div class="title">${escapeHtml(clip.title||"—")}</div>
-              <div class="tags">${escapeHtml((clip.hashtags||[]).join(" "))}</div>
-            </div>
-          </div>
-        `;
-
-        const actions=document.createElement("div");
-        actions.className="feedActions";
-        actions.innerHTML=`
-          <div class="fab" data-act="download">⬇️<br><small>DL</small></div>
-          <div class="fab" data-act="delete">🗑️<br><small>DEL</small></div>
-        `;
-        actions.addEventListener("click",async (e)=>{
-          const btn=e.target.closest("[data-act]");
-          if(!btn) return;
-          if(btn.dataset.act==="download") downloadBlob(clip.blob,`clip_${clip.id}.webm`);
-          if(btn.dataset.act==="delete"){
-            try{ await idbDel("clips",clip.id); showToast("Eliminato","good"); await renderFeed(); }
-            catch(err){ console.error(err); showToast("Errore eliminazione","bad"); }
-          }
-        });
-
-        item.appendChild(vid);
-        item.appendChild(meta);
-        item.appendChild(actions);
-        feedList.appendChild(item);
-      });
-
-      const vids=$$(".feedItem video");
-      feedObserver=new IntersectionObserver((entries)=>{
-        entries.forEach((en)=>{
-          const v=en.target;
-          if(en.isIntersecting && en.intersectionRatio>=0.65){
-            vids.forEach(o=>{ if(o!==v) o.pause(); });
-            v.play().catch(()=>{});
-          }else v.pause();
-        });
-      },{ root:feedList, threshold:[0,.35,.65,.9] });
-      vids.forEach(v=>feedObserver.observe(v));
-    }
-
-    $("#wipeAllBtn").addEventListener("click",async ()=>{
-      try{
-        const clips=await idbGetAllClips();
-        const tx=db.transaction("clips","readwrite");
-        const st=tx.objectStore("clips");
-        await Promise.all(clips.map(c=>new Promise((res,rej)=>{
-          const r=st.delete(c.id);
-          r.onsuccess=()=>res(true);
-          r.onerror=()=>rej(r.error);
-        })));
-        showToast("Archivio svuotato","good");
-        await renderFeed();
-      }catch(e){
-        console.error(e);
-        showToast("Errore nello svuotamento","bad");
-      }
-    });
-
-    /*****************************************************************
-     * 14) Wiring inputs + UI
-     *****************************************************************/
-    function updateCounts(){
-      $("#qCount").textContent=`${($("#questionInput").value||"").trim().length}`;
-      $("#aCount").textContent=`${($("#answerInput").value||"").trim().length}`;
-    }
-    $("#questionInput").addEventListener("input",()=>{
-      state.hook=$("#questionInput").value.trim();
-      updateCounts();
-      updateRecorderUITexts();
-    });
-    $("#answerInput").addEventListener("input",()=>{
-      state.script=$("#answerInput").value;
-      updateCounts();
-      updateRecorderUITexts();
-    });
-
-    $("#sendQuestionBtn").addEventListener("click",()=>{
-      const q=$("#questionInput").value.trim();
-      if(!q){ showToast("Scrivi la domanda (hook) prima di inviare.","bad"); $("#questionInput").focus(); return; }
-      state.hook=q;
-      updateRecorderUITexts();
-      showOverlay("DOMANDA (Hook)",q);
-      showToast("Domanda inviata in overlay","good");
-    });
-
-    $("#sendAnswerBtn").addEventListener("click",()=>{
-      const a=$("#answerInput").value.trim();
-      if(!a){ showToast("Scrivi la risposta (script) prima di inviare.","bad"); $("#answerInput").focus(); return; }
-      state.script=$("#answerInput").value;
-      ensureLoopLine();
-      $("#answerInput").value=state.script;
-      updateCounts();
-      updateRecorderUITexts();
-      showOverlay("RISPOSTA (Script)",state.script);
-      showToast("Risposta inviata in overlay","good");
-    });
-
-    $("#pushToTeleprompterBtn").addEventListener("click",()=>{
-      const q=$("#questionInput").value.trim();
-      const a=$("#answerInput").value.trim();
-      if(!q){ showToast("Manca la domanda (hook).","bad"); $("#questionInput").focus(); return; }
-      if(!a){ showToast("Manca la risposta (script).","bad"); $("#answerInput").focus(); return; }
-      state.hook=q;
-      state.script=$("#answerInput").value;
-      ensureLoopLine();
-      $("#answerInput").value=state.script;
-      updateCounts();
-      updateRecorderUITexts();
-      showToast("Caricato nel teleprompter ✅","good");
-    });
-
-    $("#copyCaptionBtn").addEventListener("click",async ()=>{
-      buildCaption();
-      try{ await navigator.clipboard.writeText(state.caption); showToast("Caption copiata ✅","good"); }
-      catch(e){ showToast("Clipboard non disponibile","bad"); }
-    });
-
-    /*****************************************************************
-     * 15) Recorder controls
-     *****************************************************************/
-    state.tpZoom = 1.0;
-
-    $("#zoomRange").addEventListener("input",()=>{
-      state.tpZoom=parseFloat($("#zoomRange").value);
-      $("#zoomVal").textContent=`${state.tpZoom.toFixed(2)}×`;
-    });
-    $("#speedRange").addEventListener("input",()=>{
-      state.wpm=parseFloat($("#speedRange").value);
-      $("#spdVal").textContent=`${Math.round(state.wpm)} wpm`;
-    });
-
-    $("#recBtn").addEventListener("click",async ()=>{ state.recording ? stopRecording() : await startRecording(); });
-    $("#backToScriptBtn").addEventListener("click",openScript);
-    $("#openFeedBtn").addEventListener("click",openFeed);
-    $("#feedToRecBtn").addEventListener("click",openRecorder);
-
-    $("#tabScript").addEventListener("click",openScript);
-    $("#tabRec").addEventListener("click",openRecorder);
-    $("#tabFeed").addEventListener("click",openFeed);
-
-    $("#goRecorderBtn").addEventListener("click",openRecorder);
-
-    /*****************************************************************
-     * 16) Boot
-     *****************************************************************/
-    async function boot(){
-      if(!(location.protocol==="https:" || location.hostname==="localhost" || location.hostname==="127.0.0.1")){
-        showToast("Nota: camera funziona solo su https/localhost.","bad");
-      }
-      try{ db=await openDB(); }
-      catch(e){ console.error(e); showToast("IndexedDB non disponibile: logo/feed non persistono.","bad"); }
-
-      if(db){
-        const savedLogo=await idbGet("settings","logo").catch(()=>null);
-        if(savedLogo){
-          state.logoBlob=savedLogo;
-          await loadLogoBitmapFromBlob(savedLogo);
-          $("#logoStatus").textContent="Logo caricato (persistente)";
-        }
-      }
-
-      updateCounts();
-      buildCaption();
-      updateRecorderUITexts();
-    }
-    boot();
-  </script>
-
-  <!-- QA Archive Add-on (CSV import + per-topic archives) -->
-  <script>
-  (function(){
-    try{
-      // -----------------------------
-      // QA DB (separato, non tocca DB esistente)
-      // -----------------------------
-      const QA_DB_NAME = "vertical_recorder_qa_db";
-      const QA_DB_VER  = 1;
-      let qaDb = null;
-
-      function qaOpenDB(){
-        return new Promise((resolve,reject)=>{
-          const req = indexedDB.open(QA_DB_NAME, QA_DB_VER);
-          req.onupgradeneeded = ()=>{
-            const d = req.result;
-            if(!d.objectStoreNames.contains("items")){
-              const st = d.createObjectStore("items",{keyPath:"id",autoIncrement:true});
-              st.createIndex("topic","topic",{unique:false});
-              st.createIndex("topic_qkey","topic_qkey",{unique:true});
-            }
-          };
-          req.onsuccess = ()=>resolve(req.result);
-          req.onerror = ()=>reject(req.error);
-        });
-      }
-
-      function qaTx(store, mode="readonly"){ return qaDb.transaction(store, mode).objectStore(store); }
-
-      function qaGetAll(){
-        return new Promise((resolve,reject)=>{
-          const st = qaTx("items","readonly");
-          const req = st.getAll();
-          req.onsuccess = ()=>resolve(req.result||[]);
-          req.onerror = ()=>reject(req.error);
-        });
-      }
-
-      function qaAddMany(rows){
-        return new Promise((resolve,reject)=>{
-          const tx = qaDb.transaction("items","readwrite");
-          const st = tx.objectStore("items");
-          let added=0, skipped=0;
-
-          function qkey(topic, question){
-            return (String(topic||"").trim().toLowerCase()+"||"+String(question||"").trim().toLowerCase()).slice(0, 800);
-          }
-
-          tx.oncomplete = ()=>resolve({added,skipped});
-          tx.onerror = ()=>reject(tx.error);
-
-          for(const r of rows){
-            const topic = String(r.topic||"").trim();
-            const question = String(r.question||"").trim();
-            if(!topic || !question){ skipped++; continue; }
-            const item = {
-              topic,
-              question,
-              caption: String(r.caption||"").trim(),
-              script: String(r.script||""),
-              createdAt: Date.now()
-            };
-            item.topic_qkey = qkey(item.topic, item.question);
-            const req = st.add(item);
-            req.onsuccess = ()=>{ added++; };
-            req.onerror = ()=>{ skipped++; /* dup o altro */ };
-          }
-        });
-      }
-
-      function qaClearAll(){
-        return new Promise((resolve,reject)=>{
-          const tx = qaDb.transaction("items","readwrite");
-          const st = tx.objectStore("items");
-          const req = st.clear();
-          req.onsuccess = ()=>resolve(true);
-          req.onerror = ()=>reject(req.error);
-        });
-      }
-
-      // -----------------------------
-      // CSV parser (supporta quote, virgole, newline nei campi)
-      // -----------------------------
-      function parseCSV(text){
-        const out=[];
-        let i=0, field="", row=[], inQuotes=false;
-        const pushField=()=>{ row.push(field); field=""; };
-        const pushRow=()=>{ out.push(row); row=[]; };
-
-        while(i < text.length){
-          const c = text[i];
-
-          if(inQuotes){
-            if(c === '"'){
-              if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
-              inQuotes = false; i++; continue;
-            }
-            field += c; i++; continue;
-          }
-
-          if(c === '"'){ inQuotes = true; i++; continue; }
-
-          if(c === ','){ pushField(); i++; continue; }
-
-          if(c === '\r'){
-            if(text[i+1] === '\n'){ i += 2; } else { i++; }
-            pushField(); pushRow(); continue;
-          }
-          if(c === '\n'){ i++; pushField(); pushRow(); continue; }
-
-          field += c; i++;
-        }
-        pushField();
-        if(row.length && !(row.length===1 && row[0]==="")) pushRow();
-
-        // rimuovi righe vuote
-        return out.filter(r=>r.some(x=>String(x||"").trim()!==""));
-      }
-
-      function normalizeHeader(h){
-        return String(h||"").trim().toLowerCase()
-          .replace(/\s+/g," ")
-          .replace(/[^\wàèéìòóù0-9 ]/g,"");
-      }
-
-      function topicFromArgomento(raw){
-        const v = String(raw||"").trim().toLowerCase();
-        if(v === "errore comune") return "errore comune";
-        if(v === "3 step") return "3 step";
-        if(v === "sfata un mito") return "sfata un mito";
-        // tolleranze minime
-        if(v === "errore" || v === "errorecomune") return "errore comune";
-        if(v === "3step" || v === "tre step") return "3 step";
-        if(v === "mito" || v === "sfataunmito") return "sfata un mito";
-        return null;
-      }
-
-      // -----------------------------
-      // UI injection (non modifica HTML esistente)
-      // -----------------------------
-      function el(tag, attrs={}, children=[]){
-        const n=document.createElement(tag);
-        Object.keys(attrs||{}).forEach(k=>{
-          if(k==="class") n.className=attrs[k];
-          else if(k==="style") n.setAttribute("style", attrs[k]);
-          else if(k.startsWith("on") && typeof attrs[k]==="function") n.addEventListener(k.slice(2), attrs[k]);
-          else n.setAttribute(k, attrs[k]);
-        });
-        (children||[]).forEach(ch=>{
-          if(ch==null) return;
-          if(typeof ch==="string") n.appendChild(document.createTextNode(ch));
-          else n.appendChild(ch);
-        });
-        return n;
-      }
-
-      let qaCache = []; // all items
-      let qaByTopic = { "errore comune": [], "3 step": [], "sfata un mito": [] };
-
-      function rebuildCache(){
-        qaByTopic = { "errore comune": [], "3 step": [], "sfata un mito": [] };
-        for(const it of qaCache){
-          const t = topicFromArgomento(it.topic) || it.topic;
-          if(!qaByTopic[t]) qaByTopic[t]=[];
-          qaByTopic[t].push(it);
-        }
-      }
-
-      function shuffle(arr){
-        for(let i=arr.length-1;i>0;i--){
-          const j=Math.floor(Math.random()*(i+1));
-          [arr[i],arr[j]]=[arr[j],arr[i]];
-        }
-        return arr;
-      }
-
-      let customCaptionText = "";
-      let suppressCaptionClear = false;
-
-      function applyQAItem(item){
-        if(!item) return;
-        suppressCaptionClear = true;
-        try{
-          const q = (item.question||"").trim();
-          const cap = (item.caption||"").trim();
-          const scr = (item.script||"");
-
-          // hook
-          const qEl = document.querySelector("#questionInput");
-          if(qEl){ qEl.value = q; }
-          if(window.state){ window.state.hook = q; }
-
-          // script opzionale
-          const aEl = document.querySelector("#answerInput");
-          if(aEl){
-            if(scr && String(scr).trim()){
-              aEl.value = scr;
-              if(window.state) window.state.script = aEl.value;
-              if(typeof window.ensureLoopLine === "function") window.ensureLoopLine();
-              aEl.value = window.state ? window.state.script : aEl.value;
-            }
-          }
-
-          // caption custom
-          customCaptionText = cap || "";
-          if(typeof window.buildCaption === "function") window.buildCaption();
-          if(typeof window.updateCounts === "function") window.updateCounts();
-          if(typeof window.updateRecorderUITexts === "function") window.updateRecorderUITexts();
-
-          if(typeof window.showToast === "function") window.showToast("Caricato dall’archivio ✅","good");
-        } finally {
-          setTimeout(()=>{ suppressCaptionClear = false; }, 0);
-        }
-      }
-
-      function randomFromTopic(topic){
-        const list = qaByTopic[topic] || [];
-        if(!list.length) return null;
-        return list[Math.floor(Math.random()*list.length)];
-      }
-
-      // Monkey-patch buildCaption: mantiene la caption standard, ma se c'è caption custom la usa
-      if(typeof window.buildCaption === "function"){
-        const _origBuildCaption = window.buildCaption;
-        window.buildCaption = function(){
-          _origBuildCaption();
-          if(customCaptionText && String(customCaptionText).trim()){
-            const cap = String(customCaptionText).trim();
-            // se FIXED_SIGNATURE esiste, lo aggiungiamo sempre in fondo (coerente col flusso)
-            let finalCap = cap;
-            try{
-              if(typeof window.FIXED_SIGNATURE === "string" && window.FIXED_SIGNATURE.trim()){
-                if(!finalCap.includes(window.FIXED_SIGNATURE.trim())){
-                  finalCap = finalCap.replace(/\s+$/,"") + "\n\n" + window.FIXED_SIGNATURE;
-                }
-              }
-            }catch(e){}
-            if(window.state) window.state.caption = finalCap;
-            const prev = document.querySelector("#captionPreview");
-            if(prev) prev.textContent = finalCap;
-          }
-        };
-      }
-
-      // Clear custom caption when user edits manually
-      const qInput = document.querySelector("#questionInput");
-      if(qInput){
-        qInput.addEventListener("input", ()=>{
-          if(suppressCaptionClear) return;
-          customCaptionText = "";
-        });
-      }
-
-      // Monkey-patch applyTemplate: se c'è archivio per quel topic, usa random; altrimenti comportamento originale
-      if(typeof window.applyTemplate === "function"){
-        const _origApplyTemplate = window.applyTemplate;
-        window.applyTemplate = function(kind){
-          const map = { "A":"errore comune", "B":"3 step", "C":"sfata un mito" };
-          const topic = map[kind];
-          const pick = topic ? randomFromTopic(topic) : null;
-          if(pick){
-            applyQAItem(pick);
-            return;
-          }
-          return _origApplyTemplate(kind);
-        };
-      }
-
-      // Build UI card in Script screen, right column
-      const templatesEl = document.querySelector(".templates");
-      if(templatesEl && templatesEl.parentElement){
-        const wrap = el("div", { class:"card", style:"padding:12px; margin-top:12px;" }, [
-          el("div", { style:"font-weight:950; margin-bottom:6px;" }, ["Archivio domande (CSV)"]),
-          el("div", { class:"hint", style:"margin-bottom:10px;" }, [
-            "Importa un CSV con colonne: argomento, domanda, caption, script (opzionale). Poi scegli argomento e tocca “Usa”."
-          ])
-        ]);
-
-        const row1 = el("div", { class:"row" }, []);
-        const sel = el("select", { id:"qaTopicSel", class:"btn", style:"padding:12px 14px; border-radius:16px; font-weight:900; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color: rgba(238,241,255,.92);" }, []);
-        ["errore comune","3 step","sfata un mito"].forEach(v=>{
-          const opt = document.createElement("option");
-          opt.value=v; opt.textContent=v;
-          sel.appendChild(opt);
-        });
-
-        const search = el("input", { id:"qaSearch", placeholder:"Cerca…", type:"text", class:"btn", style:"flex:1; padding:12px 14px; border-radius:16px; font-weight:800; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10); color: rgba(238,241,255,.92); text-align:left;" }, []);
-        row1.appendChild(sel);
-        row1.appendChild(search);
-
-        const row2 = el("div", { class:"row", style:"justify-content:space-between;" }, []);
-        const leftBtns = el("div", { class:"row" }, []);
-        const importBtn = el("button", { class:"btn good", id:"qaImportBtn", type:"button" }, ["Importa CSV"]);
-        const clearBtn = el("button", { class:"btn ghost", id:"qaClearBtn", type:"button" }, ["Svuota archivio"]);
-        leftBtns.appendChild(importBtn);
-        leftBtns.appendChild(clearBtn);
-
-        const stat = el("span", { class:"tiny", id:"qaStat" }, ["0 elementi"]);
-
-        row2.appendChild(leftBtns);
-        row2.appendChild(stat);
-
-        const list = el("div", { id:"qaList", style:"margin-top:10px; display:grid; gap:10px;" }, []);
-
-        wrap.appendChild(row1);
-        wrap.appendChild(row2);
-        wrap.appendChild(list);
-
-        templatesEl.parentElement.appendChild(wrap);
-
-        // hidden file input
-        const fileInput = el("input", { id:"qaCsvInput", type:"file", accept:".csv,text/csv", hidden:"" }, []);
-        document.body.appendChild(fileInput);
-
-        function setStat(){
-          const t = sel.value;
-          const n = (qaByTopic[t]||[]).length;
-          stat.textContent = `${n} elementi`;
-        }
-
-        function renderList(){
-          const topic = sel.value;
-          const q = (search.value||"").trim().toLowerCase();
-          const items = (qaByTopic[topic]||[]);
-          const filtered = q ? items.filter(it=>{
-            const s = ((it.question||"")+" "+(it.caption||"")+" "+(it.script||"")).toLowerCase();
-            return s.includes(q);
-          }) : items;
-
-          list.innerHTML = "";
-          const maxShow = 24;
-          const showItems = filtered.slice(0, maxShow);
-
-          if(!showItems.length){
-            list.appendChild(el("div", { class:"hint" }, ["Nessun elemento per questo argomento (o filtro troppo stretto)."]));
-            return;
-          }
-
-          showItems.forEach((it)=>{
-            const box = el("div", { class:"card", style:"padding:12px; background: rgba(255,255,255,.03);" }, []);
-            const title = el("div", { style:"font-weight:950; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" }, [it.question||"—"]);
-            const cap = el("div", { class:"hint", style:"white-space:pre-wrap; margin-bottom:10px;" }, [(it.caption||"").trim() ? (it.caption||"") : "—"]);
-            const actions = el("div", { class:"row" }, []);
-            const useBtn = el("button", { class:"btn primary", type:"button" }, ["Usa"]);
-            const rndBtn = el("button", { class:"btn ghost", type:"button" }, ["Random"]);
-            useBtn.addEventListener("click", ()=>applyQAItem(it));
-            rndBtn.addEventListener("click", ()=>{
-              const pick = randomFromTopic(topic);
-              if(pick) applyQAItem(pick);
-            });
-            actions.appendChild(useBtn);
-            actions.appendChild(rndBtn);
-            box.appendChild(title);
-            box.appendChild(cap);
-            box.appendChild(actions);
-            list.appendChild(box);
-          });
-
-          if(filtered.length > maxShow){
-            list.appendChild(el("div", { class:"tiny" }, [`Mostrati ${maxShow} di ${filtered.length}. Usa la ricerca per restringere.`]));
-          }
-        }
-
-        sel.addEventListener("change", ()=>{ setStat(); renderList(); });
-        search.addEventListener("input", ()=>{ renderList(); });
-
-        importBtn.addEventListener("click", ()=>fileInput.click());
-        clearBtn.addEventListener("click", async ()=>{
-          try{
-            await qaClearAll();
-            qaCache = [];
-            rebuildCache();
-            setStat(); renderList();
-            if(typeof window.showToast==="function") window.showToast("Archivio domande svuotato","good");
-          }catch(e){
-            console.error(e);
-            if(typeof window.showToast==="function") window.showToast("Errore nello svuotamento","bad");
-          }
-        });
-
-        fileInput.addEventListener("change", async (e)=>{
-          const file = e.target.files && e.target.files[0];
-          fileInput.value="";
-          if(!file) return;
-          try{
-            const text = await file.text();
-            const rows = parseCSV(text);
-
-            if(!rows.length){
-              if(typeof window.showToast==="function") window.showToast("CSV vuoto","bad");
-              return;
-            }
-
-            const header = rows[0].map(normalizeHeader);
-            const idx = {
-              argomento: header.indexOf("argomento"),
-              domanda: header.indexOf("domanda"),
-              caption: header.indexOf("caption"),
-              script: header.indexOf("script")
-            };
-
-            if(idx.argomento<0 || idx.domanda<0 || idx.caption<0){
-              if(typeof window.showToast==="function") window.showToast("Intestazioni richieste: argomento, domanda, caption (script opzionale)","bad");
-              return;
-            }
-
-            const mapped=[];
-            for(let r=1;r<rows.length;r++){
-              const row = rows[r];
-              const topic = topicFromArgomento(row[idx.argomento]);
-              if(!topic) continue;
-              const question = String(row[idx.domanda]||"").trim();
-              if(!question) continue;
-              const caption = String(row[idx.caption]||"").trim();
-              const script = idx.script>=0 ? (row[idx.script]||"") : "";
-              mapped.push({ topic, question, caption, script });
-            }
-
-            if(!mapped.length){
-              if(typeof window.showToast==="function") window.showToast("Nessuna riga valida trovata (argomento/domanda).","bad");
-              return;
-            }
-
-            const res = await qaAddMany(mapped);
-            qaCache = await qaGetAll();
-            rebuildCache();
-            setStat(); renderList();
-
-            if(typeof window.showToast==="function"){
-              window.showToast(`Import completato ✅ (${res.added} aggiunti, ${res.skipped} ignorati)`, "good");
-            }
-          }catch(err){
-            console.error(err);
-            if(typeof window.showToast==="function") window.showToast("Errore import CSV","bad");
-          }
-        });
-
-        // init data
-        (async ()=>{
-          try{
-            qaDb = await qaOpenDB();
-            qaCache = await qaGetAll();
-            rebuildCache();
-            setStat();
-            renderList();
-          }catch(e){
-            console.error(e);
-            if(typeof window.showToast==="function") window.showToast("Archivio domande non disponibile (IndexedDB).","bad");
-          }
-        })();
-      }
-
-    }catch(err){
-      console.error(err);
-    }
-  })();
-  </script>
-
-
-  <!-- Book Prompter (UI-only) -->
-  <script id="bookPrompterScript">
-    (function(){
-      try{
-        const stage = document.querySelector(".stage");
-        if(!stage) return;
-
-        const book = document.createElement("div");
-        book.id = "bookPrompter";
-        const page = document.createElement("div");
-        page.className = "page";
-        book.appendChild(page);
-        stage.appendChild(book);
-
-        const BM = {
-          enabled: true,
-          pages: [],
-          pageIndex: 0,
-          pageStartTs: 0,
-          pageDuration: 0,
-          running: false,
-          raf: null,
-          wordsPerPage: 44
-        };
-
-        const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
-        const getWps = ()=> {
-          const speed = document.querySelector("#speedRange");
-          const wpm = speed ? parseFloat(speed.value||"150") : 150;
-          return Math.max(1.0, wpm/60);
-        };
-        const normalize = (s)=> (s||"").replace(/\s+/g," ").trim();
-
-        function splitIntoPages(script){
-          const txt = normalize(script);
-          if(!txt) return [];
-          const words = txt.split(" ").filter(Boolean);
-          const per = clamp(BM.wordsPerPage, 18, 90);
-          const out = [];
-          for(let i=0;i<words.length;i+=per){
-            out.push(words.slice(i,i+per));
-          }
-          return out;
-        }
-
-        function formatPage(words){
-          // blocco stile libro: a capo ogni ~28-32 caratteri
-          const cpl = 30;
-          let lines = [];
-          let cur = "";
-          for(const w of words){
-            const add = cur ? (cur + " " + w) : w;
-            if(add.length <= cpl){
-              cur = add;
-            }else{
-              if(cur) lines.push(cur);
-              cur = w;
-            }
-            if(lines.length >= 5) break;
-          }
-          if(cur && lines.length < 5) lines.push(cur);
-          return lines.join("\n");
-        }
-
-        function renderBookPage(){
-          if(!BM.pages.length){
-            page.textContent = "—";
-            return;
-          }
-          const w = BM.pages[BM.pageIndex] || [];
-          page.textContent = formatPage(w);
-        }
-
-        function startBookPrompter(){
-          const script = (window.state && window.state.script) ? window.state.script : (document.querySelector("#answerInput")?.value||"");
-          BM.pages = splitIntoPages(script);
-          BM.pageIndex = 0;
-          BM.pageStartTs = performance.now();
-          BM.pageDuration = (BM.pages[0] ? BM.pages[0].length : 0) / getWps() * 1000;
-          BM.running = true;
-          renderBookPage();
-          document.body.classList.add("bookMode");
-
-          const tick = (ts)=>{
-            if(!BM.running) return;
-            const dur = BM.pageDuration || 1;
-            const elapsed = ts - BM.pageStartTs;
-
-            if(elapsed >= dur){
-              if(BM.pageIndex < BM.pages.length - 1){
-                BM.pageIndex++;
-                BM.pageStartTs = ts;
-                BM.pageDuration = (BM.pages[BM.pageIndex] ? BM.pages[BM.pageIndex].length : 0) / getWps() * 1000;
-                renderBookPage();
-              }else{
-                BM.pageDuration = 1e9;
-              }
-            }
-            BM.raf = requestAnimationFrame(tick);
-          };
-          BM.raf = requestAnimationFrame(tick);
-        }
-
-        function stopBookPrompter(){
-          BM.running = false;
-          if(BM.raf) cancelAnimationFrame(BM.raf);
-          BM.raf = null;
-          document.body.classList.remove("bookMode");
-        }
-
-        const recBtn = document.querySelector("#recBtn");
-        if(recBtn){
-          recBtn.addEventListener("click", ()=>{
-            setTimeout(()=>{
-              const isRec = recBtn.classList.contains("recording");
-              if(BM.enabled && isRec) startBookPrompter();
-              if(!isRec) stopBookPrompter();
-            }, 40);
-          }, true);
-        }
-
-        const speedRange = document.querySelector("#speedRange");
-        if(speedRange){
-          speedRange.addEventListener("input", ()=>{
-            if(!BM.running) return;
-            BM.pageStartTs = performance.now();
-            BM.pageDuration = (BM.pages[BM.pageIndex] ? BM.pages[BM.pageIndex].length : 0) / getWps() * 1000;
-          }, true);
-        }
-
-        // Burn-in: 1 riga più leggibile (riduce finestra parole)
-        try{
-          if(window.state){
-            window.state.phraseSize = 7;
-          }
-        }catch(e){}
-      }catch(e){
-        console.error(e);
-      }
-    })();
-  </script>
-
-</body>
-</html>
+    },
+    {
+      id: "std-72",
+      relativeHours: -72,
+      relLabel: "-72h",
+      title: "Prequalifica telefonica (selezione target)",
+      short: "Domande, motivazioni, tempistiche, prezzo desiderato: decidi se andare o no.",
+      importance: "warn",
+      popup: {
+        obiettivo: [
+          "Stabilire se il proprietario è in target e decidere se andare a casa sua o meno."
+        ],
+        cosaFare: [
+          "Esegui la prequalifica in modo strutturato (non chiacchiera).",
+          "Indaga motivazioni, tempistiche, aspettative economiche, vincoli e condizioni dell’immobile.",
+          "Prendi appunti: questi diventano la base della presentazione e della chiusura.",
+          "Decidi: target perfetto → procedi con relazione; altrimenti interrompi con eleganza."
+        ],
+        cosaDire: [
+          `Set iniziale:\n"Le faccio alcune domande specifiche: mi servono per capire
