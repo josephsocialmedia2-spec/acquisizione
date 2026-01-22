@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema Acquisizione Incarichi — Timeline Interattiva</title>
+  <title>Sistema Acquisizione Incarichi — Operativo (Fare/Dire/Preparare)</title>
   <style>
     :root{
       --bg:#0b0f17;
@@ -13,13 +13,13 @@
       --muted:#9ca3af;
       --border:#243045;
       --accent:#60a5fa;
-      --accent2:#34d399;
+      --ok:#34d399;
       --warn:#fbbf24;
       --danger:#f87171;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --shadow: 0 12px 34px rgba(0,0,0,.40);
       --radius: 16px;
       --radius2: 20px;
-      --max: 1100px;
+      --max: 1200px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
@@ -27,33 +27,28 @@
     body{
       margin:0;
       font-family:var(--sans);
-      background: radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,.20), transparent 55%),
-                  radial-gradient(1000px 500px at 80% 0%, rgba(52,211,153,.14), transparent 55%),
-                  radial-gradient(900px 500px at 50% 110%, rgba(248,113,113,.10), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,.20), transparent 55%),
+        radial-gradient(1000px 500px at 80% 0%, rgba(52,211,153,.14), transparent 55%),
+        radial-gradient(900px 500px at 50% 110%, rgba(248,113,113,.10), transparent 55%),
+        var(--bg);
       color:var(--text);
     }
     header{
-      position:sticky;
-      top:0;
-      z-index:10;
+      position:sticky; top:0; z-index:10;
       backdrop-filter: blur(12px);
-      background: rgba(11,15,23,.70);
+      background: rgba(11,15,23,.72);
       border-bottom:1px solid rgba(36,48,69,.6);
     }
     .wrap{max-width:var(--max); margin:0 auto; padding:18px 16px;}
-    .top{
-      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-    }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-    }
+    .top{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    .brand{display:flex; gap:12px; align-items:center;}
     .logo{
       width:42px; height:42px; border-radius:14px;
       background: linear-gradient(135deg, rgba(96,165,250,.9), rgba(52,211,153,.9));
       box-shadow: var(--shadow);
     }
-    h1{font-size:18px; margin:0;}
+    h1{font-size:16px; margin:0;}
     .sub{margin:2px 0 0; font-size:12px; color:var(--muted);}
     .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .pill{
@@ -66,12 +61,8 @@
     }
     .pill label{font-size:12px; color:var(--muted);}
     input[type="datetime-local"]{
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 12px;
-      outline: none;
+      background: transparent; border: none; color: var(--text);
+      font-family: var(--mono); font-size: 12px; outline: none;
       min-width: 210px;
     }
     .btn{
@@ -89,16 +80,13 @@
     .btn.primary{background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.55);}
     .btn.ok{background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.55);}
     .btn.warn{background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.55);}
-    .btn.danger{background: rgba(248,113,113,.12); border-color: rgba(248,113,113,.55);}
     main{padding: 18px 0 50px;}
     .grid{
       display:grid;
       grid-template-columns: 1.15fr .85fr;
       gap: 16px;
     }
-    @media (max-width: 980px){
-      .grid{grid-template-columns: 1fr;}
-    }
+    @media (max-width: 980px){ .grid{grid-template-columns: 1fr;} }
     .card{
       background: linear-gradient(180deg, rgba(17,24,39,.78), rgba(15,23,42,.70));
       border: 1px solid rgba(36,48,69,.9);
@@ -123,7 +111,7 @@
     .card .body{padding: 14px;}
     .tabs{display:flex; gap:8px; flex-wrap:wrap;}
     .tab{
-      cursor:pointer;
+      cursor:pointer; user-select:none;
       padding:8px 10px;
       border-radius: 999px;
       border:1px solid rgba(36,48,69,.9);
@@ -131,23 +119,15 @@
       color: var(--muted);
       font-size:12px;
       transition: all .12s ease;
-      user-select:none;
     }
     .tab.active{
       background: rgba(96,165,250,.18);
       border-color: rgba(96,165,250,.55);
       color: var(--text);
     }
-
-    .timeline{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      padding: 10px 0 0;
-    }
+    .timeline{display:flex; flex-direction:column; gap:10px; padding: 10px 0 0;}
     .event{
-      display:flex;
-      gap:12px;
+      display:flex; gap:12px;
       padding: 12px 12px;
       border-radius: var(--radius);
       border:1px solid rgba(36,48,69,.85);
@@ -161,47 +141,28 @@
       background: rgba(96,165,250,.06);
     }
     .event .left{
-      min-width: 125px;
+      min-width: 135px;
       font-family: var(--mono);
       font-size: 12px;
       color: var(--muted);
       display:flex; flex-direction:column; gap:6px;
     }
-    .event .left .rel{
-      font-weight:700;
-      color: rgba(229,231,235,.95);
-    }
-    .event .title{
-      font-weight:700;
-      font-size:13px;
-      margin: 0 0 4px;
-    }
-    .event .desc{
-      margin:0;
-      font-size:12px;
-      color: var(--muted);
-      line-height:1.35;
-    }
+    .event .left .rel{font-weight:800; color: rgba(229,231,235,.95);}
+    .event .title{font-weight:800; font-size:13px; margin: 0 0 4px;}
+    .event .desc{margin:0; font-size:12px; color: var(--muted); line-height:1.35;}
     .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      font-size:11px;
-      color: var(--muted);
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:11px; color: var(--muted);
       border:1px solid rgba(36,48,69,.9);
       background: rgba(11,15,23,.25);
-      padding:4px 8px;
-      border-radius:999px;
-      width: fit-content;
+      padding:4px 8px; border-radius:999px; width: fit-content;
     }
     .badge .dot{width:7px;height:7px;border-radius:99px;background: var(--accent);}
-    .badge.ok .dot{background: var(--accent2);}
+    .badge.ok .dot{background: var(--ok);}
     .badge.warn .dot{background: var(--warn);}
     .badge.danger .dot{background: var(--danger);}
 
-    .rules{
-      display:flex; flex-direction:column; gap:10px;
-    }
+    .rules{display:flex; flex-direction:column; gap:10px;}
     .rule{
       border:1px solid rgba(36,48,69,.85);
       background: rgba(11,15,23,.18);
@@ -210,62 +171,49 @@
     }
     .rule h3{margin:0 0 6px; font-size:13px;}
     .rule p{margin:0; color: var(--muted); font-size:12px; line-height:1.35;}
-    .kpi{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:10px;
+    .mini{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(229,231,235,.85);
+      margin-top: 8px;
+      padding:8px;
+      border-radius: 12px;
+      border:1px solid rgba(36,48,69,.8);
+      background: rgba(0,0,0,.22);
+      white-space: pre-wrap;
     }
-    .stat{
-      border:1px solid rgba(36,48,69,.85);
-      background: rgba(11,15,23,.18);
-      border-radius: var(--radius);
-      padding: 12px;
-    }
-    .stat .label{font-size:11px;color:var(--muted); margin-bottom:6px;}
-    .stat .value{font-family: var(--mono); font-size: 12px;}
-    .small{font-size:11px;color:var(--muted);}
 
     /* Modal */
     .backdrop{
       position:fixed; inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 16px;
-      z-index: 999;
+      background: rgba(0,0,0,.58);
+      display:none; align-items:center; justify-content:center;
+      padding: 16px; z-index: 999;
     }
     .backdrop.show{display:flex;}
     .modal{
-      width: min(980px, 100%);
-      max-height: min(86vh, 860px);
+      width: min(1100px, 100%);
+      max-height: min(88vh, 900px);
       overflow:auto;
-      background: linear-gradient(180deg, rgba(17,24,39,.95), rgba(15,23,42,.95));
+      background: linear-gradient(180deg, rgba(17,24,39,.97), rgba(15,23,42,.97));
       border:1px solid rgba(36,48,69,.95);
       border-radius: 22px;
       box-shadow: var(--shadow);
     }
     .modal header{
-      position:sticky;
-      top:0;
+      position:sticky; top:0;
       background: rgba(17,24,39,.92);
       border-bottom:1px solid rgba(36,48,69,.8);
       padding: 14px 14px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
     }
-    .modal header .m-title{
-      margin:0;
-      font-size:14px;
-      line-height:1.25;
-    }
+    .modal header .m-title{margin:0; font-size:14px; line-height:1.25; font-weight:900;}
     .modal header .m-sub{
       margin:4px 0 0;
       font-family: var(--mono);
       color: var(--muted);
       font-size: 12px;
+      white-space: pre-wrap;
     }
     .close{
       cursor:pointer;
@@ -275,8 +223,24 @@
       padding: 8px 10px;
       border-radius: 999px;
       font-size:12px;
+      white-space:nowrap;
     }
     .modal .content{padding: 14px;}
+    .m-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px;}
+    .m-tab{
+      cursor:pointer; user-select:none;
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(36,48,69,.9);
+      background: rgba(11,15,23,.20);
+      color: var(--muted);
+      font-size:12px;
+    }
+    .m-tab.active{
+      background: rgba(96,165,250,.18);
+      border-color: rgba(96,165,250,.55);
+      color: var(--text);
+    }
     .section{
       border:1px solid rgba(36,48,69,.85);
       background: rgba(11,15,23,.18);
@@ -284,9 +248,9 @@
       padding: 12px;
       margin-bottom: 10px;
     }
-    .section h4{margin:0 0 8px; font-size:13px;}
-    .section ul{margin:0; padding-left: 18px; color: var(--muted); font-size:12px; line-height:1.45;}
-    .section .script{
+    .section h4{margin:0 0 8px; font-size:13px; font-weight:900;}
+    .section ul{margin:0; padding-left: 18px; color: var(--muted); font-size:12px; line-height:1.55;}
+    .script{
       background: rgba(0,0,0,.25);
       border:1px solid rgba(36,48,69,.85);
       border-radius: 14px;
@@ -295,17 +259,21 @@
       color: rgba(229,231,235,.92);
       font-size: 12px;
       white-space: pre-wrap;
+      line-height:1.5;
     }
-    .split{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
+    .checklist{display:flex; flex-direction:column; gap:8px;}
+    .chk{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px;
+      border:1px solid rgba(36,48,69,.8);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
     }
-    @media (max-width: 860px){
-      .split{grid-template-columns: 1fr;}
-      .event .left{min-width: 110px;}
-      input[type="datetime-local"]{min-width: 180px;}
-    }
+    .chk input{margin-top: 2px;}
+    .chk .t{font-size:12px; font-weight:800;}
+    .chk .d{font-size:12px; color: var(--muted); margin-top:2px; line-height:1.45;}
+    .two{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    @media (max-width: 900px){ .two{grid-template-columns:1fr;} input[type="datetime-local"]{min-width: 180px;} .event .left{min-width:120px;} }
     .footer-note{margin-top: 10px; color: var(--muted); font-size:11px; line-height:1.4;}
   </style>
 </head>
@@ -315,18 +283,18 @@
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div>
-        <h1>Sistema Acquisizione Incarichi — Timeline Interattiva</h1>
-        <div class="sub">Clicca un’ora → si apre il “popup” con cosa fare, cosa dire, cosa preparare, materiali e regole.</div>
+        <h1>Sistema Acquisizione Incarichi — Operativo (Cosa fare / dire / preparare)</h1>
+        <div class="sub">Imposta l’ora dell’appuntamento → clicca ogni blocco → popup con azioni e script parola per parola.</div>
       </div>
     </div>
     <div class="controls">
       <div class="pill">
-        <label for="appt">Appuntamento (a casa / in ufficio):</label>
+        <label for="appt">Ora appuntamento (CASA o UFFICIO):</label>
         <input id="appt" type="datetime-local" />
       </div>
       <button class="btn primary" id="apply">Applica orari</button>
       <button class="btn" id="reset">Reset</button>
-      <button class="btn ok" id="exportTxt">Esporta (testo)</button>
+      <button class="btn ok" id="exportTxt">Copia tutto (testo)</button>
     </div>
   </div>
 </header>
@@ -335,61 +303,51 @@
   <div class="grid">
     <section class="card">
       <div class="head">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <h2>Timeline operativa</h2>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <h2>Timeline operativa (cliccabile)</h2>
           <span class="tag" id="modeTag">Processo: Standard (90–95%)</span>
         </div>
         <div class="tabs" role="tablist" aria-label="Seleziona processo">
           <div class="tab active" id="tab-standard" role="tab" tabindex="0">Standard</div>
           <div class="tab" id="tab-previsita" role="tab" tabindex="0">Con previsita</div>
-          <div class="tab" id="tab-materiali" role="tab" tabindex="0">Materiali & Script</div>
+          <div class="tab" id="tab-kit" role="tab" tabindex="0">Kit & Script</div>
         </div>
       </div>
       <div class="body">
         <div id="timeline" class="timeline" aria-live="polite"></div>
         <div class="footer-note">
-          Nota: se imposti data/ora dell’appuntamento in alto, qui vedi anche l’orario assoluto (calcolato).
-          Se non imposti nulla, resta la timeline relativa (-96h, -48h, ecc.).
+          Regola: se il venditore NON ha letto ciò che gli hai mandato, l’appuntamento si sposta. Sempre.
         </div>
       </div>
     </section>
 
     <aside class="card">
       <div class="head">
-        <h2>Regole non negoziabili</h2>
-        <span class="tag">Sempre visibili</span>
+        <h2>Regole non negoziabili (sempre)</h2>
+        <span class="tag">Status + Controllo</span>
       </div>
       <div class="body rules">
         <div class="rule">
-          <h3>Se NON legge → si rinvia</h3>
-          <p>Se il venditore non ha letto il pacchetto/relazione, non ti presenti: sposti l’appuntamento finché non ha dato un’occhiata attenta.</p>
+          <h3>1) Se NON legge → si rinvia</h3>
+          <p>Non ti presenti finché non ha letto (o almeno guardato con attenzione) relazione/pacchetto. Se vai lo stesso, entri in difesa e perdi status.</p>
         </div>
         <div class="rule">
-          <h3>Relazione ≥ 48h prima</h3>
-          <p>Inviala/Consegna almeno due giorni prima per far “sbollire” le aspettative sul prezzo e anticipare il tuo metodo in modo professionale.</p>
+          <h3>2) Relazione inviata ≥ 48 ore prima</h3>
+          <p>Serve a “sbollentare” aspettative sul prezzo, far emergere domande, e mostrare metodo professionale prima dell’incontro.</p>
         </div>
         <div class="rule">
-          <h3>Presentazione ≤ 30 minuti</h3>
-          <p>Oltre 30 minuti stai chiacchierando. Conduci, vai dritto, e in chiusura non tentennare.</p>
+          <h3>3) Presentazione ≤ 30 minuti</h3>
+          <p>Oltre 30 minuti stai chiacchierando. Conduci, vai dritto, e in chiusura sii deciso.</p>
         </div>
         <div class="rule">
-          <h3>Tu selezioni</h3>
-          <p>Inverti il paradigma: non sei legato al risultato, non “apprezzi troppo” l’altra persona, mantieni status alto.</p>
+          <h3>4) Tu selezioni chi rappresenti</h3>
+          <p>Inversione preda/predatore: non sei legato al risultato. Educato, ma mai subordinato.</p>
         </div>
-
-        <div class="kpi">
-          <div class="stat">
-            <div class="label">Mindset</div>
-            <div class="value">“Show time” &gt; chiusura trattativa</div>
-            <div class="small">Il proprietario sceglie l’agente: è il momento più importante.</div>
-          </div>
-          <div class="stat">
-            <div class="label">Obiettivo</div>
-            <div class="value">Incarico firmato il giorno stesso</div>
-            <div class="small">La concorrenza non fa questo processo: tu sì.</div>
-          </div>
+        <div class="rule">
+          <h3>5) “Show time” è il momento più importante</h3>
+          <p>Il proprietario sceglie l’agente. Qui comunichi valore (e quindi commissioni), molto più che in trattativa.</p>
+          <div class="mini">“Non sono un costo: sono il miglior investimento per il miglior risultato economico.”</div>
         </div>
-
       </div>
     </aside>
   </div>
@@ -405,107 +363,890 @@
       </div>
       <button class="close" id="close">Chiudi ✕</button>
     </header>
-    <div class="content" id="mContent"></div>
+
+    <div class="content">
+      <div class="m-tabs" id="mTabs"></div>
+      <div id="mBody"></div>
+    </div>
   </div>
 </div>
 
 <script>
-/**
- * Timeline data
- * - relativeHours: negative = before appointment; positive = after; 0 = at appointment
- * - importance: "ok" | "warn" | "danger" | "info"
- */
+/* -------------------------------------------------
+   DATA — SUPER OPERATIVO (Fare/Dire/Preparare/Materiali)
+   ------------------------------------------------- */
+
 const DATA = {
   standard: [
     {
-      id: "std-96",
-      relativeHours: -96,
-      relLabel: "-96h",
-      title: "Primo contatto & fissaggio appuntamenti (≥ 4 giorni)",
-      short: "Blocca anticipo, imposta controllo: prequalifica + appuntamento a casa.",
-      importance: "info",
-      popup: {
-        obiettivo: [
-          "Impostare il controllo del processo e fissare due appuntamenti (telefonico + di persona) con almeno 4 giorni di anticipo."
+      id:"std-96",
+      relativeHours:-96,
+      relLabel:"-96h",
+      importance:"info",
+      title:"Primo contatto: impostazione controllo + fissaggio appuntamenti (≥ 4 giorni)",
+      short:"Blocchi prequalifica telefonica + appuntamento dal vivo. Niente improvvisazione.",
+      popup:{
+        obiettivo:[
+          "Impostare immediatamente status e controllo del processo.",
+          "Fissare 2 appuntamenti: (1) prequalifica telefonica (2) appuntamento dal vivo (a casa).",
+          "Evitare appuntamenti inutili e difensivi."
         ],
-        cosaFare: [
-          "Gestisci la chiamata con tono calmo, sicuro, professionale.",
-          "NON fissare l’appuntamento a breve: tieniti ≥ 4 giorni di anticipo (es. lunedì → non prima di giovedì).",
-          "Concorda subito 2 momenti: (1) chiamata di prequalifica (2) incontro dal vivo.",
-          "Spiega che lavori con metodo per far risparmiare tempo e arrivare preparati."
+        fareChecklist:[
+          {t:"Tono e ritmo: calmo, sicuro, senza fretta", d:"Devi sembrare ‘in controllo’, non un venditore che corre dietro al cliente."},
+          {t:"Mai fissare prima di 4 giorni", d:"Se oggi è lunedì, non prima di giovedì. Anticipo = status + tempo per processo."},
+          {t:"Blocca 2 slot: prequalifica + incontro a casa", d:"Lo dici come standard operativo, non come opzione."},
+          {t:"Chiudi con prossimi step chiari", d:"‘Dopo la prequalifica preparo la relazione e gliela anticipo’."}
         ],
-        cosaDire: [
-          `Apertura/posizionamento:\n"Perfetto. Prima di vederci dal vivo, lavoro sempre con una breve chiamata di prequalifica così da arrivare preparato e farle risparmiare tempo."`,
-          `Set degli appuntamenti:\n"Facciamo così: ci sentiamo al telefono per le domande mercoledì alle 18:30 e poi ci vediamo venerdì alle 16:00. In questo modo arrivo con tutto pronto e lei capisce esattamente come lavoro."`,
-          `Status & controllo:\n"Il mio obiettivo è darle un quadro chiaro e professionale del mercato, così che la decisione sia semplice e basata sui dati."`
+        direScript:`
+APERTURA (posizionamento):
+"Perfetto. Per lavorare bene e farle risparmiare tempo, io faccio sempre una breve prequalifica telefonica prima dell’incontro. Così arrivo preparato e lei capisce subito il mio metodo."
+
+IMPOSTAZIONE DOPPIO APPUNTAMENTO:
+"Facciamo così: ci sentiamo al telefono [giorno/ora] per le domande sulla casa e sulle sue esigenze, e poi ci vediamo a casa sua [giorno/ora]."
+
+CREAZIONE ASPETTATIVA (relazione + recall):
+"Dopo la prequalifica, se ha senso procedere, preparo una relazione di mercato professionale e gliela anticipo. Poi la richiamo il giorno prima per le sue impressioni, così all’appuntamento siamo già allineati."
+
+CHIUSURA DELLA CHIAMATA:
+"Perfetto, segno tutto. Tra poco le mando un SMS riepilogativo e un breve video così vede come lavoro."`,
+        preparare:[
+          "Agenda: fissare 2 eventi (prequalifica + appuntamento a casa).",
+          "Template SMS riepilogo (pronto da copiare/incollare).",
+          "Link al video informativo (incarico/collaborazione + metodo).",
+          "Modulo prequalifica (digitale o cartaceo)."
         ],
-        cosaPreparare: [
-          "Agenda con doppio slot (prequalifica + incontro).",
-          "Template SMS riepilogo + link al video informativo.",
-          "Modulo prequalifica (stampabile o digitale)."
+        materiali:[
+          "SMS template (riepilogo appuntamenti).",
+          "Video informativo (incarico/collaborazione + come lavori).",
+          "Modulo prequalifica (domande immobile + motivazioni)."
         ],
-        materiali: [
-          "Template SMS (riepilogo appuntamenti).",
-          "Video informativo (incarico/collaborazione e metodo operativo).",
-          "Modulo prequalifica."
-        ],
-        errori: [
-          "Fissare l’incontro troppo presto (perdi controllo e tempo).",
-          "Parlare subito di prezzo senza contesto.",
-          "Accettare appuntamenti vaghi senza prequalifica."
+        errori:[
+          "Accettare appuntamento ‘subito’ perché il cliente spinge.",
+          "Parlare di prezzo prima del contesto e della relazione.",
+          "Fissare un solo appuntamento (ti sfugge la regia)."
         ]
       }
     },
+
     {
-      id: "std-90",
-      relativeHours: -90,
-      relLabel: "-90h",
-      title: "SMS riepilogo + invio video informativo (subito dopo)",
-      short: "Riepiloga e informa: fai percepire metodo e professionalità prima di vederti.",
-      importance: "ok",
-      popup: {
-        obiettivo: [
-          "Rendere il venditore consapevole del tuo metodo e fissare aspettative professionali."
+      id:"std-90",
+      relativeHours:-90,
+      relLabel:"-90h",
+      importance:"ok",
+      title:"SMS riepilogo + invio video informativo (subito dopo la chiamata)",
+      short:"Il cliente entra nel tuo metodo prima ancora di vederti. Impatto professionale.",
+      popup:{
+        obiettivo:[
+          "Confermare appuntamenti e posizionarti come professionista strutturato.",
+          "Educare il venditore sul significato di incarico/collaborazione."
         ],
-        cosaFare: [
-          "Invia SMS immediato con riepilogo appuntamenti (telefonico + dal vivo).",
-          "Allega/invia il video informativo: cosa significa incarico, collaborazione, affidarti la vendita.",
-          "Scrivi che lo richiamerai per la prequalifica e che è un passaggio fondamentale."
+        fareChecklist:[
+          {t:"Invia SMS riepilogo entro 5 minuti", d:"La velocità comunica controllo e precisione."},
+          {t:"Allega video informativo", d:"Il video ‘prepara la mente’ del venditore al tuo metodo e al concetto di incarico."},
+          {t:"Scrivi che il recall è parte del processo", d:"Così domani non sembri ‘insistente’: sei coerente con il metodo."}
         ],
-        cosaDire: [
-          `SMS pronto:\n"Come anticipato, ci sentiamo [DATA/ORA PREQUALIFICA] e ci vediamo [DATA/ORA INCONTRO]. Intanto le invio un breve video dove spiego come lavoro e cosa significa affidarmi l’incarico di vendita, così arriviamo all’appuntamento con le idee chiarissime."`
+        direScript:`
+SMS PRONTO (copia/incolla):
+"Ciao [Nome], come anticipato: prequalifica telefonica [DATA/ORA] e appuntamento a casa [DATA/ORA]. 
+Intanto ti mando un breve video dove spiego come lavoro e cosa significa affidarmi l’incarico, così arriviamo all’appuntamento con le idee chiarissime."`,
+        preparare:[
+          "Video pronto (link WhatsApp/SMS).",
+          "Template SMS salvato nelle note.",
+          "Cartella cliente (nome, indirizzo, recapiti, note)."
         ],
-        cosaPreparare: [
-          "Link al video (WhatsApp/SMS).",
-          "Template SMS in note rapide.",
-          "Mini-check: consegna relazione ≥ 48h prima (da anticipare mentalmente)."
+        materiali:[
+          "Video ‘Incarico/Collaborazione: cosa significa e come lavoro’.",
+          "Template SMS.",
+          "CRM/Note per registrare info cliente."
         ],
-        materiali: [
-          "Video informativo (incarico/collaborazione).",
-          "Template SMS."
-        ],
-        errori: [
-          "Non inviare nulla: perdi l’effetto ‘novità’ e il posizionamento professionale.",
-          "Messaggi lunghi/confusi: deve essere pulito e deciso."
+        errori:[
+          "Inviare un papiro confuso.",
+          "Non inviare il video: perdi ‘novità’ e pre-educazione.",
+          "Non fissare aspettative sulla lettura futura dei materiali."
         ]
       }
     },
+
     {
-      id: "std-72",
-      relativeHours: -72,
-      relLabel: "-72h",
-      title: "Prequalifica telefonica (selezione target)",
-      short: "Domande, motivazioni, tempistiche, prezzo desiderato: decidi se andare o no.",
-      importance: "warn",
-      popup: {
-        obiettivo: [
-          "Stabilire se il proprietario è in target e decidere se andare a casa sua o meno."
+      id:"std-72",
+      relativeHours:-72,
+      relLabel:"-72h",
+      importance:"warn",
+      title:"Prequalifica telefonica (decidi se è in target)",
+      short:"Domande precise: immobile + motivazioni + tempistiche + obiettivo economico + vincoli.",
+      popup:{
+        obiettivo:[
+          "Capire se il cliente è in target e vale la pena investire tempo.",
+          "Raccogliere dati per relazione e presentazione.",
+          "Impostare leadership: tu guidi, non chiacchieri."
         ],
-        cosaFare: [
-          "Esegui la prequalifica in modo strutturato (non chiacchiera).",
-          "Indaga motivazioni, tempistiche, aspettative economiche, vincoli e condizioni dell’immobile.",
-          "Prendi appunti: questi diventano la base della presentazione e della chiusura.",
-          "Decidi: target perfetto → procedi con relazione; altrimenti interrompi con eleganza."
+        fareChecklist:[
+          {t:"Apri con ‘perché lo faccio’", d:"Rende la prequalifica un passaggio ‘naturale’ e autorevole."},
+          {t:"Fai domande su motivazione e tempistica", d:"Senza motivazione/tempo chiaro, l’incarico è fragile."},
+          {t:"Chiedi cifra desiderata (obiettivo)", d:"Serve per gestire aspettative e obiezioni sul prezzo."},
+          {t:"Verifica vincoli (mutuo/eredi/abusi/documenti)", d:"Problemi nascosti = ritardi e conflitti."},
+          {t:"Decidi: target sì/no", d:"Se non è in target, chiudi elegante. Se sì, procedi con relazione."}
         ],
-        cosaDire: [
-          `Set iniziale:\n"Le faccio alcune domande specifiche: mi servono per capire
+        direScript:`
+SET INIZIALE:
+"Le faccio domande specifiche perché voglio arrivare da lei con una relazione di mercato seria e una strategia precisa."
+
+MOTIVAZIONE:
+"Qual è il motivo principale per cui sta valutando la vendita?"
+
+TEMPISTICA:
+"Entro quando vorrebbe aver concluso lo spostamento?"
+
+OBIETTIVO ECONOMICO:
+"Qual è la cifra che vuole realizzare? È un obiettivo netto o ha margine?"
+
+SITUAZIONE IMMOBILE:
+"Mi descrive metratura, piano, stato interno, pertinenze, esposizione, spese, eventuali lavori fatti?"
+
+VINCOLI/PROBLEMI:
+"Ci sono mutui, ipoteche, eredi, vincoli o situazioni documentali da considerare?"
+
+CHIUSURA PREQUALIFICA:
+"Perfetto. Con questi dati posso costruire una relazione di mercato professionale. Se procediamo, gliela anticipo almeno 2 giorni prima e poi la richiamo il giorno prima per le sue impressioni."`,
+        preparare:[
+          "Modulo prequalifica compilato (con campi: obiettivo prezzo, motivazione, tempo, vincoli, obiezioni potenziali).",
+          "Criteri ‘target’ (minimi) per decidere rapidamente.",
+          "Cartella cliente aggiornata."
+        ],
+        materiali:[
+          "Modulo prequalifica.",
+          "CRM/Note.",
+          "Checklist target."
+        ],
+        errori:[
+          "Fare la chiamata ‘a braccio’ e dimenticare domande chiave.",
+          "Non prendere appunti: perdi potere nella presentazione.",
+          "Andare avanti anche se non è in target (ti abbassi di status)."
+        ]
+      }
+    },
+
+    {
+      id:"std-48",
+      relativeHours:-48,
+      relLabel:"-48h",
+      importance:"danger",
+      title:"Relazione di mercato + pacchetto (invio/consegna ≥ 48h prima)",
+      short:"Qui si vince: allinei prezzo, mostri metodo, ‘sbollisci’ aspettative e prepari obiezioni.",
+      popup:{
+        obiettivo:[
+          "Far arrivare il venditore all’appuntamento con aspettative realistiche.",
+          "Anticipare il tuo modo di lavorare e aumentare percezione di valore.",
+          "Far emergere obiezioni PRIMA (tramite recall)."
+        ],
+        fareChecklist:[
+          {t:"Costruisci relazione professionale", d:"Comparabili, range di mercato, logica prezzo, strategia, tempistiche."},
+          {t:"Inserisci ‘come lavoro’ (metodo)", d:"Deve capire che sei diverso dalla concorrenza."},
+          {t:"Inserisci sezione ‘incarico/collaborazione’", d:"Pre-educazione: non scopre tutto in faccia a te."},
+          {t:"Invia/consegna ≥ 48 ore prima", d:"Regola d’oro. Se no arrivi in difesa il giorno dell’incontro."},
+          {t:"Pre-annuncia recall del giorno prima", d:"Serve a raccogliere impressioni e obiezioni."}
+        ],
+        direScript:`
+MESSAGGIO DI INVIO:
+"Ciao [Nome], ti ho inviato la relazione di mercato e il pacchetto informativo. Ti chiedo di leggerli con attenzione: domani ti richiamo per sentire le tue impressioni e rispondere a eventuali domande, così all’appuntamento arriviamo già allineati."`,
+        preparare:[
+          "Relazione di mercato (PDF + versione stampabile).",
+          "Pacchetto incarico/collaborazione (1 pagina chiara + link video).",
+          "Book di presentazione pronto e in ordine.",
+          "Prove sociali: 3 casi simili (prima/dopo, tempi, risultati)."
+        ],
+        materiali:[
+          "Relazione di mercato professionale.",
+          "Pacchetto informativo incarico/collaborazione.",
+          "Book di presentazione.",
+          "Prove sociali (case study, incarichi, risultati, testimonianze).",
+          "Materiali ‘pubblicitari’ professionali (consigliati):",
+          "• Brochure servizi (1 pagina): cosa fai, come, perché sei diverso.",
+          "• Scheda ‘Metodo di vendita’ (timeline marketing e gestione visite).",
+          "• QR code al video (stampato nella brochure)."
+        ],
+        errori:[
+          "Inviare la relazione il giorno prima o la mattina stessa.",
+          "Fare una relazione ‘fuffa’ senza numeri e senza conclusione operativa.",
+          "Non includere metodo e incarico: poi ti fanno guerra sul ‘perché dovrei firmare con te’."
+        ]
+      }
+    },
+
+    {
+      id:"std-24",
+      relativeHours:-24,
+      relLabel:"-24h",
+      importance:"danger",
+      title:"Recall: verifica lettura + impressioni + obiezioni (se NON ha letto → rinvio)",
+      short:"Il recall non è conferma orario: è controllo qualità e anticipo obiezioni.",
+      popup:{
+        obiettivo:[
+          "Verificare che abbia letto e far emergere obiezioni prima.",
+          "Rinviare se non ha letto: non entri mai a freddo."
+        ],
+        fareChecklist:[
+          {t:"Chiama 1 giorno prima", d:"Non messaggino. Telefonata breve e ferma."},
+          {t:"Domande in sequenza: ricevuta → letta → impressioni → domande", d:"È un mini-colloquio di allineamento."},
+          {t:"Se non ha letto: sposta", d:"È non negoziabile. Protegge status e risultato."},
+          {t:"Annota obiezioni", d:"Prezzo, incarico, tempistiche, commissioni, ‘ci penso’."}
+        ],
+        direScript:`
+RECALL STANDARD:
+"Ciao [Nome], ti chiamo al volo: hai ricevuto la relazione? L’hai letta con attenzione? Che impressione ti sei fatto e quali domande vuoi farmi?"
+
+SE OBIEZIONE SUL PREZZO:
+"Perfetto, è normale. Domani ti faccio vedere esattamente come arriviamo a quel valore e come proteggiamo il miglior risultato."
+
+SE NON HA LETTO (rinvio):
+"Capito. Allora spostiamo l’appuntamento: per me è fondamentale che tu abbia letto almeno con attenzione le informazioni, così domani non perdiamo tempo e arriviamo già allineati."`,
+        preparare:[
+          "Lista obiezioni emerse (3-5 punti).",
+          "Scaletta presentazione con ‘punti caldi’ in evidenza.",
+          "Chiusura pronta (frase diretta per firma)."
+        ],
+        materiali:[
+          "Relazione + pacchetto inviato.",
+          "Note/CRM per obiezioni."
+        ],
+        errori:[
+          "Andare comunque se non ha letto (ti troverai a difenderti su prezzo e commissione).",
+          "Fare discussione infinita al telefono: raccogli, non ‘presentare’ tutto."
+        ]
+      }
+    },
+
+    {
+      id:"std-0_10",
+      relativeHours:-0.1667,
+      relLabel:"-10m",
+      importance:"warn",
+      title:"Pre-routine (10 minuti prima di entrare) — immagine, controllo emotivo, materiali",
+      short:"È come un primo appuntamento: immagine perfetta + anticipo + ripasso + book + screening.",
+      popup:{
+        obiettivo:[
+          "Entrare con status alto e controllo emotivo.",
+          "Non dimenticare nulla (materiali e informazioni)."
+        ],
+        fareChecklist:[
+          {t:"Arriva 10 minuti prima", d:"Niente fretta = status."},
+          {t:"Immagine perfetta", d:"Il venditore si aspetta ‘grande agente’. No trasandato."},
+          {t:"Ripassa prequalifica", d:"Motivazione, tempo, obiettivo €, vincoli."},
+          {t:"Ripassa obiezioni (recall)", d:"Così le gestisci con calma e leadership."},
+          {t:"Controlla book (ordine)", d:"Book pronto, prove sociali pronte."},
+          {t:"Ripassa screening venditore", d:"Interessi/lavoro/affinità: aggancio umano solo se serve."}
+        ],
+        direScript:`
+SELF-TALK (mentale):
+"Oggi è show time. Io seleziono chi rappresento. Conduco io. 30 minuti. Chiusura decisa."`,
+        preparare:[
+          "Book fisico o tablet carico.",
+          "Moduli incarico pronti (se previsti).",
+          "Prove sociali (3 casi).",
+          "Brochure servizi + QR video (se usi kit)."
+        ],
+        materiali:[
+          "Book di presentazione.",
+          "Relazione (anche solo per riferimento).",
+          "Prove sociali.",
+          "Brochure servizi / scheda metodo / QR video."
+        ],
+        errori:[
+          "Arrivare tardi e in affanno.",
+          "Non ricordare obiettivo economico e motivazione: perdi leadership."
+        ]
+      }
+    },
+
+    {
+      id:"std-0",
+      relativeHours:0,
+      relLabel:"0h",
+      importance:"danger",
+      title:"Appuntamento a casa — Presentazione (≤ 30 min) + Chiusura incarico",
+      short:"Qui firmi. Script: status → novità → inversione → distacco → tensione → storytelling → chiusura.",
+      popup:{
+        obiettivo:[
+          "Uscire con incarico firmato il giorno stesso (possibilmente in esclusiva).",
+          "Comunicare valore (commissione 3–4% / franchigia) come conseguenza del metodo."
+        ],
+        fareChecklist:[
+          {t:"Conduci tu la conversazione", d:"Se diventa chiacchiera, perdi controllo."},
+          {t:"Tieni il tempo (max 30 min)", d:"Se sfori, stai solo parlando."},
+          {t:"Usa le 7 funzioni dello script", d:"Status, novità, inversione, distacco, tensione, immedesimazione, non subordinato."},
+          {t:"Mostra prove sociali (risultati)", d:"Fai immedesimare: ‘altri come te’ → ‘risultato’."},
+          {t:"Gestisci obiezioni già note", d:"Prezzo e incarico si gestiscono con calma perché li hai ‘preparati’."},
+          {t:"Chiusura decisa", d:"Non tentennare: chiedi la firma."}
+        ],
+        direScript:`
+APERTURA (STATUS):
+"Perfetto. Oggi facciamo una cosa molto semplice: le do un quadro chiaro del mercato e del mio metodo, e poi lei decide se sono l’agente giusto per rappresentarla."
+
+NOVITÀ (attiva attenzione):
+"Le anticipo che il mio modo di lavorare è diverso da quello che trova normalmente: è un processo strutturato che protegge il miglior risultato economico."
+
+INVERSIONE PREDA/PREDATORE:
+"Io prendo pochi incarichi: devo capire se qui posso darle un vantaggio reale. Se sì, procediamo. Se no, glielo dico con onestà."
+
+DISTACCO DAL RISULTATO:
+"Non ho bisogno di prendere questo incarico: mi interessa prendere incarichi che posso portare a risultato con metodo."
+
+TENSIONE/DESIDERIO:
+"Se l’obiettivo è massimizzare il prezzo e non ‘svendere’, allora dobbiamo seguire un processo preciso, non improvvisare."
+
+IMMEDESIMAZIONE (storytelling + prove):
+"Guardi questi casi: clienti con lo stesso problema iniziale. Le faccio vedere cosa è successo quando hanno seguito il metodo."
+
+GESTIONE COMMISSIONE/VALORE (se esce):
+"Capisco. Il punto non è ‘quanto costo’, ma quanto le faccio guadagnare e quanto rischio le tolgo. Se sono un investimento che aumenta il risultato, la commissione diventa la parte più semplice."
+
+CHIUSURA (DECISA):
+"Se è d’accordo sul prezzo corretto e sul mio metodo operativo, firmiamo l’incarico oggi così partiamo subito."`,
+        preparare:[
+          "Scaletta 30 minuti (con timer).",
+          "Book in ordine (metodo → prove sociali → casi).",
+          "Moduli incarico pronti (penna, documenti).",
+          "Obiezioni previste: prezzo / esclusiva / commissione / tempistiche."
+        ],
+        materiali:[
+          "Book di presentazione (strutturato).",
+          "Prove sociali (incarichi, risultati, testimonianze).",
+          "Relazione di mercato (già letta).",
+          "Moduli incarico + penna.",
+          "Materiale ‘pubblicitario’ pro: brochure servizi + scheda metodo + QR video."
+        ],
+        errori:[
+          "Sforare 30 minuti.",
+          "Chiusura timida (‘ci pensi’ = perdi).",
+          "Cercare approvazione (ti mette sotto)."
+        ]
+      }
+    },
+
+    {
+      id:"std+1",
+      relativeHours:1,
+      relLabel:"+1h",
+      importance:"ok",
+      title:"Debrief post appuntamento (in auto) + Allenamento continuo",
+      short:"Scrivi cosa migliorare. Role play 30 min/die. Registrazione mensile.",
+      popup:{
+        obiettivo:[
+          "Migliorare appuntamento dopo appuntamento, fino a standardizzare conversione incarichi."
+        ],
+        fareChecklist:[
+          {t:"Fermati 5 minuti e scrivi subito", d:"Se aspetti, dimentichi dettagli."},
+          {t:"Annota 1 cosa da migliorare", d:"Una sola, concreta, per volta: così migliori davvero."},
+          {t:"Role play 30 min al giorno", d:"Allenamento deliberato: non ‘esperienza’ generica."},
+          {t:"Registrati 1 volta al mese", d:"Per vedere tono, esitazioni, linguaggio non verbale."}
+        ],
+        direScript:`
+DEBRIEF (scrivi in 3 minuti):
+- Dove ho perso controllo?
+- Quale obiezione mi ha rallentato?
+- Ho sforato i tempi? Perché?
+- Quale frase va migliorata?
+- Come posso rendere la chiusura più pulita?`,
+        preparare:[
+          "Template debrief in note.",
+          "Calendario allenamento (30 min/die).",
+          "Promemoria registrazione mensile."
+        ],
+        materiali:[
+          "Note/CRM.",
+          "Telefono per registrazione."
+        ],
+        errori:[
+          "Non debriefare → ripeti gli stessi errori.",
+          "Pensare che ‘basti fare tanti appuntamenti’ senza allenamento."
+        ]
+      }
+    }
+  ],
+
+  previsita: [
+    {
+      id:"pre-96",
+      relativeHours:-96,
+      relLabel:"-96h",
+      importance:"info",
+      title:"Primo contatto (immobile speciale): fissa PREVISITA a casa",
+      short:"Attici/villa/pregio: devi vedere l’oggetto prima di fare la relazione.",
+      popup:{
+        obiettivo:[
+          "Fissare appuntamento di perlustrazione per conoscere immobile e proprietario.",
+          "Impostare che dopo prepari relazione e poi fai recall."
+        ],
+        fareChecklist:[
+          {t:"Fissa previsita", d:"Spiega che è necessaria per una relazione seria."},
+          {t:"Definisci già il percorso", d:"Previsita → relazione → invio ≥ 48h → recall → firma (ufficio o step successivo)."}
+        ],
+        direScript:`
+"Per immobili come questo, prima devo vederlo di persona: solo così posso costruire una relazione di mercato seria e una strategia corretta. 
+Dopo la previsita preparo la relazione, gliela anticipo e la richiamo il giorno prima per le sue impressioni."`,
+        preparare:[
+          "Checklist sopralluogo (punti forti/critici).",
+          "Modulo raccolta dati immobile."
+        ],
+        materiali:[
+          "Checklist previsita/sopralluogo.",
+          "Scheda immobile."
+        ],
+        errori:[
+          "Fare relazione senza vedere l’oggetto (nei casi speciali)."
+        ]
+      }
+    },
+
+    {
+      id:"pre-72",
+      relativeHours:-72,
+      relLabel:"-72h",
+      importance:"warn",
+      title:"PREVISITA a casa: perlustrazione + conoscenza venditore",
+      short:"Raccogli info reali, motivazioni, obiettivo €, criticità: decidi se procedere.",
+      popup:{
+        obiettivo:[
+          "Conoscere oggetto e proprietario e raccogliere tutto per una relazione professionale.",
+          "Capire se il cliente è in target."
+        ],
+        fareChecklist:[
+          {t:"Perlustra: punti forti e criticità", d:"L’obiettivo è capire cosa vendere e come."},
+          {t:"Chiedi motivazione e tempi", d:"Se manca urgenza/motivazione, la vendita ‘muore’."},
+          {t:"Chiedi obiettivo economico", d:"Serve per gestione aspettative."},
+          {t:"Decidi se procedere", d:"Se non è in target, ti fermi."}
+        ],
+        direScript:`
+"Oggi raccolgo tutte le informazioni reali dell’immobile e delle sue esigenze. 
+Poi le preparo una relazione di mercato professionale e gliela anticipo, così al prossimo incontro saremo già allineati."`,
+        preparare:[
+          "Note/Foto (se consentite).",
+          "Scheda immobile completa."
+        ],
+        materiali:[
+          "Checklist sopralluogo.",
+          "Scheda immobile."
+        ],
+        errori:[
+          "Trasformare la previsita in una presentazione lunga: oggi raccogli, non ‘vendi’."
+        ]
+      }
+    },
+
+    {
+      id:"pre-48",
+      relativeHours:-48,
+      relLabel:"-48h",
+      importance:"danger",
+      title:"Relazione post-previsita + invio ≥ 48h prima",
+      short:"Identico allo standard: qui abbassi emozione e anticipi obiezioni.",
+      popup:{
+        obiettivo:[
+          "Allineare aspettative (prezzo) e metodo (incarico) prima della firma."
+        ],
+        fareChecklist:[
+          {t:"Prepara relazione su misura", d:"Oggetto speciale = analisi più accurata e spiegazione chiara."},
+          {t:"Invia/consegna ≥ 48h prima", d:"Non si discute."},
+          {t:"Prepara recall 24h prima", d:"Tiri fuori obiezioni prima dell’incontro."}
+        ],
+        direScript:`
+"Le ho inviato la relazione di mercato. La guardi con attenzione: domani la richiamo per le sue impressioni e le eventuali domande."`,
+        preparare:[
+          "Relazione + book + casi simili (pregio).",
+          "Pacchetto incarico/collaborazione."
+        ],
+        materiali:[
+          "Relazione di mercato.",
+          "Book + prove sociali.",
+          "Brochure servizi + QR video."
+        ],
+        errori:[
+          "Inviare tardi e gestire shock prezzo il giorno dell’incontro."
+        ]
+      }
+    },
+
+    {
+      id:"pre-24",
+      relativeHours:-24,
+      relLabel:"-24h",
+      importance:"danger",
+      title:"Recall (se non ha letto → rinvio)",
+      short:"Verifica lettura e impressioni. Se non legge, non ti presenti.",
+      popup:{
+        obiettivo:["Assicurarti che arrivi preparato e che le obiezioni emergano prima."],
+        fareChecklist:[
+          {t:"Chiama", d:"Ricevuta? Letta? Impressioni? Domande?"},
+          {t:"Se non letto → rinvia", d:"Protegge status e chiusura."}
+        ],
+        direScript:`
+"Ciao [Nome], hai ricevuto e letto la relazione? Che impressione ti sei fatto e che domande vuoi farmi prima dell’appuntamento?"
+Se NON letta:
+"Allora spostiamo: per me è fondamentale che lei la legga prima, così ci troviamo già allineati."`,
+        preparare:["Lista obiezioni emerse + scaletta presentazione."],
+        materiali:["Note/CRM."],
+        errori:["Andare a freddo."]
+      }
+    },
+
+    {
+      id:"pre-0",
+      relativeHours:0,
+      relLabel:"0h",
+      importance:"danger",
+      title:"Appuntamento in UFFICIO: firma incarico",
+      short:"Arriva già educato dal processo: relazione + recall = firma pulita.",
+      popup:{
+        obiettivo:["Firmare incarico con controllo e chiarezza su prezzo e metodo."],
+        fareChecklist:[
+          {t:"Ricapitola 3 punti chiave", d:"Mercato, prezzo corretto, metodo operativo."},
+          {t:"Gestisci eventuali dubbi", d:"Incarico, collaborazione, tempistiche."},
+          {t:"Firma", d:"Chiusura diretta."}
+        ],
+        direScript:`
+"Abbiamo già un quadro chiaro del mercato e del mio metodo. Se è d’accordo su prezzo e strategia, firmiamo l’incarico oggi e partiamo subito."`,
+        preparare:["Moduli incarico, penna, book, prove sociali."],
+        materiali:["Moduli incarico + book + relazione."],
+        errori:["Riaprire tutto da capo (la relazione serve a evitarlo)."]
+      }
+    }
+  ],
+
+  kit: [
+    {
+      id:"kit-1",
+      relativeHours:null,
+      relLabel:"KIT",
+      importance:"ok",
+      title:"Materiali OBBLIGATORI (pronti sempre, prima di qualunque appuntamento)",
+      short:"Se manca uno di questi, stai improvvisando.",
+      popup:{
+        obiettivo:["Avere un kit completo per impatto professionale e chiusura immediata."],
+        fareChecklist:[
+          {t:"Relazione di mercato (template + personalizzazione)", d:"Comparabili, range, logica prezzo, strategia."},
+          {t:"Book di presentazione (ordine fisso)", d:"Metodo → prove sociali → casi → processo operativo."},
+          {t:"Video informativo incarico/collaborazione", d:"Pre-educazione del venditore."},
+          {t:"Template SMS", d:"Riepilogo appuntamenti + invio relazione + follow-up."},
+          {t:"Modulo prequalifica", d:"Domande immobile + motivazioni + obiettivo € + vincoli."},
+          {t:"Prove sociali", d:"3 casi simili: risultati, tempi, testimonianze."},
+          {t:"Moduli incarico pronti", d:"Quando decidi di chiudere, devi poter firmare subito."},
+          {t:"Materiali ‘pubblicitari’ professionali", d:"Brochure 1 pagina + scheda metodo + QR video."}
+        ],
+        direScript:`
+BROCHURE (testo consigliato - 1 pagina):
+- Cosa faccio: vendita strutturata per massimizzare risultato economico
+- Come: analisi + posizionamento + marketing + gestione visite + negoziazione
+- Perché io: prove sociali + metodo + controllo del processo
+- QR video: “Come funziona l’incarico e cosa faccio per vendere bene”`,
+        preparare:[
+          "Cartellina fisica (o cartella digitale) con: book, prove, moduli, brochure.",
+          "QR code stampato e funzionante.",
+          "Tablet/telefono carico."
+        ],
+        materiali:[
+          "Relazione (PDF + stampa).",
+          "Book (PDF/tablet + stampa).",
+          "Brochure servizi (1 pagina).",
+          "Scheda metodo (timeline operativa marketing).",
+          "QR code al video.",
+          "Prove sociali (3 casi).",
+          "Moduli incarico + penna."
+        ],
+        errori:[
+          "Presentarsi senza prove sociali.",
+          "Non avere moduli pronti: perdi l’attimo della firma."
+        ]
+      }
+    },
+
+    {
+      id:"kit-2",
+      relativeHours:null,
+      relLabel:"SCRIPT",
+      importance:"warn",
+      title:"Script completo: 7 funzioni psicologiche (da usare SEMPRE)",
+      short:"È lo scheletro che ti fa chiudere senza ‘supplicare’.",
+      popup:{
+        obiettivo:["Avere uno script che alza status, crea novità e ti porta alla firma con leadership."],
+        fareChecklist:[
+          {t:"Allenati 30 min/die (role play)", d:"Come uno sport: ripetizione, non improvvisazione."},
+          {t:"Registrati 1 volta al mese", d:"Vedi esitazioni e punti deboli."},
+          {t:"Taglia a 30 minuti", d:"Timer sempre."}
+        ],
+        direScript:`
+1) STATUS:
+"Oggi le do un quadro chiaro e poi lei decide se sono la persona giusta."
+
+2) NOVITÀ:
+"Il mio modo di lavorare è diverso: è un processo che protegge risultato e tempo."
+
+3) INVERSIONE PREDA/PREDATORE:
+"Io rappresento pochi immobili: devo capire se qui posso dare un vantaggio reale."
+
+4) DISTACCO:
+"Non ho bisogno dell’incarico: prendo solo incarichi che posso portare a risultato."
+
+5) TENSIONE/DESIDERIO:
+"Se vuole massimizzare il prezzo, dobbiamo seguire un processo preciso."
+
+6) IMMEDESIMAZIONE (storytelling + prove):
+"Guardi questi casi: stessi problemi, risultato ottenuto applicando il metodo."
+
+7) NON SUBORDINATO (educato):
+"Mi fa piacere conoscerla, ma la mia priorità è lavorare con criteri chiari."`,
+        preparare:[
+          "3 varianti di chiusura (tutte dirette).",
+          "3 risposte brevi a: prezzo / esclusiva / commissione."
+        ],
+        materiali:[
+          "Timer.",
+          "Book con prove sociali.",
+          "Appunti obiezioni standard."
+        ],
+        errori:[
+          "Diventare ‘troppo amico’ e perdere status.",
+          "Parlare senza struttura."
+        ]
+      }
+    }
+  ]
+};
+
+/* -------------------------------------------------
+   UI
+   ------------------------------------------------- */
+const $ = (s)=>document.querySelector(s);
+const timelineEl = $("#timeline");
+const backdrop = $("#backdrop");
+const mTitle = $("#mTitle");
+const mSub = $("#mSub");
+const mTabs = $("#mTabs");
+const mBody = $("#mBody");
+let activeMode = "standard";
+let activeTab = "fare";
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function formatDateTime(dt){
+  const y = dt.getFullYear();
+  const m = pad2(dt.getMonth()+1);
+  const d = pad2(dt.getDate());
+  const hh = pad2(dt.getHours());
+  const mm = pad2(dt.getMinutes());
+  return `${y}-${m}-${d} ${hh}:${mm}`;
+}
+function formatLocalInputValue(dt){
+  const y = dt.getFullYear();
+  const m = pad2(dt.getMonth()+1);
+  const d = pad2(dt.getDate());
+  const hh = pad2(dt.getHours());
+  const mm = pad2(dt.getMinutes());
+  return `${y}-${m}-${d}T${hh}:${mm}`;
+}
+function relToAbsolute(appt, relativeHours){
+  if(!appt || relativeHours === null || relativeHours === undefined) return null;
+  return new Date(appt.getTime() + relativeHours * 3600 * 1000);
+}
+function badgeClass(importance){
+  if(importance==="ok") return "badge ok";
+  if(importance==="warn") return "badge warn";
+  if(importance==="danger") return "badge danger";
+  return "badge";
+}
+function badgeText(importance){
+  if(importance==="ok") return "Operativo";
+  if(importance==="warn") return "Attenzione";
+  if(importance==="danger") return "Critico";
+  return "Info";
+}
+function esc(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function setMode(mode){
+  activeMode = mode;
+  $("#tab-standard").classList.toggle("active", mode==="standard");
+  $("#tab-previsita").classList.toggle("active", mode==="previsita");
+  $("#tab-kit").classList.toggle("active", mode==="kit");
+  $("#modeTag").textContent =
+    mode==="standard" ? "Processo: Standard (90–95%)" :
+    mode==="previsita" ? "Processo: Con previsita (immobili particolari)" :
+    "Sezione: Kit & Script (sempre)";
+  renderTimeline();
+}
+
+function renderTimeline(){
+  const apptVal = $("#appt").value;
+  const appt = apptVal ? new Date(apptVal) : null;
+
+  const items = DATA[activeMode] ?? [];
+  timelineEl.innerHTML = "";
+
+  items.forEach(item=>{
+    const abs = (appt && item.relativeHours !== null && item.relativeHours !== undefined)
+      ? relToAbsolute(appt, item.relativeHours) : null;
+
+    const leftTop = abs ? `${formatDateTime(abs)}` : "Orario assoluto: —";
+    const el = document.createElement("div");
+    el.className = "event";
+    el.setAttribute("role","button");
+    el.setAttribute("tabindex","0");
+
+    el.innerHTML = `
+      <div class="left">
+        <div class="rel">${esc(item.relLabel)}</div>
+        <div>${esc(leftTop)}</div>
+        <div class="${badgeClass(item.importance)}"><span class="dot"></span>${esc(badgeText(item.importance))}</div>
+      </div>
+      <div class="right">
+        <div class="title">${esc(item.title)}</div>
+        <p class="desc">${esc(item.short)}</p>
+      </div>
+    `;
+    el.addEventListener("click", ()=> openModal(item, abs));
+    el.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openModal(item, abs);} });
+    timelineEl.appendChild(el);
+  });
+}
+
+function renderTabs(popup){
+  const tabs = [
+    {id:"fare", label:"✅ Cosa fare"},
+    {id:"dire", label:"🗣️ Cosa dire"},
+    {id:"prep", label:"🧰 Cosa preparare"},
+    {id:"mat", label:"📦 Materiali"},
+    {id:"err", label:"🚫 Errori"},
+    {id:"obj", label:"🎯 Obiettivo"}
+  ];
+  mTabs.innerHTML = "";
+  tabs.forEach(t=>{
+    const b = document.createElement("div");
+    b.className = "m-tab" + (t.id===activeTab ? " active":"");
+    b.textContent = t.label;
+    b.tabIndex = 0;
+    b.addEventListener("click", ()=>{ activeTab=t.id; renderModalBody(popup); renderTabs(popup); });
+    b.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" "){ activeTab=t.id; renderModalBody(popup); renderTabs(popup);} });
+    mTabs.appendChild(b);
+  });
+}
+
+function listSection(title, items){
+  const li = (items||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+  return `<div class="section"><h4>${esc(title)}</h4><ul>${li}</ul></div>`;
+}
+function checklistSection(title, rows){
+  const html = (rows||[]).map((r,i)=>`
+    <div class="chk">
+      <input type="checkbox" id="chk-${Math.random().toString(16).slice(2)}" />
+      <div>
+        <div class="t">${esc(r.t)}</div>
+        <div class="d">${esc(r.d||"")}</div>
+      </div>
+    </div>
+  `).join("");
+  return `<div class="section"><h4>${esc(title)}</h4><div class="checklist">${html}</div></div>`;
+}
+function scriptSection(title, text){
+  return `<div class="section"><h4>${esc(title)}</h4><div class="script">${esc(text||"")}</div></div>`;
+}
+
+function renderModalBody(popup){
+  const p = popup || {};
+  if(activeTab==="fare"){
+    mBody.innerHTML = checklistSection("✅ Cosa fare (passi eseguibili)", p.fareChecklist);
+  } else if(activeTab==="dire"){
+    mBody.innerHTML = scriptSection("🗣️ Cosa dire (script parola per parola)", p.direScript || "");
+  } else if(activeTab==="prep"){
+    mBody.innerHTML = listSection("🧰 Cosa preparare (prima di muoverti)", p.preparare);
+  } else if(activeTab==="mat"){
+    mBody.innerHTML = listSection("📦 Materiali (inclusi materiali ‘pubblicitari’)", p.materiali);
+  } else if(activeTab==="err"){
+    mBody.innerHTML = listSection("🚫 Errori da evitare (ti fanno perdere status)", p.errori);
+  } else if(activeTab==="obj"){
+    mBody.innerHTML = listSection("🎯 Obiettivo del blocco (perché lo fai)", p.obiettivo);
+  }
+}
+
+function openModal(item, abs){
+  const apptVal = $("#appt").value;
+  const appt = apptVal ? new Date(apptVal) : null;
+
+  const absLine = abs ? `Orario: ${formatDateTime(abs)}` : "Orario: (imposta l’appuntamento in alto per calcolarlo)";
+  const relLine = item.relLabel + (item.relativeHours !== null && item.relativeHours !== undefined ? " (relativo)" : "");
+
+  mTitle.textContent = item.title;
+  mSub.textContent = `${relLine}\n${absLine}`;
+
+  activeTab = "fare";
+  renderTabs(item.popup);
+  renderModalBody(item.popup);
+
+  backdrop.classList.add("show");
+}
+function closeModal(){ backdrop.classList.remove("show"); }
+
+$("#close").addEventListener("click", closeModal);
+backdrop.addEventListener("click", (e)=>{ if(e.target===backdrop) closeModal(); });
+window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
+
+$("#apply").addEventListener("click", renderTimeline);
+$("#reset").addEventListener("click", ()=>{
+  $("#appt").value = "";
+  renderTimeline();
+});
+
+$("#tab-standard").addEventListener("click", ()=> setMode("standard"));
+$("#tab-previsita").addEventListener("click", ()=> setMode("previsita"));
+$("#tab-kit").addEventListener("click", ()=> setMode("kit"));
+
+$("#tab-standard").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("standard"); });
+$("#tab-previsita").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("previsita"); });
+$("#tab-kit").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("kit"); });
+
+$("#exportTxt").addEventListener("click", ()=>{
+  const apptVal = $("#appt").value;
+  const appt = apptVal ? new Date(apptVal) : null;
+  const items = DATA[activeMode] ?? [];
+  let out = `=== ${activeMode.toUpperCase()} ===\n`;
+  out += appt ? `Appuntamento: ${formatDateTime(appt)}\n\n` : `Appuntamento: (non impostato)\n\n`;
+
+  for(const it of items){
+    const abs = (appt && it.relativeHours !== null && it.relativeHours !== undefined)
+      ? relToAbsolute(appt, it.relativeHours) : null;
+
+    out += `--- ${it.relLabel} ${abs ? "(" + formatDateTime(abs) + ")" : ""}\n`;
+    out += `${it.title}\n\n`;
+
+    const p = it.popup || {};
+    out += `OBIETTIVO:\n- ${(p.obiettivo||[]).join("\n- ")}\n\n`;
+    out += `COSA FARE:\n- ${(p.fareChecklist||[]).map(r=>r.t + (r.d? " — " + r.d:"")).join("\n- ")}\n\n`;
+    out += `COSA DIRE:\n${(p.direScript||"")}\n\n`;
+    out += `COSA PREPARARE:\n- ${(p.preparare||[]).join("\n- ")}\n\n`;
+    out += `MATERIALI:\n- ${(p.materiali||[]).join("\n- ")}\n\n`;
+    out += `ERRORI:\n- ${(p.errori||[]).join("\n- ")}\n\n`;
+  }
+
+  navigator.clipboard?.writeText(out).then(()=> alert("Copiato negli appunti ✅"))
+    .catch(()=>{
+      const w = window.open("", "_blank");
+      w.document.write(`<pre>${esc(out)}</pre>`);
+      w.document.close();
+    });
+});
+
+/* Init: default a domani 16:00 */
+(function init(){
+  const now = new Date();
+  const d = new Date(now);
+  d.setHours(16,0,0,0);
+  if(now.getTime() > d.getTime()) d.setDate(d.getDate()+1);
+  $("#appt").value = formatLocalInputValue(d);
+  renderTimeline();
+})();
+</script>
+</body>
+</html>
