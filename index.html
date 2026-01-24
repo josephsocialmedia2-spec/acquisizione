@@ -3,1317 +3,615 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema Acquisizione Incarichi — Operativo + Materiali Scaricabili</title>
+  <title>Macchina Acquisizione — Programma Operativo (Torino + Valle di Susa)</title>
   <style>
-    :root{
-      --bg:#0b0f17;
-      --panel:#111827;
-      --panel2:#0f172a;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --border:#243045;
-      --accent:#60a5fa;
-      --ok:#34d399;
-      --warn:#fbbf24;
-      --danger:#f87171;
-      --shadow: 0 12px 34px rgba(0,0,0,.40);
-      --radius: 16px;
-      --radius2: 20px;
-      --max: 1200px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
+    :root { --bg:#0b0f19; --card:#121a2a; --muted:#93a4c7; --txt:#e9eefc; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; --line:#22304d; }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,.20), transparent 55%),
-        radial-gradient(1000px 500px at 80% 0%, rgba(52,211,153,.14), transparent 55%),
-        radial-gradient(900px 500px at 50% 110%, rgba(248,113,113,.10), transparent 55%),
-        var(--bg);
-      color:var(--text);
-    }
-    header{
-      position:sticky; top:0; z-index:10;
-      backdrop-filter: blur(12px);
-      background: rgba(11,15,23,.72);
-      border-bottom:1px solid rgba(36,48,69,.6);
-    }
-    .wrap{max-width:var(--max); margin:0 auto; padding:18px 16px;}
-    .top{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
-    .brand{display:flex; gap:12px; align-items:center;}
-    .logo{
-      width:42px; height:42px; border-radius:14px;
-      background: linear-gradient(135deg, rgba(96,165,250,.9), rgba(52,211,153,.9));
-      box-shadow: var(--shadow);
-    }
-    h1{font-size:16px; margin:0;}
-    .sub{margin:2px 0 0; font-size:12px; color:var(--muted);}
-    .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
-    .pill{
-      display:flex; align-items:center; gap:8px;
-      padding:10px 12px;
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(17,24,39,.65);
-      border-radius:999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.25);
-    }
-    .pill label{font-size:12px; color:var(--muted);}
-    input[type="datetime-local"]{
-      background: transparent; border: none; color: var(--text);
-      font-family: var(--mono); font-size: 12px; outline: none;
-      min-width: 210px;
-    }
-    .btn{
-      cursor:pointer;
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(17,24,39,.7);
-      color: var(--text);
-      padding:10px 12px;
-      border-radius: 999px;
-      font-size:12px;
-      display:inline-flex; align-items:center; gap:8px;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
-      user-select:none;
-    }
-    .btn:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.9);}
-    .btn.primary{background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.55);}
-    .btn.ok{background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.55);}
-    .btn.warn{background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.55);}
-    main{padding: 18px 0 50px;}
-    .grid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-    }
-    @media (max-width: 980px){ .grid{grid-template-columns: 1fr;} }
-    .card{
-      background: linear-gradient(180deg, rgba(17,24,39,.78), rgba(15,23,42,.70));
-      border: 1px solid rgba(36,48,69,.9);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .head{
-      padding: 14px 14px 12px;
-      border-bottom:1px solid rgba(36,48,69,.75);
-      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-    }
-    .card .head h2{margin:0; font-size:14px;}
-    .tag{
-      font-size:11px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(36,48,69,.9);
-      color: var(--muted);
-      background: rgba(11,15,23,.25);
-    }
-    .card .body{padding: 14px;}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
-    .tab{
-      cursor:pointer; user-select:none;
-      padding:8px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(11,15,23,.20);
-      color: var(--muted);
-      font-size:12px;
-      transition: all .12s ease;
-    }
-    .tab.active{
-      background: rgba(96,165,250,.18);
-      border-color: rgba(96,165,250,.55);
-      color: var(--text);
-    }
-    .timeline{display:flex; flex-direction:column; gap:10px; padding: 10px 0 0;}
-    .event{
-      display:flex; gap:12px;
-      padding: 12px 12px;
-      border-radius: var(--radius);
-      border:1px solid rgba(36,48,69,.85);
-      background: rgba(11,15,23,.20);
-      cursor:pointer;
-      transition: transform .10s ease, border-color .10s ease, background .10s ease;
-    }
-    .event:hover{
-      transform: translateY(-1px);
-      border-color: rgba(96,165,250,.65);
-      background: rgba(96,165,250,.06);
-    }
-    .event .left{
-      min-width: 135px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-      display:flex; flex-direction:column; gap:6px;
-    }
-    .event .left .rel{font-weight:800; color: rgba(229,231,235,.95);}
-    .event .title{font-weight:800; font-size:13px; margin: 0 0 4px;}
-    .event .desc{margin:0; font-size:12px; color: var(--muted); line-height:1.35;}
-    .badge{
-      display:inline-flex; align-items:center; gap:6px;
-      font-size:11px; color: var(--muted);
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(11,15,23,.25);
-      padding:4px 8px; border-radius:999px; width: fit-content;
-    }
-    .badge .dot{width:7px;height:7px;border-radius:99px;background: var(--accent);}
-    .badge.ok .dot{background: var(--ok);}
-    .badge.warn .dot{background: var(--warn);}
-    .badge.danger .dot{background: var(--danger);}
-
-    .rules{display:flex; flex-direction:column; gap:10px;}
-    .rule{
-      border:1px solid rgba(36,48,69,.85);
-      background: rgba(11,15,23,.18);
-      border-radius: var(--radius);
-      padding: 12px;
-    }
-    .rule h3{margin:0 0 6px; font-size:13px;}
-    .rule p{margin:0; color: var(--muted); font-size:12px; line-height:1.35;}
-    .mini{
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(229,231,235,.85);
-      margin-top: 8px;
-      padding:8px;
-      border-radius: 12px;
-      border:1px solid rgba(36,48,69,.8);
-      background: rgba(0,0,0,.22);
-      white-space: pre-wrap;
-    }
-
-    /* Modal */
-    .backdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.58);
-      display:none; align-items:center; justify-content:center;
-      padding: 16px; z-index: 999;
-    }
-    .backdrop.show{display:flex;}
-    .modal{
-      width: min(1100px, 100%);
-      max-height: min(88vh, 900px);
-      overflow:auto;
-      background: linear-gradient(180deg, rgba(17,24,39,.97), rgba(15,23,42,.97));
-      border:1px solid rgba(36,48,69,.95);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-    }
-    .modal header{
-      position:sticky; top:0;
-      background: rgba(17,24,39,.92);
-      border-bottom:1px solid rgba(36,48,69,.8);
-      padding: 14px 14px;
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-    }
-    .modal header .m-title{margin:0; font-size:14px; line-height:1.25; font-weight:900;}
-    .modal header .m-sub{
-      margin:4px 0 0;
-      font-family: var(--mono);
-      color: var(--muted);
-      font-size: 12px;
-      white-space: pre-wrap;
-    }
-    .close{
-      cursor:pointer;
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(11,15,23,.25);
-      color: var(--text);
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .modal .content{padding: 14px;}
-    .m-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px;}
-    .m-tab{
-      cursor:pointer; user-select:none;
-      padding:8px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(36,48,69,.9);
-      background: rgba(11,15,23,.20);
-      color: var(--muted);
-      font-size:12px;
-    }
-    .m-tab.active{
-      background: rgba(96,165,250,.18);
-      border-color: rgba(96,165,250,.55);
-      color: var(--text);
-    }
-    .section{
-      border:1px solid rgba(36,48,69,.85);
-      background: rgba(11,15,23,.18);
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-    .section h4{margin:0 0 8px; font-size:13px; font-weight:900;}
-    .section ul{margin:0; padding-left: 18px; color: var(--muted); font-size:12px; line-height:1.55;}
-    .script{
-      background: rgba(0,0,0,.25);
-      border:1px solid rgba(36,48,69,.85);
-      border-radius: 14px;
-      padding: 10px;
-      font-family: var(--mono);
-      color: rgba(229,231,235,.92);
-      font-size: 12px;
-      white-space: pre-wrap;
-      line-height:1.5;
-    }
-    .checklist{display:flex; flex-direction:column; gap:8px;}
-    .chk{
-      display:flex; gap:10px; align-items:flex-start;
-      padding:10px;
-      border:1px solid rgba(36,48,69,.8);
-      background: rgba(0,0,0,.18);
-      border-radius: 14px;
-    }
-    .chk input{margin-top: 2px;}
-    .chk .t{font-size:12px; font-weight:800;}
-    .chk .d{font-size:12px; color: var(--muted); margin-top:2px; line-height:1.45;}
-
-    /* Downloadables */
-    .dl-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (max-width: 900px){ .dl-grid{grid-template-columns:1fr;} input[type="datetime-local"]{min-width: 180px;} .event .left{min-width:120px;} }
-    .dl{
-      border:1px solid rgba(36,48,69,.8);
-      background: rgba(0,0,0,.18);
-      border-radius: 16px;
-      padding: 12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .dl .name{font-weight:900; font-size:12px;}
-    .dl .meta{font-family:var(--mono); font-size:11px; color: var(--muted);}
-    .dl .desc{font-size:12px; color: var(--muted); line-height:1.45;}
-    .dl .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;}
-    .btn.small{padding:8px 10px; font-size:12px;}
-    .btn.ghost{background: rgba(11,15,23,.20);}
-    .footer-note{margin-top: 10px; color: var(--muted); font-size:11px; line-height:1.4;}
-    textarea.preview{
-      width:100%;
-      min-height: 220px;
-      border-radius: 14px;
-      border:1px solid rgba(36,48,69,.85);
-      background: rgba(0,0,0,.22);
-      color: rgba(229,231,235,.92);
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 10px;
-      outline:none;
-      resize: vertical;
-      line-height:1.5;
-    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,#070a12 0%, #0b0f19 40%, #070a12 100%);color:var(--txt)}
+    header{padding:20px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,15,25,.92);backdrop-filter: blur(8px);z-index:5}
+    h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+    main{max-width:1100px;margin:0 auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(18,26,42,.88);border:1px solid var(--line);border-radius:14px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 10px;border-radius:10px;border:1px solid #2a3b5f;background:#0b1220;color:var(--txt);outline:none}
+    textarea{min-height:84px;resize:vertical}
+    .btn{appearance:none;border:1px solid #2a3b5f;background:#0b1220;color:var(--txt);padding:10px 12px;border-radius:10px;cursor:pointer}
+    .btn:hover{border-color:#3c568d}
+    .btn.primary{background:linear-gradient(180deg,#1b2a4a,#111b33);border-color:#3c568d}
+    .btn.ok{border-color:rgba(52,211,153,.6)}
+    .btn.warn{border-color:rgba(251,191,36,.6)}
+    .btn.bad{border-color:rgba(251,113,133,.7)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#0b1220;color:var(--muted);font-size:12px}
+    .pill .dot{width:8px;height:8px;border-radius:50%}
+    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+    .section{margin-top:12px}
+    .section h2{margin:0 0 10px;font-size:15px}
+    details{border:1px solid var(--line);border-radius:12px;background:#0b1220;margin:10px 0;overflow:hidden}
+    summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+    summary::-webkit-details-marker{display:none}
+    .sumLeft{display:flex;flex-direction:column;gap:4px}
+    .sumTitle{font-weight:650;font-size:13px}
+    .sumHint{color:var(--muted);font-size:12px}
+    .sumRight{display:flex;gap:8px;align-items:center}
+    .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+    .content{padding:12px;border-top:1px solid var(--line)}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#0a0f1c;border:1px solid #243252;color:var(--txt);padding:2px 6px;border-radius:8px;font-size:12px}
+    pre{margin:10px 0 0;white-space:pre-wrap;word-break:break-word;background:#070c16;border:1px solid #22304d;border-radius:12px;padding:12px;color:#d9e4ff}
+    .mini{color:var(--muted);font-size:12px;margin-top:8px}
+    .toast{position:fixed;right:14px;bottom:14px;background:#0b1220;border:1px solid var(--line);padding:10px 12px;border-radius:12px;color:var(--txt);font-size:13px;display:none;z-index:10}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:760px){.split{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <header>
-  <div class="wrap top">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>Sistema Acquisizione Incarichi — Operativo + Materiali Scaricabili</h1>
-        <div class="sub">Clicca un blocco → tab 📦 MATERIALI → scarichi file pronti (SMS, brochure, schede, moduli, checklist).</div>
-      </div>
-    </div>
-    <div class="controls">
-      <div class="pill">
-        <label for="appt">Ora appuntamento (CASA o UFFICIO):</label>
-        <input id="appt" type="datetime-local" />
-      </div>
-      <button class="btn primary" id="apply">Applica orari</button>
-      <button class="btn" id="reset">Reset</button>
-      <button class="btn ok" id="exportAll">Scarica KIT completo</button>
-    </div>
-  </div>
+  <h1>Macchina Acquisizione — Programma Operativo (HTML)</h1>
+  <div class="sub">Copia & incolla guidato: <span class="kbd">ChatGPT</span> → testi IT • <span class="kbd">Canva AI</span> → grafica EN • Controllo umano + Kill Switch</div>
 </header>
 
-<main class="wrap">
+<main>
   <div class="grid">
-    <section class="card">
-      <div class="head">
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <h2>Timeline operativa (cliccabile)</h2>
-          <span class="tag" id="modeTag">Processo: Standard (90–95%)</span>
+    <!-- LEFT: CONTROL PANEL -->
+    <div class="card">
+      <div class="row">
+        <div style="flex:1;min-width:240px">
+          <label>Area operativa</label>
+          <select id="area">
+            <option value="Torino">Torino</option>
+            <option value="Valle di Susa">Valle di Susa</option>
+            <option value="Torino + Valle di Susa" selected>Torino + Valle di Susa</option>
+          </select>
         </div>
-        <div class="tabs" role="tablist" aria-label="Seleziona processo">
-          <div class="tab active" id="tab-standard" role="tab" tabindex="0">Standard</div>
-          <div class="tab" id="tab-previsita" role="tab" tabindex="0">Con previsita</div>
-          <div class="tab" id="tab-kit" role="tab" tabindex="0">Kit & Script</div>
+        <div style="flex:1;min-width:200px">
+          <label>Lingua grafica (Canva)</label>
+          <input id="langCanva" value="English" />
+        </div>
+        <div style="flex:1;min-width:220px">
+          <label>Lingua testi (pubblico)</label>
+          <input id="langTxt" value="Italiano" />
         </div>
       </div>
-      <div class="body">
-        <div id="timeline" class="timeline" aria-live="polite"></div>
-        <div class="footer-note">
-          Regola: se il venditore NON ha letto ciò che gli hai mandato, l’appuntamento si sposta. Sempre.
-        </div>
-      </div>
-    </section>
 
-    <aside class="card">
-      <div class="head">
-        <h2>Regole non negoziabili</h2>
-        <span class="tag">Sempre</span>
-      </div>
-      <div class="body rules">
-        <div class="rule">
-          <h3>1) Se NON legge → si rinvia</h3>
-          <p>Non ti presenti finché non ha letto/guardato con attenzione relazione/pacchetto. Altrimenti entri in difesa e perdi status.</p>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px">
+          <label>WhatsApp / Telefono (pubblico)</label>
+          <input id="phone" placeholder="+39..." />
         </div>
-        <div class="rule">
-          <h3>2) Relazione ≥ 48 ore prima</h3>
-          <p>Serve a sbollire aspettative, far emergere domande e posizionarti come professionista prima del vis-à-vis.</p>
+        <div style="flex:1;min-width:260px">
+          <label>Email (pubblica)</label>
+          <input id="email" placeholder="info@..." />
         </div>
-        <div class="rule">
-          <h3>3) Presentazione ≤ 30 minuti</h3>
-          <p>Oltre 30 minuti stai chiacchierando. Conduci e chiudi deciso.</p>
-        </div>
-        <div class="rule">
-          <h3>4) Tu selezioni chi rappresenti</h3>
-          <p>Inversione preda/predatore: educato ma non subordinato.</p>
-          <div class="mini">"Non ho bisogno dell’incarico. Prendo solo incarichi che posso portare a risultato con metodo."</div>
+        <div style="flex:1;min-width:260px">
+          <label>Link Form (opt-in) / QR</label>
+          <input id="formLink" placeholder="https://..." />
         </div>
       </div>
-    </aside>
+
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px">
+          <label>Nome firma (facoltativo)</label>
+          <input id="sign" placeholder="Nome e Cognome" />
+        </div>
+        <div style="flex:1;min-width:260px">
+          <label>Stile (1 riga)</label>
+          <input id="style" value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist." />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary ok" id="save">Salva impostazioni</button>
+        <button class="btn warn" id="fillDemo">Compila esempio</button>
+        <span class="pill" id="killPill"><span class="dot ok"></span><span id="killTxt">KILL SWITCH: OFF</span></span>
+        <button class="btn bad" id="toggleKill">Toggle Kill Switch</button>
+      </div>
+
+      <div class="mini">
+        Regola: se Kill Switch = ON → non pubblicare/contattare. Solo generazione bozze.
+      </div>
+    </div>
+
+    <!-- RIGHT: DAILY RUN -->
+    <div class="card">
+      <div class="section">
+        <h2>Avvio quotidiano (08:00)</h2>
+        <div class="split">
+          <div>
+            <div class="pill"><span class="dot ok"></span>1) Genera testi (ChatGPT)</div>
+            <div class="mini">Apri ChatGPT → copia prompt → incolla → ottieni testi IT.</div>
+            <button class="btn primary" id="copyDailyChatGPT">Copia Prompt Giornaliero (ChatGPT)</button>
+          </div>
+          <div>
+            <div class="pill"><span class="dot warn"></span>2) Genera grafica (Canva AI)</div>
+            <div class="mini">Apri Canva → Canva AI / Magic Design → incolla prompt EN.</div>
+            <button class="btn primary" id="copyDailyCanva">Copia Prompt Grafica (Canva AI)</button>
+          </div>
+        </div>
+        <div style="margin-top:12px" class="split">
+          <div>
+            <div class="pill"><span class="dot ok"></span>3) Inbox + consenso</div>
+            <div class="mini">Risposte pronte (GDPR-safe) per DM/WhatsApp/email.</div>
+            <button class="btn" id="copyInbox">Copia Risposta Inbox + Consenso</button>
+          </div>
+          <div>
+            <div class="pill"><span class="dot warn"></span>4) Territorio “Al residente”</div>
+            <div class="mini">Volantino + lettera non nominativa + QR/form.</div>
+            <button class="btn" id="copyTerritoryPack">Copia Pacchetto Territorio (testi)</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" class="row">
+          <button class="btn ok" id="approveAll">APPROVA TUTTO (oggi)</button>
+          <button class="btn bad" id="blockAll">BLOCCA TUTTO (oggi)</button>
+          <button class="btn" id="exportTxt">Esporta “file di testo” (TXT)</button>
+        </div>
+
+        <div class="mini">
+          “Esporta TXT” crea un file locale con tutte le bozze (copiabile in Notion/Drive).
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- PROCEDURES -->
+  <div class="card section">
+    <h2>Procedure (aprire → copiare → incollare)</h2>
+
+    <details open>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Prompt Giornaliero ChatGPT (genera tutto)</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: testi IT completi</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('dailyChatGPT')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="dailyChatGPT"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Prompt Canva AI (grafica)</div>
+          <div class="sumHint">📍 DOVE: Canva → Canva AI / Magic Design → Copia & incolla</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">EN</span>
+          <button class="btn" type="button" onclick="copyFrom('dailyCanva')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="dailyCanva"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Commenti Strategici (10) per post pubblici</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → poi incolla come commenti (pubblici)</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('commentsPrompt')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="commentsPrompt"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Script Campanello (15 sec)</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: 3 frasi max</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('doorbellPrompt')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="doorbellPrompt"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Checklist gratuita (lead magnet)</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: 7 punti</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('checklistPrompt')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="checklistPrompt"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Inbox + Consenso (Sì/No) GDPR-safe</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: template risposta</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('inboxPrompt')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="inboxPrompt"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Pacchetto Territorio (Volantino + Lettera)</div>
+          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: testo volantino + lettera</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">IT</span>
+          <button class="btn" type="button" onclick="copyFrom('territoryPrompt')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="territoryPrompt"></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <div class="sumLeft">
+          <div class="sumTitle">Programma: Spegnimento di Sicurezza (Kill Switch)</div>
+          <div class="sumHint">📍 DOVE: qui → regole operative da applicare sempre</div>
+        </div>
+        <div class="sumRight">
+          <span class="tag">RULES</span>
+          <button class="btn" type="button" onclick="copyFrom('killRules')">Copia</button>
+        </div>
+      </summary>
+      <div class="content">
+        <pre id="killRules"></pre>
+      </div>
+    </details>
+  </div>
+
+  <div class="toast" id="toast">Copiato ✅</div>
 </main>
 
-<!-- Modal -->
-<div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Dettaglio operazione">
-  <div class="modal">
-    <header>
-      <div>
-        <p class="m-title" id="mTitle"></p>
-        <p class="m-sub" id="mSub"></p>
-      </div>
-      <button class="close" id="close">Chiudi ✕</button>
-    </header>
-
-    <div class="content">
-      <div class="m-tabs" id="mTabs"></div>
-      <div id="mBody"></div>
-    </div>
-  </div>
-</div>
-
 <script>
-/* ------------------------
-   Helper: download files
-   ------------------------ */
-function downloadFile(filename, mime, content){
-  const blob = new Blob([content], {type: mime});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=> URL.revokeObjectURL(url), 1200);
-}
-function esc(str){
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-function pad2(n){ return String(n).padStart(2,"0"); }
-function formatDateTime(dt){
-  const y = dt.getFullYear();
-  const m = pad2(dt.getMonth()+1);
-  const d = pad2(dt.getDate());
-  const hh = pad2(dt.getHours());
-  const mm = pad2(dt.getMinutes());
-  return `${y}-${m}-${d} ${hh}:${mm}`;
-}
-function formatLocalInputValue(dt){
-  const y = dt.getFullYear();
-  const m = pad2(dt.getMonth()+1);
-  const d = pad2(dt.getDate());
-  const hh = pad2(dt.getHours());
-  const mm = pad2(dt.getMinutes());
-  return `${y}-${m}-${d}T${hh}:${mm}`;
-}
-function relToAbsolute(appt, relativeHours){
-  if(!appt || relativeHours === null || relativeHours === undefined) return null;
-  return new Date(appt.getTime() + relativeHours * 3600 * 1000);
-}
-function badgeClass(importance){
-  if(importance==="ok") return "badge ok";
-  if(importance==="warn") return "badge warn";
-  if(importance==="danger") return "badge danger";
-  return "badge";
-}
-function badgeText(importance){
-  if(importance==="ok") return "Operativo";
-  if(importance==="warn") return "Attenzione";
-  if(importance==="danger") return "Critico";
-  return "Info";
-}
-
-/* ------------------------
-   Material Templates (downloadables)
-   - You can later personalize placeholders [NOME], [DATA], etc.
-   ------------------------ */
-function makeBrochureHTML(){
-  return `<!doctype html>
-<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Brochure Servizi — Metodo Operativo</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;margin:40px;line-height:1.35}
-h1{margin:0 0 8px} h2{margin:18px 0 8px;font-size:16px}
-.box{border:1px solid #222;padding:12px;margin:10px 0}
-.small{font-size:12px;color:#333}
-ul{margin:6px 0 0 18px}
-hr{margin:14px 0}
-</style></head><body>
-<h1>Brochure Servizi — Vendita con Metodo</h1>
-<div class="small">Versione 1 pagina (stampabile) • Personalizza logo/contatti</div>
-<hr>
-<div class="box">
-<b>Cosa faccio</b><br>
-Massimizzo il risultato economico della vendita attraverso un processo strutturato: analisi, posizionamento, marketing, gestione visite, negoziazione e chiusura.
-</div>
-
-<h2>Il mio metodo (in 5 step)</h2>
-<ul>
-  <li>Prequalifica: capisco obiettivo, tempi, vincoli e target.</li>
-  <li>Relazione di mercato: comparabili, range e prezzo corretto.</li>
-  <li>Piano marketing e posizionamento: presentazione e visibilità.</li>
-  <li>Gestione visite e selezione acquirenti: qualità prima della quantità.</li>
-  <li>Negoziazione e chiusura: protezione del risultato e tempi certi.</li>
-</ul>
-
-<h2>Perché funziona</h2>
-<ul>
-  <li>Riduce improvvisazione e abbassa lo stress del venditore.</li>
-  <li>Allinea le aspettative prima dell’appuntamento.</li>
-  <li>Fa emergere obiezioni prima (recall) e accelera la firma.</li>
-</ul>
-
-<h2>Prove (da inserire)</h2>
-<ul>
-  <li>Case study #1: problema → strategia → risultato</li>
-  <li>Case study #2: problema → strategia → risultato</li>
-  <li>Case study #3: problema → strategia → risultato</li>
-</ul>
-
-<hr>
-<div class="box">
-<b>Contatti</b><br>
-Nome: [TUO NOME] • Agenzia: [AGENZIA] • Tel: [NUMERO] • Email: [EMAIL]<br>
-<b>Video metodo:</b> inserisci qui un QR con link al tuo video (YouTube/Drive).
-</div>
-</body></html>`;
-}
-
-function makeSchedaMetodoMD(){
-  return `# Scheda Metodo Operativo (stampabile)
-
-## Obiettivo
-Massimizzare il risultato economico con un processo strutturato, riducendo improvvisazione e obiezioni in appuntamento.
-
-## Timeline (Standard)
-1. **Fissaggio appuntamento (≥ 4 giorni)** + slot prequalifica
-2. **SMS riepilogo + video informativo**
-3. **Prequalifica telefonica** (motivazione / tempi / obiettivo € / vincoli)
-4. **Relazione di mercato professionale**
-5. **Invio/Consegna relazione ≥ 48 ore prima**
-6. **Recall -24h** (ricevuta? letta? impressioni? domande?)
-   - Se non letta: **rinvio appuntamento**
-7. **Appuntamento (≤ 30 minuti)**: status → metodo → prove → chiusura
-8. **Debrief + miglioramento** (role play + registrazione)
-
-## Regole non negoziabili
-- Se non legge: **si rinvia**
-- Presentazione: **max 30 minuti**
-- Chiusura: **decisa, senza tentennare**
-- Tu selezioni chi rappresenti (status alto)
-
-## Asset da mostrare in presentazione
-- Relazione di mercato
-- Book presentazione
-- Prove sociali (3 casi simili)
-- Brochure servizi (1 pagina)
-- QR al video metodo
-`;
-}
-
-function makeModuloPrequalificaTXT(){
-  return `MODULO PREQUALIFICA (da compilare prima dell’appuntamento)
-
-DATI CLIENTE
-- Nome/Cognome:
-- Telefono:
-- Email:
-- Indirizzo immobile:
-
-MOTIVAZIONE & TEMPISTICHE
-1) Perché vende?
-2) Entro quando vuole completare lo spostamento?
-3) C’è urgenza? (Sì/No) Perché?
-
-OBIETTIVO ECONOMICO
-4) Qual è la cifra che vuole realizzare?
-5) È un obiettivo netto o ha margine? (quanto)
-6) Ha già ricevuto valutazioni? Da chi? A quanto?
-
-DATI IMMOBILE
-7) Tipologia, metratura, piano, ascensore:
-8) Stato interno (ristrutturato / buono / da fare):
-9) Esposizione, pertinenze (box/cantina/terrazzo):
-10) Spese condominiali:
-11) Lavori condominiali in programma:
-12) Elementi distintivi (vista, luminosità, ecc.):
-
-VINCOLI / CRITICITÀ
-13) Mutuo/Ipoteche:
-14) Eredi / comproprietà:
-15) Abusi / difformità / pratiche:
-16) Documenti disponibili (atto, planimetria, APE):
-
-OBIEZIONI EMERSE (se già presenti)
-- Prezzo:
-- Esclusiva:
-- Commissione:
-- Tempistiche:
-
-NOTE IMPORTANTI
-- Cliente in target? (Sì/No)
-- Prossimo step: relazione di mercato + invio ≥ 48 ore prima + recall
-`;
-}
-
-function makeTemplateSMS_TXT(){
-  return `TEMPLATE SMS / WHATSAPP (copia-incolla)
-
-1) RIEPILOGO APPUNTAMENTI + VIDEO
-"Ciao [Nome], come anticipato: prequalifica telefonica [DATA/ORA] e appuntamento [DATA/ORA].
-Intanto ti mando un breve video dove spiego come lavoro e cosa significa affidarmi l’incarico, così arriviamo con le idee chiarissime."
-
-2) INVIO RELAZIONE + PREANNUNCIO RECALL
-"Ciao [Nome], ti ho inviato la relazione di mercato e il pacchetto informativo.
-Ti chiedo di leggerli con attenzione: domani ti richiamo per le tue impressioni e le eventuali domande."
-
-3) RECALL (se preferisci messaggio breve prima della chiamata)
-"Ciao [Nome], domani ti chiamo al volo per sentire le tue impressioni sulla relazione che ti ho inviato."
-`;
-}
-
-function makeRecallScriptTXT(){
-  return `SCRIPT RECALL (telefonata -24h)
-
-OBIETTIVO
-- Verificare lettura e far emergere obiezioni prima dell’appuntamento.
-- Se NON ha letto: rinvio (non negoziabile).
-
-APERTURA
-"Ciao [Nome], ti chiamo al volo: hai ricevuto la relazione?"
-
-VERIFICA LETTURA
-"L’hai letta con attenzione?"
-
-IMPRESSIONI + DOMANDE
-"Che impressione ti sei fatto? Quali sono le tue domande o dubbi?"
-
-SE OBIEZIONE PREZZO
-"Perfetto, è normale. Domani ti faccio vedere come arriviamo a quel valore e come proteggiamo il miglior risultato."
-
-SE OBIEZIONE ESCLUSIVA/INCARICO
-"Chiaro. Domani ti spiego perché il processo funziona solo se è applicato in modo coerente e misurabile."
-
-SE NON HA LETTO (RINVIO)
-"Capito. Allora spostiamo l’appuntamento: per me è fondamentale che tu abbia letto almeno con attenzione le informazioni, così domani non perdiamo tempo e arriviamo già allineati."
-`;
-}
-
-function makeChecklistPreRoutineTXT(){
-  return `CHECKLIST PRE-ROUTINE (10 minuti prima di suonare)
-
-IMMAGINE
-[ ] Outfit professionale (contesto/target)
-[ ] Cura dettagli (scarpe, capelli, ordine)
-
-TEMPO
-[ ] Arrivo 10 minuti prima (zero fretta)
-
-RIPASSO CLIENTE
-[ ] Motivazione vendita
-[ ] Tempistiche
-[ ] Obiettivo economico
-[ ] Vincoli (mutuo/eredi/documenti)
-[ ] Obiezioni emerse al recall
-
-MATERIALI
-[ ] Book presentazione (ordine corretto)
-[ ] Prove sociali (3 casi simili)
-[ ] Relazione (per riferimento)
-[ ] Brochure servizi + scheda metodo + QR video
-[ ] Moduli incarico + penna (se chiusura prevista)
-
-MENTALITÀ
-[ ] “Io seleziono chi rappresento”
-[ ] Presentazione max 30 minuti
-[ ] Chiusura decisa
-`;
-}
-
-function makeDebriefTXT(){
-  return `DEBRIEF POST APPUNTAMENTO (da compilare in auto - 5 minuti)
-
-DATA:
-CLIENTE:
-ESITO: (incarico firmato / follow-up / rinviato)
-
-1) COSA HA FUNZIONATO (max 3 bullet)
-- 
-- 
-- 
-
-2) DOVE HO PERSO CONTROLLO (1 punto)
-- 
-
-3) OBIEZIONI EMERSE (con risposta data)
-- Prezzo:
-- Esclusiva/incarico:
-- Commissione:
-- Altro:
-
-4) TEMPO
-- Ho rispettato i 30 minuti? (Sì/No) Perché?
-
-5) UNA SOLA COSA DA MIGLIORARE NEL PROSSIMO APPUNTAMENTO
-- 
-
-6) NUOVA FRASE / MIGLIORIA SCRIPT (se utile)
-- 
-`;
-}
-
-function makeMiniBookIndexMD(){
-  return `# Book Presentazione — Indice (ordine consigliato)
-
-1) Apertura: status + obiettivo incontro
-2) Metodo operativo (scheda metodo / timeline)
-3) Relazione di mercato (range e logica)
-4) Piano marketing e gestione visite
-5) Prove sociali: 3 casi simili (storytelling)
-6) Domande/obiezioni (prezzo, incarico, commissione)
-7) Chiusura: richiesta firma incarico (diretta)
-`;
-}
-
-/* ------------------------
-   Per-event "downloadables"
-   Each downloadable: {name, filename, mime, contentFn or content, notes}
-   ------------------------ */
-const DOWNLOAD_LIBRARY = {
-  "BROCHURE_HTML": { name:"Brochure servizi (1 pagina)", filename:"brochure-servizi.html", mime:"text/html", contentFn: makeBrochureHTML,
-    notes:"Stampala o aprila in Chrome e ‘Stampa’ → Salva in PDF." },
-  "SCHEDA_METODO_MD": { name:"Scheda metodo (stampabile)", filename:"scheda-metodo.md", mime:"text/markdown", contentFn: makeSchedaMetodoMD,
-    notes:"Aprila in Google Docs/Notion e formattala." },
-  "PREQUALIFICA_TXT": { name:"Modulo prequalifica", filename:"modulo-prequalifica.txt", mime:"text/plain", contentFn: makeModuloPrequalificaTXT,
-    notes:"Copialo in Word/Docs e trasformalo in modulo compilabile." },
-  "SMS_TXT": { name:"Template SMS/WhatsApp", filename:"template-sms.txt", mime:"text/plain", contentFn: makeTemplateSMS_TXT,
-    notes:"Salvalo nelle note del telefono." },
-  "RECALL_TXT": { name:"Script Recall (-24h)", filename:"script-recall.txt", mime:"text/plain", contentFn: makeRecallScriptTXT,
-    notes:"Tienilo aperto durante la chiamata." },
-  "PREROUTINE_TXT": { name:"Checklist Pre-routine (-10m)", filename:"checklist-pre-routine.txt", mime:"text/plain", contentFn: makeChecklistPreRoutineTXT,
-    notes:"Stampala e mettila nella cartellina." },
-  "DEBRIEF_TXT": { name:"Debrief post appuntamento", filename:"debrief-post-appuntamento.txt", mime:"text/plain", contentFn: makeDebriefTXT,
-    notes:"Da compilare in auto in 5 minuti." },
-  "BOOK_INDEX_MD": { name:"Indice Book Presentazione", filename:"book-indice.md", mime:"text/markdown", contentFn: makeMiniBookIndexMD,
-    notes:"Usalo per sistemare l’ordine del book." }
-};
-
-/* ------------------------
-   DATA (timeline)
-   Each event popup includes downloadKeys: array of keys into DOWNLOAD_LIBRARY
-   ------------------------ */
-const DATA = {
-  standard: [
-    {
-      id:"std-96", relativeHours:-96, relLabel:"-96h", importance:"info",
-      title:"Primo contatto: controllo + fissaggio appuntamenti (≥ 4 giorni)",
-      short:"Blocchi prequalifica + appuntamento dal vivo. Imposti il processo.",
-      popup:{
-        obiettivo:[
-          "Impostare status e controllo del processo.",
-          "Fissare due appuntamenti (telefonico + di persona)."
-        ],
-        fareChecklist:[
-          {t:"Mai fissare prima di 4 giorni", d:"Anticipo = controllo + tempo per educare."},
-          {t:"Blocca 2 slot (prequalifica + incontro)", d:"Standard operativo, non opzione."},
-          {t:"Preannuncia relazione + recall", d:"Così guidi l’aspettativa."}
-        ],
-        direScript:
-`"Perfetto. Per lavorare bene e farle risparmiare tempo, io faccio sempre una breve prequalifica telefonica prima dell’incontro. Così arrivo preparato.
-
-Facciamo così: ci sentiamo al telefono [giorno/ora] e poi ci vediamo a casa sua [giorno/ora].
-
-Dopo la prequalifica, se ha senso procedere, preparo una relazione di mercato professionale e gliela anticipo. Poi la richiamo il giorno prima per le sue impressioni."`,
-        preparare:[
-          "Agenda: due slot fissati.",
-          "Template SMS pronto.",
-          "Modulo prequalifica pronto."
-        ],
-        materiali:[
-          "Template SMS/WhatsApp (download).",
-          "Modulo prequalifica (download)."
-        ],
-        errori:[
-          "Accettare appuntamento subito.",
-          "Parlare di prezzo prima del contesto."
-        ],
-        downloadKeys:["SMS_TXT","PREQUALIFICA_TXT"]
-      }
-    },
-
-    {
-      id:"std-90", relativeHours:-90, relLabel:"-90h", importance:"ok",
-      title:"SMS riepilogo + invio video (subito)",
-      short:"Riepiloghi tutto e ‘pre-educhi’ sul metodo.",
-      popup:{
-        obiettivo:["Confermare appuntamenti e posizionare il metodo prima di vederti."],
-        fareChecklist:[
-          {t:"Invia SMS entro 5 minuti", d:"Precisione = professionalità."},
-          {t:"Invia il video informativo", d:"Spiega incarico/collaborazione e come lavori."}
-        ],
-        direScript:
-`SMS:
-"Ciao [Nome], come anticipato: prequalifica telefonica [DATA/ORA] e appuntamento [DATA/ORA].
-Intanto ti mando un breve video dove spiego come lavoro e cosa significa affidarmi l’incarico, così arriviamo con le idee chiarissime."`,
-        preparare:[
-          "Link video pronto (Drive/YouTube).",
-          "Template SMS salvato."
-        ],
-        materiali:[
-          "Template SMS (download).",
-          "Brochure servizi (1 pagina) per spiegare il metodo (download)."
-        ],
-        errori:["Messaggi lunghi/confusi.", "Non inviare nulla (perdi impatto)."],
-        downloadKeys:["SMS_TXT","BROCHURE_HTML"]
-      }
-    },
-
-    {
-      id:"std-72", relativeHours:-72, relLabel:"-72h", importance:"warn",
-      title:"Prequalifica telefonica (selezione target)",
-      short:"Domande precise → decidi se andare avanti.",
-      popup:{
-        obiettivo:["Decidere se il cliente è in target e raccogliere dati per relazione/presentazione."],
-        fareChecklist:[
-          {t:"Fai domande su motivazione e tempistica", d:"Senza, la vendita ‘muore’."},
-          {t:"Chiedi obiettivo economico", d:"Ti serve per gestire prezzo e aspettative."},
-          {t:"Verifica vincoli", d:"Mutuo/eredi/documenti."}
-        ],
-        direScript:
-`"Le faccio domande specifiche perché voglio arrivare con una relazione seria.
-
-Perché vende? Entro quando vuole completare lo spostamento?
-Qual è la cifra che vuole realizzare?
-Ci sono vincoli (mutuo, eredi, documenti)?"`,
-        preparare:["Modulo prequalifica compilato.", "Note per relazione."],
-        materiali:["Modulo prequalifica (download).", "Scheda metodo (download)."],
-        errori:["Chiamata improvvisata.", "Non prendere appunti."],
-        downloadKeys:["PREQUALIFICA_TXT","SCHEDA_METODO_MD"]
-      }
-    },
-
-    {
-      id:"std-48", relativeHours:-48, relLabel:"-48h", importance:"danger",
-      title:"Relazione di mercato + pacchetto (invio ≥ 48h)",
-      short:"Allinei prezzo, mostri metodo, fai emergere obiezioni prima.",
-      popup:{
-        obiettivo:["Inviare materiale 48h prima per sbollire aspettative e preparare il recall."],
-        fareChecklist:[
-          {t:"Prepara relazione professionale", d:"Comparabili + range + logica."},
-          {t:"Inserisci metodo e incarico", d:"Pre-educazione: non scoprire tutto in faccia a te."},
-          {t:"Invia ≥ 48 ore prima", d:"Non negoziabile."}
-        ],
-        direScript:
-`"Ciao [Nome], ti ho inviato la relazione di mercato e il pacchetto informativo.
-Ti chiedo di leggerli con attenzione: domani ti richiamo per impressioni e domande."`,
-        preparare:["Book in ordine.", "3 prove sociali (casi simili)."],
-        materiali:[
-          "Brochure servizi (download).",
-          "Scheda metodo (download).",
-          "Indice Book (download)."
-        ],
-        errori:["Inviare tardi.", "Relazione confusa senza conclusione."],
-        downloadKeys:["BROCHURE_HTML","SCHEDA_METODO_MD","BOOK_INDEX_MD"]
-      }
-    },
-
-    {
-      id:"std-24", relativeHours:-24, relLabel:"-24h", importance:"danger",
-      title:"Recall (-24h): verifica lettura + obiezioni (se non letto → rinvio)",
-      short:"Telefonata di controllo, non conferma orario.",
-      popup:{
-        obiettivo:["Verificare lettura e far emergere obiezioni prima dell’appuntamento."],
-        fareChecklist:[
-          {t:"Chiama: ricevuta? letta? impressioni?", d:"Sequenza fissa."},
-          {t:"Se non ha letto: rinvia", d:"Protegge status e risultato."}
-        ],
-        direScript:
-`"Ciao [Nome], hai ricevuto la relazione? L’hai letta con attenzione?
-Che impressione ti sei fatto e che domande vuoi farmi?
-
-Se NON l’ha letta:
-"Allora spostiamo: per me è fondamentale che lei la legga prima, così arriviamo già allineati."`,
-        preparare:["Lista obiezioni emerse.", "Scaletta presentazione."],
-        materiali:["Script recall (download)."],
-        errori:["Andare lo stesso anche se non ha letto."],
-        downloadKeys:["RECALL_TXT"]
-      }
-    },
-
-    {
-      id:"std-0_10", relativeHours:-0.1667, relLabel:"-10m", importance:"warn",
-      title:"Pre-routine (-10m): immagine + ripasso + materiali",
-      short:"Arrivi con status alto e zero dimenticanze.",
-      popup:{
-        obiettivo:["Entrare con controllo emotivo e materiali completi."],
-        fareChecklist:[
-          {t:"Arriva 10 min prima", d:"Mai in affanno."},
-          {t:"Ripassa obiettivo €, motivazione, obiezioni", d:"Leadership."},
-          {t:"Controlla book e prove sociali", d:"Ordine e impatto."}
-        ],
-        direScript:`Self-talk: "Show time. Io seleziono chi rappresento. 30 minuti. Chiusura decisa."`,
-        preparare:["Book pronto.", "Moduli incarico pronti.", "Penna."],
-        materiali:["Checklist pre-routine (download)."],
-        errori:["Arrivare di corsa.", "Dimenticare materiali."],
-        downloadKeys:["PREROUTINE_TXT"]
-      }
-    },
-
-    {
-      id:"std-0", relativeHours:0, relLabel:"0h", importance:"danger",
-      title:"Appuntamento (≤ 30 min): presentazione + chiusura",
-      short:"Status → metodo → prove → chiusura decisa.",
-      popup:{
-        obiettivo:["Uscire con incarico firmato il giorno stesso."],
-        fareChecklist:[
-          {t:"Conduci tu (max 30 min)", d:"Se sfori, chiacchieri."},
-          {t:"Mostra prove sociali", d:"Immedesimazione."},
-          {t:"Chiudi deciso", d:"Chiedi la firma."}
-        ],
-        direScript:
-`"Oggi le do un quadro chiaro del mercato e del mio metodo, e poi lei decide.
-
-Se è d’accordo sul prezzo corretto e sul processo, firmiamo oggi e partiamo subito."`,
-        preparare:["Book (ordine perfetto).", "Moduli incarico + penna.", "Prove sociali."],
-        materiali:["Indice Book (download).", "Scheda metodo (download).", "Brochure (download)."],
-        errori:["Chiusura timida.", "Sforare 30 min."],
-        downloadKeys:["BOOK_INDEX_MD","SCHEDA_METODO_MD","BROCHURE_HTML"]
-      }
-    },
-
-    {
-      id:"std+1", relativeHours:1, relLabel:"+1h", importance:"ok",
-      title:"Debrief (+1h): scrivi miglioramenti + allenamento",
-      short:"Sistemi il processo appuntamento dopo appuntamento.",
-      popup:{
-        obiettivo:["Migliorare costantemente script e performance."],
-        fareChecklist:[
-          {t:"Compila debrief in auto (5 min)", d:"Se aspetti, perdi dettagli."},
-          {t:"Role play 30 min/die", d:"Allenamento deliberato."},
-          {t:"Registrati 1 volta/mese", d:"Vedi esitazioni e punti deboli."}
-        ],
-        direScript:"Debrief rapido: cosa ha funzionato? cosa migliorare? quale obiezione? ho rispettato i 30 min?",
-        preparare:["Template debrief pronto."],
-        materiali:["Debrief (download)."],
-        errori:["Non debriefare → ripeti errori."],
-        downloadKeys:["DEBRIEF_TXT"]
-      }
-    }
-  ],
-
-  previsita: [
-    {
-      id:"pre-96", relativeHours:-96, relLabel:"-96h", importance:"info",
-      title:"Immobile speciale: fissa PREVISITA a casa",
-      short:"Oggetto particolare → devi vederlo prima della relazione.",
-      popup:{
-        obiettivo:["Fissare previsita e impostare il percorso: previsita → relazione → recall → firma."],
-        fareChecklist:[
-          {t:"Fissa previsita", d:"Spiega che serve per una relazione seria."},
-          {t:"Imposta già invio ≥ 48h + recall", d:"Processo guidato."}
-        ],
-        direScript:
-`"Per immobili come questo devo vederlo di persona: solo così posso costruire una relazione seria.
-Poi le invio la relazione e la richiamo il giorno prima per le impressioni."`,
-        preparare:["Checklist sopralluogo (tua).", "Modulo prequalifica."],
-        materiali:["Modulo prequalifica (download).", "Scheda metodo (download)."],
-        errori:["Fare relazione senza vedere l’oggetto (in questi casi)."],
-        downloadKeys:["PREQUALIFICA_TXT","SCHEDA_METODO_MD"]
-      }
-    },
-    {
-      id:"pre-72", relativeHours:-72, relLabel:"-72h", importance:"warn",
-      title:"PREVISITA: perlustrazione + conoscenza venditore",
-      short:"Raccogli dati reali e motivazioni.",
-      popup:{
-        obiettivo:["Raccogliere info reali per relazione professionale e scelta target."],
-        fareChecklist:[
-          {t:"Perlustra punti forti e criticità", d:"Appunti concreti."},
-          {t:"Chiedi motivazione, tempi, obiettivo €", d:"Base della chiusura."}
-        ],
-        direScript:`"Oggi raccolgo tutto. Poi le preparo una relazione professionale e gliela anticipo."`,
-        preparare:["Note/Foto se consentite.", "Scheda immobile."],
-        materiali:["Modulo prequalifica (download)."],
-        errori:["Trasformare previsita in ‘presentazione lunga’."],
-        downloadKeys:["PREQUALIFICA_TXT"]
-      }
-    },
-    {
-      id:"pre-48", relativeHours:-48, relLabel:"-48h", importance:"danger",
-      title:"Relazione post-previsita + invio ≥ 48h",
-      short:"Identico allo standard: educazione e obiezioni prima.",
-      popup:{
-        obiettivo:["Inviare materiale 48h prima e preparare recall."],
-        fareChecklist:[
-          {t:"Invia ≥ 48 ore prima", d:"Non negoziabile."},
-          {t:"Prepara recall -24h", d:"Obiezioni prima."}
-        ],
-        direScript:`"Le ho inviato la relazione. Domani la richiamo per impressioni e domande."`,
-        preparare:["Book + prove sociali su immobili simili."],
-        materiali:["Brochure (download).", "Indice Book (download)."],
-        errori:["Inviare tardi."],
-        downloadKeys:["BROCHURE_HTML","BOOK_INDEX_MD"]
-      }
-    },
-    {
-      id:"pre-24", relativeHours:-24, relLabel:"-24h", importance:"danger",
-      title:"Recall (se non letto → rinvio)",
-      short:"Controllo lettura e impressioni.",
-      popup:{
-        obiettivo:["Verificare lettura e obiezioni prima."],
-        fareChecklist:[
-          {t:"Chiama e verifica lettura", d:"Ricevuta? letta? impressioni?"},
-          {t:"Se non letta: rinvia", d:"Status."}
-        ],
-        direScript:`Vedi script recall (scaricabile).`,
-        preparare:["Lista obiezioni."],
-        materiali:["Script recall (download)."],
-        errori:["Andare a freddo."],
-        downloadKeys:["RECALL_TXT"]
-      }
-    },
-    {
-      id:"pre-0", relativeHours:0, relLabel:"0h", importance:"danger",
-      title:"Appuntamento in UFFICIO: firma incarico",
-      short:"Chiusura pulita: quadro chiaro → firma.",
-      popup:{
-        obiettivo:["Firmare incarico con controllo su prezzo e processo."],
-        fareChecklist:[
-          {t:"Ricapitola 3 punti", d:"Mercato, prezzo, metodo."},
-          {t:"Firma", d:"Chiusura diretta."}
-        ],
-        direScript:`"Abbiamo un quadro chiaro. Se è d’accordo su prezzo e strategia, firmiamo oggi e partiamo subito."`,
-        preparare:["Moduli incarico pronti.", "Book."],
-        materiali:["Indice Book (download).", "Scheda metodo (download)."],
-        errori:["Riaprire tutto da capo."],
-        downloadKeys:["BOOK_INDEX_MD","SCHEDA_METODO_MD"]
-      }
-    }
-  ],
-
-  kit: [
-    {
-      id:"kit-1", relativeHours:null, relLabel:"KIT", importance:"ok",
-      title:"KIT COMPLETO — scarica e imposta tutti i materiali",
-      short:"Qui crei tutto il pacchetto: brochure, scheda metodo, moduli, checklist, script.",
-      popup:{
-        obiettivo:[
-          "Avere tutti i materiali pronti e coerenti con il processo.",
-          "Standardizzare presentazioni e conversione incarichi."
-        ],
-        fareChecklist:[
-          {t:"Scarica e personalizza ogni file", d:"Sostituisci [TUO NOME], contatti, loghi, esempi."},
-          {t:"Stampa: brochure + checklist", d:"Materiale fisico = impatto."},
-          {t:"Sistema il book seguendo l’indice", d:"Ordine fisso = presentazione veloce."},
-          {t:"Crea QR al video", d:"Inseriscilo in brochure (poi stampi)."}
-        ],
-        direScript:`"Il mio metodo è un processo strutturato: la differenza la fa la coerenza nell’esecuzione."`,
-        preparare:[
-          "Logo + contatti + link video.",
-          "3 case study reali da inserire.",
-          "Cartellina (fisica o digitale) ordinata."
-        ],
-        materiali:[
-          "Brochure (HTML) → stampa/PDF",
-          "Scheda metodo (MD/TXT)",
-          "Modulo prequalifica (TXT)",
-          "Template SMS (TXT)",
-          "Script recall (TXT)",
-          "Checklist pre-routine (TXT)",
-          "Debrief post appuntamento (TXT)",
-          "Indice book (MD)"
-        ],
-        errori:["Avere materiali disallineati tra loro.", "Non avere prove sociali."],
-        downloadKeys:["BROCHURE_HTML","SCHEDA_METODO_MD","PREQUALIFICA_TXT","SMS_TXT","RECALL_TXT","PREROUTINE_TXT","DEBRIEF_TXT","BOOK_INDEX_MD"]
-      }
-    }
-  ]
-};
-
-/* ------------------------
-   UI
-   ------------------------ */
-const $ = (s)=>document.querySelector(s);
-const timelineEl = $("#timeline");
-const backdrop = $("#backdrop");
-const mTitle = $("#mTitle");
-const mSub = $("#mSub");
-const mTabs = $("#mTabs");
-const mBody = $("#mBody");
-let activeMode = "standard";
-let activeTab = "fare";
-let activePopup = null;
-
-function setMode(mode){
-  activeMode = mode;
-  $("#tab-standard").classList.toggle("active", mode==="standard");
-  $("#tab-previsita").classList.toggle("active", mode==="previsita");
-  $("#tab-kit").classList.toggle("active", mode==="kit");
-  $("#modeTag").textContent =
-    mode==="standard" ? "Processo: Standard (90–95%)" :
-    mode==="previsita" ? "Processo: Con previsita (immobili particolari)" :
-    "Sezione: Kit & Script (sempre)";
-  renderTimeline();
-}
-
-function renderTimeline(){
-  const apptVal = $("#appt").value;
-  const appt = apptVal ? new Date(apptVal) : null;
-
-  const items = DATA[activeMode] ?? [];
-  timelineEl.innerHTML = "";
-
-  items.forEach(item=>{
-    const abs = (appt && item.relativeHours !== null && item.relativeHours !== undefined)
-      ? relToAbsolute(appt, item.relativeHours) : null;
-
-    const leftTop = abs ? `${formatDateTime(abs)}` : "Orario assoluto: —";
-
-    const el = document.createElement("div");
-    el.className = "event";
-    el.setAttribute("role","button");
-    el.setAttribute("tabindex","0");
-
-    el.innerHTML = `
-      <div class="left">
-        <div class="rel">${esc(item.relLabel)}</div>
-        <div>${esc(leftTop)}</div>
-        <div class="${badgeClass(item.importance)}"><span class="dot"></span>${esc(badgeText(item.importance))}</div>
-      </div>
-      <div class="right">
-        <div class="title">${esc(item.title)}</div>
-        <p class="desc">${esc(item.short)}</p>
-      </div>
-    `;
-    el.addEventListener("click", ()=> openModal(item, abs));
-    el.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openModal(item, abs);} });
-    timelineEl.appendChild(el);
-  });
-}
-
-function renderTabs(popup){
-  const tabs = [
-    {id:"fare", label:"✅ Cosa fare"},
-    {id:"dire", label:"🗣️ Cosa dire"},
-    {id:"prep", label:"🧰 Cosa preparare"},
-    {id:"mat", label:"📦 Materiali scaricabili"},
-    {id:"err", label:"🚫 Errori"},
-    {id:"obj", label:"🎯 Obiettivo"}
-  ];
-  mTabs.innerHTML = "";
-  tabs.forEach(t=>{
-    const b = document.createElement("div");
-    b.className = "m-tab" + (t.id===activeTab ? " active":"");
-    b.textContent = t.label;
-    b.tabIndex = 0;
-    b.addEventListener("click", ()=>{ activeTab=t.id; renderModalBody(popup); renderTabs(popup); });
-    b.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" "){ activeTab=t.id; renderModalBody(popup); renderTabs(popup);} });
-    mTabs.appendChild(b);
-  });
-}
-
-function listSection(title, items){
-  const li = (items||[]).map(x=>`<li>${esc(x)}</li>`).join("");
-  return `<div class="section"><h4>${esc(title)}</h4><ul>${li}</ul></div>`;
-}
-function checklistSection(title, rows){
-  const html = (rows||[]).map(r=>`
-    <div class="chk">
-      <input type="checkbox" />
-      <div>
-        <div class="t">${esc(r.t)}</div>
-        <div class="d">${esc(r.d||"")}</div>
-      </div>
-    </div>
-  `).join("");
-  return `<div class="section"><h4>${esc(title)}</h4><div class="checklist">${html}</div></div>`;
-}
-function scriptSection(title, text){
-  return `<div class="section"><h4>${esc(title)}</h4><div class="script">${esc(text||"")}</div></div>`;
-}
-
-function renderDownloadables(popup){
-  const keys = popup.downloadKeys || [];
-  if(!keys.length){
-    return `<div class="section"><h4>📦 Materiali scaricabili</h4>
-      <div class="mini">Nessun file associato a questo blocco. Vai su “Kit & Script” per scaricare tutto.</div>
-    </div>`;
+  // ---------- State ----------
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    kill: false,
+    approvedToday: null, // 'APPROVED' | 'BLOCKED' | null
+  };
+
+  function loadSettings() {
+    const saved = JSON.parse(localStorage.getItem("macchina_settings") || "{}");
+    if (saved.area) $("area").value = saved.area;
+    if (saved.langCanva) $("langCanva").value = saved.langCanva;
+    if (saved.langTxt) $("langTxt").value = saved.langTxt;
+    if (saved.phone) $("phone").value = saved.phone;
+    if (saved.email) $("email").value = saved.email;
+    if (saved.formLink) $("formLink").value = saved.formLink;
+    if (saved.sign) $("sign").value = saved.sign;
+    if (saved.style) $("style").value = saved.style;
+    if (typeof saved.kill === "boolean") state.kill = saved.kill;
+    renderKill();
+    renderAllPrompts();
   }
 
-  const cards = keys.map(k=>{
-    const it = DOWNLOAD_LIBRARY[k];
-    if(!it) return "";
-    const content = typeof it.contentFn === "function" ? it.contentFn() : (it.content || "");
-    const safeContent = esc(content);
-    return `
-      <div class="dl">
-        <div class="name">${esc(it.name)}</div>
-        <div class="meta">${esc(it.filename)} • ${esc(it.mime)}</div>
-        <div class="desc">${esc(it.notes || "")}</div>
-        <div class="actions">
-          <button class="btn small ok" data-dl="${esc(k)}">Scarica</button>
-          <button class="btn small ghost" data-prev="${esc(k)}">Anteprima</button>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  return `
-    <div class="section">
-      <h4>📦 Materiali scaricabili (già progettati)</h4>
-      <div class="dl-grid">${cards}</div>
-      <div class="footer-note">Suggerimento: apri i file in Google Docs/Word per personalizzare, poi esporta in PDF se ti serve stampare.</div>
-    </div>
-    <div class="section" id="previewBox" style="display:none;">
-      <h4>👀 Anteprima contenuto</h4>
-      <textarea class="preview" id="previewArea" readonly></textarea>
-      <div class="footer-note">Puoi copiare/incollare questo contenuto direttamente in Word/Docs.</div>
-    </div>
-  `;
-}
-
-function renderModalBody(popup){
-  const p = popup || {};
-  activePopup = p;
-
-  if(activeTab==="fare"){
-    mBody.innerHTML = checklistSection("✅ Cosa fare (passi eseguibili)", p.fareChecklist);
-  } else if(activeTab==="dire"){
-    mBody.innerHTML = scriptSection("🗣️ Cosa dire (script parola per parola)", p.direScript || "");
-  } else if(activeTab==="prep"){
-    mBody.innerHTML = listSection("🧰 Cosa preparare (prima di muoverti)", p.preparare);
-  } else if(activeTab==="mat"){
-    mBody.innerHTML = renderDownloadables(p);
-    wireDownloadButtons();
-  } else if(activeTab==="err"){
-    mBody.innerHTML = listSection("🚫 Errori da evitare", p.errori);
-  } else if(activeTab==="obj"){
-    mBody.innerHTML = listSection("🎯 Obiettivo del blocco", p.obiettivo);
+  function saveSettings() {
+    const saved = {
+      area: $("area").value,
+      langCanva: $("langCanva").value,
+      langTxt: $("langTxt").value,
+      phone: $("phone").value.trim(),
+      email: $("email").value.trim(),
+      formLink: $("formLink").value.trim(),
+      sign: $("sign").value.trim(),
+      style: $("style").value.trim(),
+      kill: state.kill
+    };
+    localStorage.setItem("macchina_settings", JSON.stringify(saved));
+    toast("Salvato ✅");
+    renderAllPrompts();
   }
-}
 
-function wireDownloadButtons(){
-  // Download buttons
-  document.querySelectorAll("button[data-dl]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const key = btn.getAttribute("data-dl");
-      const it = DOWNLOAD_LIBRARY[key];
-      if(!it) return;
-      const content = typeof it.contentFn === "function" ? it.contentFn() : (it.content || "");
-      downloadFile(it.filename, it.mime, content);
-    });
+  function fillDemo() {
+    $("area").value = "Torino + Valle di Susa";
+    $("phone").value = "+39 3XX XXX XXXX";
+    $("email").value = "info@esempio.it";
+    $("formLink").value = "https://forms.gle/tuo-link";
+    $("sign").value = "Nome Cognome";
+    $("style").value = "Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
+    saveSettings();
+  }
+
+  function toggleKill() {
+    state.kill = !state.kill;
+    saveSettings();
+    renderKill();
+    toast(state.kill ? "Kill Switch ON 🛑" : "Kill Switch OFF ✅");
+  }
+
+  function renderKill() {
+    const pill = $("killPill");
+    const dot = pill.querySelector(".dot");
+    const txt = $("killTxt");
+    if (state.kill) {
+      dot.className = "dot bad";
+      txt.textContent = "KILL SWITCH: ON (STOP)";
+    } else {
+      dot.className = "dot ok";
+      txt.textContent = "KILL SWITCH: OFF";
+    }
+  }
+
+  function todayISO() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  // ---------- Prompts ----------
+  function getVars() {
+    return {
+      area: $("area").value,
+      phone: $("phone").value.trim() || "[INSERISCI WHATSAPP]",
+      email: $("email").value.trim() || "[INSERISCI EMAIL]",
+      formLink: $("formLink").value.trim() || "[INSERISCI LINK FORM]",
+      sign: $("sign").value.trim() || "[FIRMA FACOLTATIVA]",
+      style: $("style").value.trim() || "Utile, locale, neutro.",
+      date: todayISO(),
+      kill: state.kill ? "ON" : "OFF",
+    };
+  }
+
+  function renderAllPrompts() {
+    const v = getVars();
+
+    const dailyChatGPT = `
+Sei una IA centrale per acquisizione immobiliare.
+DEVI generare SOLO testi in ITALIANO pronti da incollare.
+Area: ${v.area}
+Data: ${v.date}
+
+VINCOLI (OBBLIGATORI):
+- zero vendita aggressiva
+- zero promesse o prezzi
+- zero contatto a freddo
+- solo inbound e consenso (GDPR)
+- tono: ${v.style}
+
+CTA STANDARD (sempre uguale, soft):
+"Richiedi la checklist gratuita: ${v.formLink} oppure WhatsApp ${v.phone}"
+
+GENERA QUESTI ASSET (in quest'ordine), con intestazione chiara per ciascuno:
+
+1) POST_SOCIAL (max 120 parole) — 1 concetto, chiusura CTA soft.
+2) POST_GROUPI (max 80 parole) — tono aiuto, zero promozione.
+3) TESTO_VOLANTINO "AL RESIDENTE" (max 120 parole) — per cassetta postale, QR/form.
+4) LETTERA "AL RESIDENTE" (max 180 parole) — senza nomi, cordiale.
+5) SCRIPT_CAMPANELLO (max 15 secondi, 3 frasi) — domanda finale aperta.
+6) COMMENTI_STRATEGICI (10) — risposte utili a post pubblici; chiusura: "se vuoi ti giro la checklist".
+7) CHECKLIST_GRATUITA (7 punti) — pratica, semplice, locale.
+8) INBOX_REPLY + CONSENSO (Sì/No) — tono naturale, non legaleggiante.
+
+OUTPUT:
+- solo testi finali
+- nessuna spiegazione
+- nessuna analisi
+`.trim();
+
+    const dailyCanva = `
+Minimal real estate design for a local Italian area.
+Clean and professional. White background, neutral colors.
+Modern sans-serif typography. Friendly and informative tone, not salesy.
+
+Layout:
+- clear headline at the top
+- short informational text
+- bullet points
+- QR code placeholder (link to form)
+- contact details area
+
+Format: A4 vertical for flyer + a variant square for social post.
+Local community feeling.
+`.trim();
+
+    const commentsPrompt = `
+Genera 10 commenti brevi in italiano per rispondere a post pubblici di persone che parlano di vendita casa.
+Area: ${v.area}
+Tono: utile, locale, mai promozionale.
+Vincoli:
+- non chiedere dati
+- non spingere servizi
+- chiusura soft: "se vuoi ti giro una checklist gratuita: ${v.formLink}"
+Output: lista numerata 1-10, una sola frase ciascuno.
+`.trim();
+
+    const doorbellPrompt = `
+Scrivi uno script da campanello (italiano) per ${v.area}.
+Durata: massimo 15 secondi.
+Vincoli:
+- 3 frasi massimo
+- tono educato
+- 1 domanda finale aperta
+- obiettivo: aprire conversazione neutra, non vendere
+Output: solo lo script.
+`.trim();
+
+    const checklistPrompt = `
+Crea una checklist gratuita in italiano:
+"Vendere casa a ${v.area}: cosa sapere prima di decidere"
+Contenuto:
+- 7 punti numerati
+- pratico e semplice
+- include: documenti, prezzo, tempi, visite, errori comuni
+CTA finale soft: ${v.formLink} oppure WhatsApp ${v.phone}
+Output: solo checklist.
+`.trim();
+
+    const inboxPrompt = `
+Scrivi un messaggio inbox (italiano) per chi chiede info.
+Area: ${v.area}
+Obiettivo: inviare materiale + chiedere consenso ricontatto.
+Vincoli:
+- tono naturale, umano
+- domanda chiara Sì/No
+- zero linguaggio legale
+Includi link: ${v.formLink}
+Includi WhatsApp: ${v.phone}
+Output: solo il messaggio.
+`.trim();
+
+    const territoryPrompt = `
+Scrivi in italiano due testi per territorio (non nominativi), area ${v.area}:
+
+A) VOLANTINO "AL RESIDENTE" (max 120 parole)
+- informativo
+- 1 concetto
+- CTA soft: QR/form ${v.formLink} e WhatsApp ${v.phone}
+
+B) LETTERA "AL RESIDENTE" (max 180 parole)
+- tono umano
+- nessun nome destinatario
+- chiusura con firma: ${v.sign}
+Output: separa chiaramente A) e B), solo testi finali.
+`.trim();
+
+    const killRules = `
+KILL SWITCH (stato attuale: ${v.kill})
+
+REGOLE:
+1) Se KILL=ON → NON pubblicare, NON inviare messaggi, NON contattare nessuno.
+2) Se KILL=ON → puoi SOLO generare bozze e salvarle per revisione.
+3) Se un utente chiede stop/opt-out → KILL=ON finché non gestito.
+4) Se c'è dubbio su privacy/consenso → KILL=ON.
+5) Ripartenza solo con APPROVAZIONE umana.
+
+OPERATIVITÀ:
+- Pubblica solo dopo "APPROVA".
+- Niente contatti a freddo.
+- Solo inbound e consenso.
+`.trim();
+
+    $("dailyChatGPT").textContent = dailyChatGPT;
+    $("dailyCanva").textContent = dailyCanva;
+    $("commentsPrompt").textContent = commentsPrompt;
+    $("doorbellPrompt").textContent = doorbellPrompt;
+    $("checklistPrompt").textContent = checklistPrompt;
+    $("inboxPrompt").textContent = inboxPrompt;
+    $("territoryPrompt").textContent = territoryPrompt;
+    $("killRules").textContent = killRules;
+  }
+
+  // ---------- Copy helpers ----------
+  async function copyText(text) {
+    await navigator.clipboard.writeText(text);
+    toast("Copiato ✅");
+  }
+  function copyFrom(id) {
+    const t = $(id).textContent;
+    copyText(t);
+  }
+  function toast(msg) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.style.display = "none", 1100);
+  }
+
+  // ---------- Export TXT ----------
+  function exportTxt() {
+    const v = getVars();
+    const blocks = [
+      `# MACCHINA ACQUISIZIONE — ${v.area} — ${v.date}`,
+      `# KILL SWITCH: ${v.kill}`,
+      "",
+      "## PROMPT CHATGPT (giornaliero)",
+      $("dailyChatGPT").textContent,
+      "",
+      "## PROMPT CANVA AI (grafica)",
+      $("dailyCanva").textContent,
+      "",
+      "## PROMPT COMMENTI",
+      $("commentsPrompt").textContent,
+      "",
+      "## PROMPT CAMPANELLO",
+      $("doorbellPrompt").textContent,
+      "",
+      "## PROMPT CHECKLIST",
+      $("checklistPrompt").textContent,
+      "",
+      "## PROMPT INBOX",
+      $("inboxPrompt").textContent,
+      "",
+      "## PROMPT TERRITORIO",
+      $("territoryPrompt").textContent,
+      "",
+      "## KILL RULES",
+      $("killRules").textContent
+    ].join("\n");
+
+    const blob = new Blob([blocks], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `macchina_${v.date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("TXT esportato ✅");
+  }
+
+  // ---------- Approve/Block (local) ----------
+  function approveAll() {
+    state.approvedToday = "APPROVED";
+    toast("APPROVATO ✅ (oggi)");
+  }
+  function blockAll() {
+    state.approvedToday = "BLOCKED";
+    toast("BLOCCATO 🛑 (oggi)");
+  }
+
+  // ---------- Buttons ----------
+  $("save").addEventListener("click", saveSettings);
+  $("fillDemo").addEventListener("click", fillDemo);
+  $("toggleKill").addEventListener("click", toggleKill);
+
+  $("copyDailyChatGPT").addEventListener("click", () => copyFrom("dailyChatGPT"));
+  $("copyDailyCanva").addEventListener("click", () => copyFrom("dailyCanva"));
+  $("copyInbox").addEventListener("click", () => copyFrom("inboxPrompt"));
+  $("copyTerritoryPack").addEventListener("click", () => copyFrom("territoryPrompt"));
+
+  $("approveAll").addEventListener("click", approveAll);
+  $("blockAll").addEventListener("click", blockAll);
+  $("exportTxt").addEventListener("click", exportTxt);
+
+  // Live update prompts when settings change
+  ["area","langCanva","langTxt","phone","email","formLink","sign","style"].forEach(id=>{
+    $(id).addEventListener("input", () => { renderAllPrompts(); });
+    $(id).addEventListener("change", () => { renderAllPrompts(); });
   });
-  // Preview buttons
-  document.querySelectorAll("button[data-prev]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const key = btn.getAttribute("data-prev");
-      const it = DOWNLOAD_LIBRARY[key];
-      if(!it) return;
-      const content = typeof it.contentFn === "function" ? it.contentFn() : (it.content || "");
-      const box = document.getElementById("previewBox");
-      const area = document.getElementById("previewArea");
-      if(box && area){
-        box.style.display = "block";
-        area.value = content;
-        area.scrollTop = 0;
-      }
-    });
-  });
-}
 
-function openModal(item, abs){
-  const apptVal = $("#appt").value;
-  const appt = apptVal ? new Date(apptVal) : null;
-
-  const absLine = abs ? `Orario: ${formatDateTime(abs)}` : "Orario: (imposta l’appuntamento in alto per calcolarlo)";
-  const relLine = item.relLabel + (item.relativeHours !== null && item.relativeHours !== undefined ? " (relativo)" : "");
-
-  mTitle.textContent = item.title;
-  mSub.textContent = `${relLine}\n${absLine}`;
-
-  activeTab = "fare";
-  renderTabs(item.popup);
-  renderModalBody(item.popup);
-
-  backdrop.classList.add("show");
-}
-function closeModal(){ backdrop.classList.remove("show"); }
-
-$("#close").addEventListener("click", closeModal);
-backdrop.addEventListener("click", (e)=>{ if(e.target===backdrop) closeModal(); });
-window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
-
-$("#apply").addEventListener("click", renderTimeline);
-$("#reset").addEventListener("click", ()=>{
-  $("#appt").value = "";
-  renderTimeline();
-});
-
-$("#tab-standard").addEventListener("click", ()=> setMode("standard"));
-$("#tab-previsita").addEventListener("click", ()=> setMode("previsita"));
-$("#tab-kit").addEventListener("click", ()=> setMode("kit"));
-
-$("#tab-standard").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("standard"); });
-$("#tab-previsita").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("previsita"); });
-$("#tab-kit").addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") setMode("kit"); });
-
-/* Download KIT completo: scarica tutti i file della libreria */
-$("#exportAll").addEventListener("click", ()=>{
-  const keys = Object.keys(DOWNLOAD_LIBRARY);
-  keys.forEach((k, idx)=>{
-    const it = DOWNLOAD_LIBRARY[k];
-    const content = typeof it.contentFn === "function" ? it.contentFn() : (it.content || "");
-    // small stagger to avoid browser blocking multiple downloads at same instant
-    setTimeout(()=> downloadFile(it.filename, it.mime, content), idx * 250);
-  });
-});
-
-/* Init: default domani 16:00 */
-(function init(){
-  const now = new Date();
-  const d = new Date(now);
-  d.setHours(16,0,0,0);
-  if(now.getTime() > d.getTime()) d.setDate(d.getDate()+1);
-  $("#appt").value = formatLocalInputValue(d);
-  renderTimeline();
-})();
+  loadSettings();
 </script>
 </body>
 </html>
