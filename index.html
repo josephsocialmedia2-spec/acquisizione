@@ -3,55 +3,66 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Macchina Operativa — Step by Step (Verticale)</title>
+  <title>MACCHINA — Step by Step Verticale (CLICK → BOOM)</title>
   <style>
     :root{
-      --bg:#070a12; --card:#0b1220; --line:#22304d; --txt:#e9eefc; --muted:#93a4c7;
+      --bg:#050711; --card:#0b1220; --line:#22304d; --txt:#e9eefc; --muted:#93a4c7;
       --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; --accent:#3c568d;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,#050711 0%, #070a12 60%, #050711 100%);color:var(--txt)}
-    header{position:sticky;top:0;z-index:5;background:rgba(7,10,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 14px}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,var(--bg) 0%, #070a12 60%, var(--bg) 100%);color:var(--txt)}
+    header{position:sticky;top:0;z-index:5;background:rgba(7,10,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px}
     h1{margin:0;font-size:16px;letter-spacing:.2px}
     .sub{margin-top:6px;color:var(--muted);font-size:12px}
-    main{max-width:860px;margin:0 auto;padding:14px}
-    .card{background:rgba(11,18,32,.9);border:1px solid var(--line);border-radius:14px;padding:12px}
+    main{max-width:920px;margin:0 auto;padding:14px}
+    .card{background:rgba(11,18,32,.92);border:1px solid var(--line);border-radius:14px;padding:12px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
     label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
     input,select,textarea{
       width:100%;padding:10px;border-radius:12px;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);outline:none
     }
-    textarea{min-height:88px;resize:vertical}
+    textarea{min-height:90px;resize:vertical}
     .btn{
       appearance:none;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);
       padding:10px 12px;border-radius:12px;cursor:pointer
     }
     .btn:hover{border-color:#3c568d}
     .btn.primary{background:linear-gradient(180deg,#15264a,#0a1533);border-color:var(--accent)}
-    .btn.ok{border-color:rgba(52,211,153,.6)}
-    .btn.bad{border-color:rgba(251,113,133,.7)}
+    .btn.ok{border-color:rgba(52,211,153,.7)}
+    .btn.warn{border-color:rgba(251,191,36,.7)}
+    .btn.bad{border-color:rgba(251,113,133,.85)}
     .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#070c16;border-radius:999px;padding:8px 10px;color:var(--muted);font-size:12px}
     .dot{width:8px;height:8px;border-radius:50%}
     .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
     .sep{height:1px;background:var(--line);margin:12px 0}
     .mini{color:var(--muted);font-size:12px}
     .step{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-    .stepHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .stepTitle{font-weight:750}
-    .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .stepTitle{font-weight:800}
+    .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px;white-space:nowrap}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     .timerBox{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .timeBig{font-variant-numeric:tabular-nums;font-size:18px;font-weight:800}
+    .timeBig{font-variant-numeric:tabular-nums;font-size:18px;font-weight:900}
+    pre{margin:0;white-space:pre-wrap;word-break:break-word;background:#050915;border:1px solid #22304d;border-radius:12px;padding:12px;color:#d9e4ff}
     .toast{position:fixed;right:14px;bottom:14px;background:#070c16;border:1px solid var(--line);padding:10px 12px;border-radius:12px;display:none;z-index:10}
-    .successBox{border:1px solid rgba(52,211,153,.35);background:rgba(52,211,153,.08);border-radius:14px;padding:12px}
-    .warnBox{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:14px;padding:12px}
+    .successBox{border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.08);border-radius:14px;padding:12px}
+    .warnBox{border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);border-radius:14px;padding:12px}
     .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#070c16;border:1px solid #243252;color:var(--txt);padding:2px 6px;border-radius:8px;font-size:12px}
+    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#070c16}
+    th,td{padding:10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+    th{background:#050915;color:var(--muted);text-align:left;font-weight:700}
+    tr:last-child td{border-bottom:none}
+    .muted{color:var(--muted)}
   </style>
 </head>
+
 <body>
 <header>
-  <h1>MACCHINA OPERATIVA — VERTICALE (CLICK → BOOM)</h1>
-  <div class="sub">Zero decisioni. Solo operatività. Timer incluso. Confronto con ieri + “Check al capo” automatico quando migliori.</div>
+  <h1>MACCHINA — STEP BY STEP VERTICALE (CLICK → BOOM)</h1>
+  <div class="sub">
+    Zero decisioni. Solo operatività. 6 pubblicazioni/giorno con rotazione 3 giorni.
+    Timer totale + timer registrazione. Confronto con ieri + “CHECK AL CAPO” automatico quando migliori.
+  </div>
 </header>
 
 <main>
@@ -75,11 +86,23 @@
         <input id="formLink" placeholder="https://..." />
       </div>
     </div>
+
     <div class="row" style="margin-top:10px">
+      <div style="flex:1;min-width:240px">
+        <label>Email (pubblica) (facoltativa)</label>
+        <input id="email" placeholder="info@..." />
+      </div>
       <div style="flex:1;min-width:240px">
         <label>Firma (facoltativa)</label>
         <input id="sign" placeholder="Nome Cognome" />
       </div>
+      <div style="flex:1;min-width:240px">
+        <label>Stile (1 riga)</label>
+        <input id="style" value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist." />
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
       <div style="flex:1;min-width:240px">
         <label>Orari pubblicazione (6 slot)</label>
         <input id="times" value="08:30,11:00,13:30,16:00,18:30,21:00" />
@@ -88,6 +111,10 @@
         <label>Data start ciclo 3 giorni</label>
         <input id="cycleStart" type="date" />
       </div>
+      <div style="flex:1;min-width:240px">
+        <label>Later URL (fisso)</label>
+        <input id="laterUrl" value="https://app.later.com/9H8EZ/schedule/calendar" />
+      </div>
     </div>
 
     <div class="row" style="margin-top:10px">
@@ -95,6 +122,7 @@
       <button class="btn" id="demo">Esempio</button>
       <span class="pill" id="killPill"><span class="dot ok"></span><span id="killTxt">KILL SWITCH: OFF</span></span>
       <button class="btn bad" id="toggleKill">Toggle Kill</button>
+      <button class="btn warn" id="openLaterTop">Apri Later</button>
     </div>
 
     <div class="sep"></div>
@@ -103,6 +131,8 @@
       <span class="pill"><span class="dot warn"></span><span id="cycleLabel">Oggi: Giorno ?</span></span>
       <span class="pill"><span class="dot ok"></span><span id="todayLabel">Oggi: ?</span></span>
       <span class="pill"><span class="dot warn"></span><span id="yesterdayLabel">Ieri: ?</span></span>
+      <span class="pill"><span class="dot ok"></span><span id="yTotalLabel">Ieri (totale): --:--:--</span></span>
+      <span class="pill"><span class="dot ok"></span><span id="yRecLabel">Ieri (registrazione): --:--:--</span></span>
     </div>
 
     <div class="sep"></div>
@@ -112,7 +142,7 @@
       <div class="stepHead">
         <div>
           <div class="stepTitle">TIMER GIORNATA (totale)</div>
-          <div class="mini">Start quando inizi. Stop quando hai schedulato tutto + copiato teleprompter.</div>
+          <div class="mini">Start quando inizi. Stop quando hai: testi + Canva + Later + teleprompter pronti.</div>
         </div>
         <span class="badge" id="totalStatus">IN ATTESA</span>
       </div>
@@ -128,7 +158,7 @@
       </div>
 
       <div id="improveBox" style="display:none" class="successBox">
-        <div style="font-weight:800">✅ MIGLIORAMENTO RILEVATO → CHECK AL CAPO (AUTOMATICO)</div>
+        <div style="font-weight:900">✅ MIGLIORAMENTO → CHECK AL CAPO (AUTOMATICO)</div>
         <div class="mini" id="improveMsg" style="margin-top:6px"></div>
         <div class="actions" style="margin-top:10px">
           <button class="btn ok" id="copyCapoMsg">Copia messaggio “Check al capo”</button>
@@ -136,87 +166,114 @@
       </div>
 
       <div id="noImproveBox" style="display:none" class="warnBox">
-        <div style="font-weight:800">🟡 Oggi non hai migliorato (ancora)</div>
+        <div style="font-weight:900">🟡 Oggi non hai migliorato (ancora)</div>
         <div class="mini" id="noImproveMsg" style="margin-top:6px"></div>
       </div>
     </div>
   </div>
 
-  <!-- STEPS (VERTICAL, CLICK->BOOM) -->
+  <!-- STEP-BY-STEP VERTICAL -->
   <div class="card" style="margin-top:12px">
+    <!-- STEP 1 -->
     <div class="step">
       <div class="stepHead">
         <div>
-          <div class="stepTitle">STEP 1 — APRI CHATGPT → COPIA & INCOLLA → BOOM (testi + teleprompter)</div>
-          <div class="mini">Click “Copia prompt” → incolla in ChatGPT → copia output.</div>
+          <div class="stepTitle">STEP 1 — CHATGPT (CLICK → BOOM)</div>
+          <div class="mini">Copia prompt → incolla in ChatGPT → copia output.</div>
         </div>
         <span class="badge">CLICK → BOOM</span>
       </div>
       <div class="actions">
         <button class="btn primary" id="copyChatGPT">Copia prompt ChatGPT</button>
+        <button class="btn" id="copyOnlyTeleprompter">Copia SOLO prompt Teleprompter</button>
+        <button class="btn" id="copyInboxPrompt">Copia prompt Inbox (GDPR)</button>
+        <button class="btn" id="copyTerritoryPrompt">Copia prompt Territorio (volantino+lettera)</button>
+        <button class="btn" id="copyCommentsPrompt">Copia prompt Commenti (10)</button>
       </div>
-      <pre id="promptChatGPT" style="margin:0"></pre>
+      <pre id="promptChatGPT"></pre>
     </div>
 
     <div class="sep"></div>
 
+    <!-- STEP 2 -->
     <div class="step">
       <div class="stepHead">
         <div>
-          <div class="stepTitle">STEP 2 — APRI CANVA IA → INCOLLA PROMPT (EN) → BOOM (layout)</div>
-          <div class="mini">Canva AI / Magic Design → prompt EN → esporta.</div>
+          <div class="stepTitle">STEP 2 — CANVA IA (CLICK → BOOM)</div>
+          <div class="mini">Prompt EN → genera layout verticali (A4 + 1080×1920) → esporta.</div>
         </div>
         <span class="badge">CLICK → BOOM</span>
       </div>
       <div class="actions">
         <button class="btn primary" id="copyCanva">Copia prompt Canva (EN)</button>
       </div>
-      <pre id="promptCanva" style="margin:0"></pre>
+      <pre id="promptCanva"></pre>
     </div>
 
     <div class="sep"></div>
 
+    <!-- STEP 3 -->
     <div class="step">
       <div class="stepHead">
         <div>
-          <div class="stepTitle">STEP 3 — APRI LATER → SCHEDULA 6 POST (rotazione 3 giorni)</div>
-          <div class="mini">Click “Apri Later” → incolla piano orari+canali → schedula.</div>
+          <div class="stepTitle">STEP 3 — LATER (6 pubblicazioni) (CLICK → BOOM)</div>
+          <div class="mini">Apri Later → incolla piano → schedula 6 post.</div>
         </div>
         <span class="badge">CLICK → BOOM</span>
       </div>
+
       <div class="actions">
-        <button class="btn primary" id="openLater">Apri Later</button>
+        <button class="btn primary warn" id="openLater">Apri Later</button>
         <button class="btn" id="copyLaterPlan">Copia piano per Later</button>
       </div>
-      <pre id="laterPlan" style="margin:0"></pre>
-      <div class="mini">Later URL: <span class="kbd">https://app.later.com/9H8EZ/schedule/calendar</span></div>
+
+      <div style="margin-top:10px">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:80px">#</th>
+              <th style="width:120px">Ora</th>
+              <th>Canale (rotazione 3 giorni)</th>
+              <th>Asset</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:10px">
+        <pre id="laterPlan"></pre>
+      </div>
+
+      <div class="mini">Later URL: <span class="kbd" id="laterUrlBadge">https://app.later.com/9H8EZ/schedule/calendar</span></div>
     </div>
 
     <div class="sep"></div>
 
+    <!-- STEP 4 -->
     <div class="step">
       <div class="stepHead">
         <div>
-          <div class="stepTitle">STEP 4 — TELEPROMPTER (CapCut) → COPIA TESTO → BOOM (registri)</div>
-          <div class="mini">Incolla qui l’output di ChatGPT (sezione TELEPROMPTER_1..6) → Split → “Copia per CapCut”.</div>
+          <div class="stepTitle">STEP 4 — TELEPROMPTER (CapCut) + TIMER REGISTRAZIONE (CLICK → BOOM)</div>
+          <div class="mini">Incolla output ChatGPT → Split → Copia testo per CapCut → registra 6 video.</div>
         </div>
         <span class="badge">CLICK → BOOM</span>
       </div>
 
       <label>Incolla output ChatGPT (tutto)</label>
-      <textarea id="raw" placeholder="Incolla qui l'output completo di ChatGPT..."></textarea>
+      <textarea id="raw" placeholder="Incolla qui l'output completo di ChatGPT (con TELEPROMPTER_1..6)"></textarea>
 
       <div class="actions">
         <button class="btn primary" id="split">SPLIT TELEPROMPTER (1..6)</button>
+        <button class="btn" id="clearTeleprompter">Pulisci campi</button>
       </div>
 
       <div class="sep"></div>
 
-      <!-- Recording timer (optional) -->
       <div class="stepHead">
         <div>
           <div class="stepTitle">TIMER REGISTRAZIONE (CapCut)</div>
-          <div class="mini">Start quando inizi a registrare. Stop quando hai finito il 6° video.</div>
+          <div class="mini">Start quando inizi a registrare. Stop quando finisci il 6°.</div>
         </div>
         <span class="badge" id="recStatus">IN ATTESA</span>
       </div>
@@ -261,7 +318,22 @@
           <div class="actions"><button class="btn ok" onclick="copyVal('tp6')">Copia (CapCut)</button></div>
         </div>
       </div>
+    </div>
 
+    <div class="sep"></div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">STEP 5 — EXPORT (CLICK → BOOM)</div>
+          <div class="mini">Esporta un file TXT con: prompt + piano Later + tempi di oggi.</div>
+        </div>
+        <span class="badge">CLICK → BOOM</span>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="exportTxt">Esporta TXT</button>
+      </div>
     </div>
   </div>
 
@@ -270,9 +342,8 @@
 
 <script>
   const $ = (id)=>document.getElementById(id);
-  const LATER_URL = "https://app.later.com/9H8EZ/schedule/calendar";
+  const STORAGE_KEY = "macchina_vertical_ops_v2";
 
-  // 6 canali — in 3 giorni giri tutto con pattern fisso
   const CHANNELS = [
     "Instagram Reels",
     "Facebook Reels",
@@ -301,15 +372,9 @@
     recTimer:   { running:false, start:0, elapsed:0, raf:null },
   };
 
-  const STORAGE_KEY = "macchina_vertical_v1";
   function pad(n){return String(n).padStart(2,"0")}
-  function todayISO(){
-    const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  }
-  function yesterdayISO(){
-    const d=new Date(); d.setDate(d.getDate()-1);
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  }
+  function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+  function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
   function fmt(ms){
     const s=Math.floor(ms/1000);
     const hh=Math.floor(s/3600);
@@ -324,29 +389,27 @@
   async function copyText(t){ await navigator.clipboard.writeText(t); toast("Copiato ✅"); }
   function copyVal(id){ copyText($(id).value||""); }
 
-  function load(){
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    $("area").value = saved.area || "Torino + Valle di Susa";
-    $("phone").value = saved.phone || "";
-    $("formLink").value = saved.formLink || "";
-    $("sign").value = saved.sign || "";
-    $("times").value = saved.times || "08:30,11:00,13:30,16:00,18:30,21:00";
-    if (saved.cycleStart) $("cycleStart").value = saved.cycleStart;
-    if (!$("cycleStart").value) $("cycleStart").valueAsDate = new Date();
-    state.kill = !!saved.kill;
+  function parseTimes(){
+    const parts=($("times").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+    while(parts.length<6) parts.push("00:00");
+    return parts.slice(0,6);
+  }
 
-    // restore today elapsed (if any)
-    if (saved.dayTimes && saved.dayTimes[todayISO()]){
-      state.totalTimer.elapsed = saved.dayTimes[todayISO()].totalElapsed || 0;
-      state.recTimer.elapsed = saved.dayTimes[todayISO()].recElapsed || 0;
-    }
+  function cycleDay(){
+    const startStr=$("cycleStart").value || todayISO();
+    const start=new Date(startStr+"T00:00:00");
+    const now=new Date(); const t=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays=Math.floor((t-start)/(1000*60*60*24));
+    const idx=((diffDays%3)+3)%3;
+    return idx+1;
+  }
 
-    renderKill();
-    renderCycle();
-    renderPrompts();
-    renderLaterPlan();
-    updateTotalsUI();
-    updateChallenge();
+  function renderKill(){
+    const pill=$("killPill");
+    const dot=pill.querySelector(".dot");
+    const txt=$("killTxt");
+    if(state.kill){ dot.className="dot bad"; txt.textContent="KILL SWITCH: ON (STOP)"; }
+    else { dot.className="dot ok"; txt.textContent="KILL SWITCH: OFF"; }
   }
 
   function save(){
@@ -354,12 +417,14 @@
     saved.area = $("area").value;
     saved.phone = $("phone").value.trim();
     saved.formLink = $("formLink").value.trim();
+    saved.email = $("email").value.trim();
     saved.sign = $("sign").value.trim();
+    saved.style = $("style").value.trim();
     saved.times = $("times").value.trim();
     saved.cycleStart = $("cycleStart").value;
+    saved.laterUrl = $("laterUrl").value.trim();
     saved.kill = state.kill;
 
-    // persist per-day timings
     saved.dayTimes = saved.dayTimes || {};
     const t = todayISO();
     saved.dayTimes[t] = saved.dayTimes[t] || {};
@@ -369,58 +434,97 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   }
 
-  function demo(){
-    $("area").value="Torino + Valle di Susa";
-    $("phone").value="+39 3XX XXX XXXX";
-    $("formLink").value="https://forms.gle/tuo-link";
-    $("sign").value="Nome Cognome";
-    $("times").value="08:30,11:00,13:30,16:00,18:30,21:00";
-    $("cycleStart").valueAsDate=new Date();
-    save(); renderPrompts(); renderLaterPlan(); renderCycle(); toast("Esempio ✅");
+  function load(){
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    $("area").value = saved.area || "Torino + Valle di Susa";
+    $("phone").value = saved.phone || "";
+    $("formLink").value = saved.formLink || "";
+    $("email").value = saved.email || "";
+    $("sign").value = saved.sign || "";
+    $("style").value = saved.style || "Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
+    $("times").value = saved.times || "08:30,11:00,13:30,16:00,18:30,21:00";
+    $("laterUrl").value = saved.laterUrl || "https://app.later.com/9H8EZ/schedule/calendar";
+    if (saved.cycleStart) $("cycleStart").value = saved.cycleStart;
+    if (!$("cycleStart").value) $("cycleStart").valueAsDate = new Date();
+    state.kill = !!saved.kill;
+
+    // restore today's elapsed
+    if (saved.dayTimes && saved.dayTimes[todayISO()]){
+      state.totalTimer.elapsed = saved.dayTimes[todayISO()].totalElapsed || 0;
+      state.recTimer.elapsed = saved.dayTimes[todayISO()].recElapsed || 0;
+    }
+
+    renderKill();
+    renderTopLabels();
+    renderSchedule();
+    renderPrompts();
+    renderLaterPlan();
+    updateTimersUI();
+    updateChallenge();
   }
 
-  function toggleKill(){
-    state.kill = !state.kill;
-    save(); renderKill(); renderPrompts(); toast(state.kill ? "KILL ON 🛑" : "KILL OFF ✅");
+  function getSavedElapsed(day, key){
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return saved.dayTimes?.[day]?.[key] || 0;
   }
-  function renderKill(){
-    const pill=$("killPill"); const dot=pill.querySelector(".dot"); const txt=$("killTxt");
-    if (state.kill){
-      dot.className="dot bad"; txt.textContent="KILL SWITCH: ON (STOP)";
-    } else {
-      dot.className="dot ok"; txt.textContent="KILL SWITCH: OFF";
+
+  function renderTopLabels(){
+    $("cycleLabel").textContent = `Oggi: Giorno ${cycleDay()} (ciclo 3 giorni)`;
+    $("todayLabel").textContent = `Oggi: ${todayISO()}`;
+    $("yesterdayLabel").textContent = `Ieri: ${yesterdayISO()}`;
+    $("laterUrlBadge").textContent = $("laterUrl").value.trim() || "https://app.later.com/9H8EZ/schedule/calendar";
+
+    const yTot = getSavedElapsed(yesterdayISO(), "totalElapsed");
+    const yRec = getSavedElapsed(yesterdayISO(), "recElapsed");
+    $("yTotalLabel").textContent = `Ieri (totale): ${yTot ? fmt(yTot) : "--:--:--"}`;
+    $("yRecLabel").textContent = `Ieri (registrazione): ${yRec ? fmt(yRec) : "--:--:--"}`;
+  }
+
+  function renderSchedule(){
+    const d = cycleDay();
+    const times = parseTimes();
+    const map = ROTATION[d];
+    const body = $("scheduleBody");
+    body.innerHTML = "";
+    for(let i=0;i<6;i++){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>#${i+1}</strong></td>
+        <td>${times[i]}</td>
+        <td>${CHANNELS[map[i]]}</td>
+        <td class="muted">${ASSETS[i]}</td>
+      `;
+      body.appendChild(tr);
     }
   }
 
-  function cycleDay(){
-    const startStr=$("cycleStart").value;
-    const start=new Date((startStr||todayISO())+"T00:00:00");
-    const now=new Date(); const t=new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffDays=Math.floor((t-start)/(1000*60*60*24));
-    const idx=((diffDays%3)+3)%3;
-    return idx+1;
-  }
-  function parseTimes(){
-    const parts=($("times").value||"").split(",").map(s=>s.trim()).filter(Boolean);
-    while(parts.length<6) parts.push("00:00");
-    return parts.slice(0,6);
-  }
-  function renderCycle(){
+  function renderLaterPlan(){
     const d=cycleDay();
-    $("cycleLabel").textContent=`Oggi: Giorno ${d} (ciclo 3 giorni)`;
-    $("todayLabel").textContent=`Oggi: ${todayISO()}`;
-    $("yesterdayLabel").textContent=`Ieri: ${yesterdayISO()}`;
+    const times=parseTimes();
+    const map=ROTATION[d];
+    const lines=[];
+    lines.push(`PIANO OGGI — Giorno ${d} (ciclo 3 giorni) — ${todayISO()}`);
+    for(let i=0;i<6;i++){
+      lines.push(`${times[i]} — ${CHANNELS[map[i]]} — ${ASSETS[i]}`);
+    }
+    lines.push("");
+    const form = $("formLink").value.trim() || "[FORM]";
+    const phone = $("phone").value.trim() || "[WHATSAPP]";
+    lines.push(`CTA: ${form} | WhatsApp: ${phone}`);
+    $("laterPlan").textContent = lines.join("\n");
   }
 
   function renderPrompts(){
-    const area=$("area").value;
-    const phone=$("phone").value.trim() || "[WHATSAPP]";
-    const form=$("formLink").value.trim() || "[FORM]";
-    const sign=$("sign").value.trim() || "[FIRMA]";
-    const times=parseTimes().join(", ");
-    const d=cycleDay();
+    const area = $("area").value;
+    const phone = $("phone").value.trim() || "[WHATSAPP]";
+    const form  = $("formLink").value.trim() || "[FORM]";
+    const email = $("email").value.trim() || "[EMAIL]";
+    const sign  = $("sign").value.trim() || "[FIRMA]";
+    const style = $("style").value.trim() || "Utile, locale, neutro.";
+    const d = cycleDay();
+    const times = parseTimes().join(", ");
 
-    const promptChatGPT = `
+    const master = `
 Sei una IA centrale per acquisizione immobiliare.
 DEVI generare SOLO testi in ITALIANO pronti da incollare.
 Area: ${area}
@@ -433,7 +537,10 @@ VINCOLI (OBBLIGATORI):
 - zero promesse o prezzi
 - zero contatto a freddo
 - solo inbound e consenso (GDPR)
-- CTA soft (sempre): "Checklist gratuita: ${form} oppure WhatsApp ${phone}"
+- tono: ${style}
+
+CTA STANDARD (sempre uguale, soft):
+"Checklist gratuita: ${form} oppure WhatsApp ${phone} (email: ${email})"
 
 GENERA SOLO QUESTO (OUTPUT SECCO, NO SPIEGAZIONI):
 
@@ -449,39 +556,80 @@ GENERA SOLO QUESTO (OUTPUT SECCO, NO SPIEGAZIONI):
 - Coerenti con i rispettivi teleprompter
 - CTA soft finale
 
-3) VOLANTINO_AL_RESIDENTE (max 120 parole) con CTA (QR/form + WhatsApp)
+3) POST_GROUPI (1 testo max 80 parole) tono aiuto, zero promozione
 
-4) LETTERA_AL_RESIDENTE (max 180 parole), chiusura con firma: ${sign}
+4) COMMENTI_STRATEGICI (10) — 1 frase ciascuno, chiusura soft: "se vuoi ti giro la checklist"
 
-5) INBOX_REPLY_CONSENSO (Sì/No), tono naturale
+5) VOLANTINO_AL_RESIDENTE (max 120 parole) con CTA (QR/form + WhatsApp)
+
+6) LETTERA_AL_RESIDENTE (max 180 parole), chiusura con firma: ${sign}
+
+7) INBOX_REPLY_CONSENSO (Sì/No), tono naturale
 `.trim();
 
-    const promptCanva = `
+    const teleOnly = `
+Genera SOLO TELEPROMPTER_1 ... TELEPROMPTER_6 (6 script) in ITALIANO.
+Area: ${area}
+Vincoli:
+- 35–55 secondi ciascuno
+- Hook + 2-3 punti + CTA soft finale
+- CTA: "Checklist gratuita: ${form} oppure WhatsApp ${phone}"
+Output: SOLO i 6 script etichettati TELEPROMPTER_1..6, senza altro.
+`.trim();
+
+    const inboxOnly = `
+Scrivi SOLO un messaggio inbox (ITALIANO) per chi chiede info.
+Area: ${area}
+Obiettivo: inviare materiale + chiedere consenso ricontatto.
+Vincoli:
+- tono naturale
+- domanda chiara Sì/No
+- zero linguaggio legale
+Includi: ${form} e WhatsApp ${phone}
+Output: SOLO il messaggio.
+`.trim();
+
+    const territoryOnly = `
+Scrivi SOLO:
+A) VOLANTINO "AL RESIDENTE" (max 120 parole)
+B) LETTERA "AL RESIDENTE" (max 180 parole)
+Area: ${area}
+Tono: utile, locale, neutro, zero vendita.
+CTA: ${form} + WhatsApp ${phone}
+Firma lettera: ${sign}
+Output: SOLO i testi con intestazioni A) e B).
+`.trim();
+
+    const commentsOnly = `
+Genera 10 commenti brevi in italiano per rispondere a post pubblici di persone che parlano di vendita casa.
+Area: ${area}
+Tono: utile e locale, mai promozionale.
+Vincoli:
+- 1 frase ciascuno
+- chiusura soft: "se vuoi ti giro una checklist gratuita: ${form}"
+Output: lista numerata 1-10.
+`.trim();
+
+    const canvaEN = `
 Vertical, easy-to-understand, step-by-step layout.
 Clean and minimal real estate design.
 White background, neutral colors, modern sans-serif.
+
 Create 2 vertical templates:
-A) A4 vertical flyer (headline + 3 bullet steps + QR placeholder + contacts)
-B) 1080x1920 vertical story/reel cover (headline + 3 steps + QR/CTA area)
-No luxury, no sales tone. Local community feel.
+A) A4 vertical flyer: headline + "3 steps" bullets + QR placeholder + contacts
+B) 1080x1920 vertical reel cover/story: headline + 3 steps + CTA area
+
+Not salesy. Local community feel.
 `.trim();
 
-    $("promptChatGPT").textContent = promptChatGPT;
-    $("promptCanva").textContent = promptCanva;
-  }
+    $("promptChatGPT").textContent = master;
+    $("promptCanva").textContent = canvaEN;
 
-  function renderLaterPlan(){
-    const d=cycleDay();
-    const times=parseTimes();
-    const map=ROTATION[d];
-    const lines=[];
-    lines.push(`PIANO OGGI — Giorno ${d} (ciclo 3 giorni) — ${todayISO()}`);
-    for(let i=0;i<6;i++){
-      lines.push(`${times[i]} — ${CHANNELS[map[i]]} — ${ASSETS[i]}`);
-    }
-    lines.push("");
-    lines.push(`CTA: ${$("formLink").value.trim()||"[FORM]"} | WhatsApp: ${$("phone").value.trim()||"[WHATSAPP]"}`);
-    $("laterPlan").textContent = lines.join("\n");
+    // stash “sub-prompts” for dedicated buttons
+    $("promptChatGPT").dataset.teleOnly = teleOnly;
+    $("promptChatGPT").dataset.inboxOnly = inboxOnly;
+    $("promptChatGPT").dataset.territoryOnly = territoryOnly;
+    $("promptChatGPT").dataset.commentsOnly = commentsOnly;
   }
 
   // ---------- Timers ----------
@@ -520,55 +668,46 @@ No luxury, no sales tone. Local community feel.
     save();
     toast("RESET ✅");
   }
-
-  function updateTotalsUI(){
-    $("totalTime").textContent = fmt(state.totalTimer.elapsed + (state.totalTimer.running ? (Date.now()-state.totalTimer.start) : 0));
-    $("recTime").textContent = fmt(state.recTimer.elapsed + (state.recTimer.running ? (Date.now()-state.recTimer.start) : 0));
-  }
-
-  function getSavedDayTime(day){
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return saved.dayTimes?.[day]?.totalElapsed || 0;
+  function updateTimersUI(){
+    $("totalTime").textContent = fmt(state.totalTimer.elapsed);
+    $("recTime").textContent = fmt(state.recTimer.elapsed);
   }
 
   function updateChallenge(){
-    const y = getSavedDayTime(yesterdayISO());
+    const y = getSavedElapsed(yesterdayISO(), "totalElapsed");
     const t = state.totalTimer.elapsed;
     const challenge = y > 0
       ? `Ieri hai fatto ${fmt(y)}. Oggi riuscirai a fare meglio?`
-      : `Nessun tempo salvato ieri. Oggi imposta il tuo baseline.`;
+      : `Nessun tempo salvato ieri. Oggi imposta il baseline.`;
     $("challengeText").textContent = challenge;
 
-    // improvement check (only when today stopped and yesterday exists)
-    const improveBox = $("improveBox");
-    const noImproveBox = $("noImproveBox");
-    improveBox.style.display="none";
-    noImproveBox.style.display="none";
+    $("improveBox").style.display="none";
+    $("noImproveBox").style.display="none";
 
     if (y > 0 && t > 0){
       if (t < y){
         const delta = y - t;
         $("improveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Miglioramento: -${fmt(delta)}.`;
-        improveBox.style.display="block";
+        $("improveBox").style.display="block";
       } else {
         const delta = t - y;
         $("noImproveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Peggioramento: +${fmt(delta)}.`;
-        noImproveBox.style.display="block";
+        $("noImproveBox").style.display="block";
       }
     }
   }
 
   function buildCapoMessage(){
-    const y = getSavedDayTime(yesterdayISO());
+    const y = getSavedElapsed(yesterdayISO(), "totalElapsed");
     const t = state.totalTimer.elapsed;
     const area = $("area").value;
     const delta = y - t;
     return `CHECK AL CAPO ✅
 Area: ${area}
-Oggi: ${fmt(t)}
+Oggi (tempo produzione): ${fmt(t)}
 Ieri: ${fmt(y)}
-Miglioramento: -${fmt(delta)} (tempo produzione)
-Note: 6 pubblicazioni schedulate + teleprompter pronto.`;
+Miglioramento: -${fmt(delta)}
+Output: 6 pubblicazioni schedulate + teleprompter pronto + Canva pronto.`;
   }
 
   // ---------- Teleprompter split ----------
@@ -592,22 +731,108 @@ Note: 6 pubblicazioni schedulate + teleprompter pronto.`;
     toast("Split ✅");
   }
 
-  // ---------- Buttons ----------
-  $("save").addEventListener("click", ()=>{ save(); renderPrompts(); renderLaterPlan(); renderCycle(); updateChallenge(); toast("Salvato ✅"); });
-  $("demo").addEventListener("click", demo);
-  $("toggleKill").addEventListener("click", toggleKill);
+  function clearTeleprompter(){
+    $("raw").value="";
+    ["tp1","tp2","tp3","tp4","tp5","tp6"].forEach(id=>$(id).value="");
+    toast("Pulito ✅");
+  }
+
+  // ---------- Export TXT ----------
+  function exportTxt(){
+    const blocks = [];
+    blocks.push(`# MACCHINA — ${todayISO()}`);
+    blocks.push(`Area: ${$("area").value}`);
+    blocks.push(`Orari: ${parseTimes().join(", ")}`);
+    blocks.push(`Later: ${$("laterUrl").value.trim()}`);
+    blocks.push("");
+    blocks.push("## Piano Later");
+    blocks.push($("laterPlan").textContent);
+    blocks.push("");
+    blocks.push("## Prompt ChatGPT");
+    blocks.push($("promptChatGPT").textContent);
+    blocks.push("");
+    blocks.push("## Prompt Canva");
+    blocks.push($("promptCanva").textContent);
+    blocks.push("");
+    blocks.push(`## Tempi Oggi`);
+    blocks.push(`Totale: ${fmt(state.totalTimer.elapsed)}`);
+    blocks.push(`Registrazione: ${fmt(state.recTimer.elapsed)}`);
+    blocks.push("");
+    blocks.push("## Teleprompter (se presenti)");
+    ["tp1","tp2","tp3","tp4","tp5","tp6"].forEach((id, i)=>{
+      const t = $(id).value.trim();
+      if (t) blocks.push(`TELEPROMPTER_${i+1}\n${t}\n`);
+    });
+
+    const blob = new Blob([blocks.join("\n")], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `macchina_${todayISO()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("TXT esportato ✅");
+  }
+
+  // ---------- Actions ----------
+  function openLater(){
+    const url = $("laterUrl").value.trim() || "https://app.later.com/9H8EZ/schedule/calendar";
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  // ---------- Wire up UI ----------
+  $("save").addEventListener("click", ()=>{
+    save();
+    renderTopLabels();
+    renderSchedule();
+    renderPrompts();
+    renderLaterPlan();
+    updateChallenge();
+    toast("Salvato ✅");
+  });
+
+  $("demo").addEventListener("click", ()=>{
+    $("area").value="Torino + Valle di Susa";
+    $("phone").value="+39 3XX XXX XXXX";
+    $("formLink").value="https://forms.gle/tuo-link";
+    $("email").value="info@esempio.it";
+    $("sign").value="Nome Cognome";
+    $("style").value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
+    $("times").value="08:30,11:00,13:30,16:00,18:30,21:00";
+    $("cycleStart").valueAsDate=new Date();
+    $("laterUrl").value="https://app.later.com/9H8EZ/schedule/calendar";
+    save();
+    renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
+    toast("Esempio ✅");
+  });
+
+  $("toggleKill").addEventListener("click", ()=>{
+    state.kill = !state.kill;
+    save();
+    renderKill();
+    toast(state.kill ? "KILL ON 🛑" : "KILL OFF ✅");
+  });
+
+  $("openLaterTop").addEventListener("click", openLater);
+  $("openLater").addEventListener("click", openLater);
 
   $("copyChatGPT").addEventListener("click", ()=>copyText($("promptChatGPT").textContent));
-  $("copyCanva").addEventListener("click", ()=>copyText($("promptCanva").textContent));
+  $("copyOnlyTeleprompter").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.teleOnly || ""));
+  $("copyInboxPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.inboxOnly || ""));
+  $("copyTerritoryPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.territoryOnly || ""));
+  $("copyCommentsPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.commentsOnly || ""));
 
-  $("openLater").addEventListener("click", ()=>window.open(LATER_URL,"_blank","noopener,noreferrer"));
+  $("copyCanva").addEventListener("click", ()=>copyText($("promptCanva").textContent));
   $("copyLaterPlan").addEventListener("click", ()=>copyText($("laterPlan").textContent));
 
   $("split").addEventListener("click", splitTeleprompter);
+  $("clearTeleprompter").addEventListener("click", clearTeleprompter);
 
-  // timers
+  $("exportTxt").addEventListener("click", exportTxt);
+
+  // timers total
   $("startTotal").addEventListener("click", ()=>{
-    if(state.kill){ toast("KILL ON: solo bozze"); }
+    if(state.kill) toast("KILL ON: solo bozze (no pubblicazioni/contatti)");
     startTimer(state.totalTimer, $("totalTime"), $("totalStatus"), "IN CORSO");
   });
   $("stopTotal").addEventListener("click", ()=>{
@@ -619,16 +844,28 @@ Note: 6 pubblicazioni schedulate + teleprompter pronto.`;
     updateChallenge();
   });
 
+  // timers recording
   $("startRec").addEventListener("click", ()=>startTimer(state.recTimer, $("recTime"), $("recStatus"), "REGISTRAZIONE"));
-  $("stopRec").addEventListener("click", ()=>{ stopTimer(state.recTimer, $("recTime"), $("recStatus"), "FERMO"); save(); });
-  $("resetRec").addEventListener("click", ()=>resetTimer(state.recTimer, $("recTime"), $("recStatus")));
+  $("stopRec").addEventListener("click", ()=>{
+    stopTimer(state.recTimer, $("recTime"), $("recStatus"), "FERMO");
+    renderTopLabels();
+  });
+  $("resetRec").addEventListener("click", ()=>{
+    resetTimer(state.recTimer, $("recTime"), $("recStatus"));
+    renderTopLabels();
+  });
 
+  // check al capo
   $("copyCapoMsg").addEventListener("click", ()=>copyText(buildCapoMessage()));
 
   // live updates
-  ["area","phone","formLink","sign","times","cycleStart"].forEach(id=>{
-    $(id).addEventListener("input", ()=>{ renderPrompts(); renderLaterPlan(); renderCycle(); });
-    $(id).addEventListener("change", ()=>{ renderPrompts(); renderLaterPlan(); renderCycle(); });
+  ["area","phone","formLink","email","sign","style","times","cycleStart","laterUrl"].forEach(id=>{
+    $(id).addEventListener("input", ()=>{
+      renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
+    });
+    $(id).addEventListener("change", ()=>{
+      renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
+    });
   });
 
   // init
