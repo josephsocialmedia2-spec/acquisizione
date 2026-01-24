@@ -1,107 +1,902 @@
-OBIETTIVO:
-Genera un singolo file HTML (con CSS + JS inline) che sia un “CERVELLO ELETTRONICO” per la gestione operativa dei funzionari di agenzia. Deve massimizzare operatività (click → boom), saturare il mercato e liberare tempo per la ricerca. Nessuna teoria, nessuna spiegazione: solo interfaccia operativa.
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CERVELLO ELETTRONICO — Operatività Funzionari</title>
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel:#12161b;
+      --panel2:#0f1318;
+      --text:#e9eef5;
+      --muted:#9aa7b6;
+      --line:#1e2a36;
+      --good:#16a34a;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+      --accent:#60a5fa;
+      --accent2:#a78bfa;
+      --btn:#1b2531;
+      --btn2:#18202a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(96,165,250,.25), transparent 60%),
+                  radial-gradient(900px 700px at 100% 0%, rgba(167,139,250,.18), transparent 55%),
+                  linear-gradient(180deg, #06070a, #0b0d10 35%, #07090c);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 80px;
+    }
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index:20;
+      background: rgba(11,13,16,.72);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(30,42,54,.75);
+    }
+    .topbarInner{
+      max-width:1100px;
+      margin:0 auto;
+      padding:12px 16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .title{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    }
+    .title h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.3px;
+      font-weight:800;
+    }
+    .pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid rgba(30,42,54,.9);
+      border-radius:999px;
+      background: rgba(18,22,27,.8);
+      color:var(--text);
+      font-size:12px;
+      line-height:1;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      white-space:nowrap;
+    }
+    .pill strong{font-weight:900}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--muted);display:inline-block}
+    .dot.good{background:var(--good)}
+    .dot.bad{background:var(--bad)}
+    .dot.warn{background:var(--warn)}
+    .dot.accent{background:var(--accent)}
 
-REGOLE FERREE:
-- NON omettere, NON inventare, NON riassumere, NON modificare nulla del sistema qui sotto.
-- TUTTI i testi e le procedure incollati nella sezione “CONTENUTO INTEGRALE” devono essere riportati nel codice ESATTAMENTE uguali, parola per parola, stessa punteggiatura, stessi numeri, stessi orari, stessi simboli, stessa formattazione (a capo inclusi).
-- Non cambiare i contenuti: devi solo ORGANIZZARLI in UI step-by-step verticale e renderli “copia/incolla” con bottoni.
-- Output finale: SOLO codice HTML completo, pronto da salvare come “macchina.html”. Nessun commento esterno.
+    .bannerKill{
+      display:none;
+      margin:14px 0 10px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(239,68,68,.55);
+      background: rgba(239,68,68,.12);
+      color:#ffd7d7;
+      font-weight:800;
+      letter-spacing:.2px;
+      box-shadow: var(--shadow);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(18,22,27,.92), rgba(15,19,24,.92));
+      border:1px solid rgba(30,42,54,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHead{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(30,42,54,.7);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .cardHead h2{
+      margin:0;
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:.3px;
+    }
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .cardBody{padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .col{display:flex;flex-direction:column;gap:8px;min-width:240px;flex:1}
+    label{font-size:12px;color:var(--muted);display:block}
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea, select{
+      width:100%;
+      padding:10px 11px;
+      border-radius:14px;
+      border:1px solid rgba(30,42,54,.95);
+      background: rgba(9,11,14,.55);
+      color: var(--text);
+      outline:none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    textarea{min-height:120px;resize:vertical}
+    .btn{
+      appearance:none;
+      border:1px solid rgba(30,42,54,.95);
+      background: linear-gradient(180deg, rgba(27,37,49,.95), rgba(24,32,42,.95));
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:850;
+      letter-spacing:.2px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      transition: transform .06s ease, filter .15s ease;
+      user-select:none;
+    }
+    .btn:hover{filter:brightness(1.06)}
+    .btn:active{transform: translateY(1px)}
+    .btn.big{
+      padding:14px 16px;
+      font-size:13px;
+      border-radius:18px;
+      letter-spacing:.35px;
+    }
+    .btn.primary{
+      border-color: rgba(96,165,250,.5);
+      background: linear-gradient(180deg, rgba(35,54,80,.95), rgba(24,32,42,.95));
+    }
+    .btn.good{
+      border-color: rgba(22,163,74,.55);
+      background: linear-gradient(180deg, rgba(17,68,38,.95), rgba(24,32,42,.95));
+    }
+    .btn.bad{
+      border-color: rgba(239,68,68,.55);
+      background: linear-gradient(180deg, rgba(78,26,26,.95), rgba(24,32,42,.95));
+    }
+    .btn.warn{
+      border-color: rgba(245,158,11,.55);
+      background: linear-gradient(180deg, rgba(82,57,18,.95), rgba(24,32,42,.95));
+    }
+    .btn.ghost{
+      background: rgba(9,11,14,.25);
+      box-shadow:none;
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      filter:saturate(.5);
+    }
+    .sep{height:1px;background:rgba(30,42,54,.7);margin:12px 0}
+    .stepTag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(30,42,54,.9);
+      background: rgba(9,11,14,.35);
+      font-size:12px;font-weight:950;letter-spacing:.35px;
+    }
+    .stepTag .dot{background:var(--accent)}
+    .boom{
+      margin-top:10px;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(30,42,54,.85);
+      background: rgba(9,11,14,.35);
+      font-size:12px;
+      color: var(--text);
+      line-height:1.35;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .mini{
+      font-size:12px;color:var(--muted);
+      margin:0;
+      line-height:1.35;
+    }
+    .copyRow{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px
+    }
+    .kbd{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:12px;
+      border:1px solid rgba(30,42,54,.85);
+      background: rgba(9,11,14,.35);
+      font-size:12px;color:var(--muted)
+    }
+    .timerBox{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      align-items:stretch;
+    }
+    .timerPanel{
+      border:1px solid rgba(30,42,54,.85);
+      border-radius:16px;
+      background: rgba(9,11,14,.3);
+      padding:12px;
+    }
+    .timerVal{
+      font-size:22px;
+      font-weight:950;
+      letter-spacing:.4px;
+      margin:2px 0 0;
+    }
+    .timerMeta{
+      display:flex;gap:10px;flex-wrap:wrap;margin-top:8px
+    }
+    .msgBox{
+      display:none;
+      margin-top:10px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(22,163,74,.5);
+      background: rgba(22,163,74,.12);
+      color:#d6ffe5;
+      box-shadow: var(--shadow);
+    }
+    .msgBox h3{
+      margin:0 0 6px;
+      font-size:13px;
+      font-weight:950;
+      letter-spacing:.25px;
+    }
+    .tbl{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid rgba(30,42,54,.9);
+      background: rgba(9,11,14,.28);
+    }
+    .tbl th, .tbl td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(30,42,54,.6);
+      font-size:12px;
+      text-align:left;
+      vertical-align:top;
+    }
+    .tbl th{
+      color:var(--muted);
+      font-weight:950;
+      background: rgba(18,22,27,.45);
+    }
+    .tbl tr:last-child td{border-bottom:none}
+    .smallInput{min-width:220px;flex:1}
+    .teleGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .tpCard{
+      border:1px solid rgba(30,42,54,.9);
+      border-radius:16px;
+      background: rgba(9,11,14,.28);
+      padding:12px;
+    }
+    .tpHead{
+      display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .tpHead strong{font-size:12px;font-weight:950;letter-spacing:.25px}
+    .tpCard textarea{min-height:92px}
+    details{
+      border:1px solid rgba(30,42,54,.9);
+      border-radius:16px;
+      background: rgba(9,11,14,.22);
+      overflow:hidden;
+    }
+    summary{
+      padding:12px 12px;
+      cursor:pointer;
+      list-style:none;
+      font-weight:950;
+      letter-spacing:.25px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      border-bottom:1px solid rgba(30,42,54,.6);
+      user-select:none;
+    }
+    summary::-webkit-details-marker{display:none}
+    .accBody{padding:12px}
+    pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      line-height:1.35;
+      color: var(--text);
+    }
+    .checklist{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+    }
+    .checkItem{
+      display:flex;gap:10px;align-items:flex-start;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(30,42,54,.85);
+      background: rgba(9,11,14,.25);
+    }
+    .checkItem input{margin-top:3px;transform:scale(1.2)}
+    .checkItem .txt{
+      white-space:pre-wrap;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .overlay{
+      position:fixed;inset:0;
+      display:none;
+      z-index:9999;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(10px);
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .overlayCard{
+      width:min(900px, 100%);
+      border-radius:22px;
+      border:1px solid rgba(96,165,250,.55);
+      background: linear-gradient(180deg, rgba(18,22,27,.95), rgba(9,11,14,.92));
+      box-shadow: 0 25px 80px rgba(0,0,0,.6);
+      overflow:hidden;
+    }
+    .overlayTop{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(30,42,54,.7);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    .overlayTop h2{
+      margin:0;
+      font-size:16px;
+      font-weight:950;
+      letter-spacing:.35px;
+    }
+    .overlayBody{padding:14px}
+    .overlayActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .hint{
+      display:flex;gap:8px;align-items:flex-start;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(245,158,11,.45);
+      background: rgba(245,158,11,.10);
+      color:#ffe7bf;
+      margin-top:10px;
+      line-height:1.35;
+      font-size:12px;
+    }
+    .footerActions{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      display:flex;
+      gap:10px;
+      z-index:30;
+    }
+    @media (min-width: 980px){
+      .teleGrid{grid-template-columns: 1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbarInner">
+      <div class="title">
+        <span class="pill" style="background:rgba(18,22,27,.65)"><span class="dot accent"></span><strong>STATO</strong></span>
+        <h1>CERVELLO ELETTRONICO — Gestione Operativa Funzionari</h1>
+      </div>
+      <div class="pills">
+        <span class="pill" id="pillKill"><span class="dot" id="dotKill"></span><strong>KILL</strong> <span id="valKill">OFF</span></span>
+        <span class="pill"><span class="dot accent"></span><strong>Giorno ciclo</strong> <span id="valCycleDay">—</span></span>
+        <span class="pill"><span class="dot"></span><strong>Oggi</strong> <span id="valToday">—</span></span>
+        <span class="pill"><span class="dot"></span><strong>Ieri totale</strong> <span id="valYTotal">—</span></span>
+        <span class="pill"><span class="dot"></span><strong>Ieri registrazione</strong> <span id="valYRec">—</span></span>
+      </div>
+    </div>
+  </div>
 
-LAYOUT UI (obbligatorio):
-- Layout VERTICALE, molto semplice, leggibile, con blocchi “STEP 1, STEP 2, …”.
-- Ogni step ha: pulsante gigante “CLICK” + risultato “BOOM” (copy/ open/ timer).
-- Nessun menu complesso, nessuna decisione richiesta: tutto guidato.
-- Ogni blocco di testo deve avere: “COPIA” e “COPIA PER TELEPROMPTER” se pertinente.
-- Sezione “TOP PRODUCER (FAI QUESTO) — per nuovo funzionario”: checklist guidata con checkbox (ma senza modificare i testi originali).
-- Sezione “SISTEMA COMPLETO” con accordion (collassabile) ma con bottoni di copia per ogni sottosezione.
+  <div class="wrap">
+    <div class="bannerKill" id="bannerKill">KILL ON: solo bozze</div>
 
-AUTOMAZIONI (JS):
-1) TIMER PRODUZIONE (totale giornata):
-- Pulsanti: START / STOP / RESET.
-- Salva il tempo per data in localStorage.
-- Mostra: “Ieri hai fatto (tempo ieri). Oggi riuscirai a fare meglio?”
-- Se STOP di oggi < tempo di ieri, mostra box verde: “MIGLIORAMENTO → CHECK AL CAPO” e genera automaticamente un messaggio pronto (con bottone COPIA).
-- Il “CHECK AL CAPO” deve includere: data, area, tempo oggi, tempo ieri, delta, e la frase: “Output: 6 pubblicazioni schedulate + teleprompter pronto + Canva pronto.”
+    <div class="grid">
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <h2>CONFIGURAZIONI (salvate)</h2>
+            <p class="sub">Compila una volta. Poi: click → boom.</p>
+          </div>
+          <div class="row">
+            <button class="btn warn" id="btnToggleKill">KILL SWITCH: OFF</button>
+            <button class="btn ghost" id="btnSaveCfg">SALVA</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="col">
+              <label>Area (Torino / Valle di Susa / Torino + Valle di Susa)</label>
+              <select id="cfgArea">
+                <option value="Torino">Torino</option>
+                <option value="Valle di Susa">Valle di Susa</option>
+                <option value="Torino + Valle di Susa">Torino + Valle di Susa</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>WhatsApp/Telefono pubblico</label>
+              <input type="tel" id="cfgPhone" placeholder="Es: 3713708294"/>
+            </div>
+            <div class="col">
+              <label>Email pubblica</label>
+              <input type="email" id="cfgEmail" placeholder="Es: info@..."/>
+            </div>
+          </div>
 
-2) TIMER REGISTRAZIONE (CapCut):
-- Pulsanti: START / STOP / RESET.
-- Salva tempo registrazione per data.
-- Mostra “Ieri registrazione: …” se presente.
+          <div class="row" style="margin-top:10px">
+            <div class="col">
+              <label>Link form (opt-in)</label>
+              <input type="text" id="cfgFormLink" placeholder="https://..."/>
+            </div>
+            <div class="col">
+              <label>Firma</label>
+              <input type="text" id="cfgSignature" placeholder="Nome Cognome — Agenzia — Area"/>
+            </div>
+            <div class="col">
+              <label>Data start ciclo</label>
+              <input type="date" id="cfgStartDate"/>
+            </div>
+          </div>
 
-3) APERTURE LINK (CLICK):
-- Bottone “APRI LATER” che apre in nuova scheda (noopener,noreferrer):
-  https://app.later.com/9H8EZ/schedule/calendar
+          <div class="row" style="margin-top:10px">
+            <div class="col smallInput">
+              <label>Orari 6 slot</label>
+              <input type="text" id="cfgSlots" value="08:30,11:00,13:30,16:00,18:30,21:00"/>
+            </div>
+            <div class="col">
+              <label>Later URL (prefill)</label>
+              <input type="text" id="cfgLaterUrl" value="https://app.later.com/9H8EZ/schedule/calendar"/>
+            </div>
+            <div class="col">
+              <label>Sora URL (configurabile)</label>
+              <input type="text" id="cfgSoraUrl" placeholder="https://..."/>
+            </div>
+          </div>
 
-4) ROTAZIONE SOCIAL + 6 PUBBLICAZIONI/GIORNO:
-- Input orari: default "08:30,11:00,13:30,16:00,18:30,21:00"
-- Crea tabella 6 righe: slot #, ora, canale, asset.
-- Rotazione fissa 3 giorni (sempre uguale):
-  Giorno 1: Instagram Reels, Facebook Reels, TikTok, YouTube Shorts, LinkedIn, Facebook Gruppi
-  Giorno 2: TikTok, YouTube Shorts, LinkedIn, Facebook Gruppi, Instagram Reels, Facebook Reels
-  Giorno 3: LinkedIn, Facebook Gruppi, Instagram Reels, Facebook Reels, TikTok, YouTube Shorts
-- Calcolo Giorno 1/2/3 basato su “data start ciclo” inserita dall’utente.
-- Bottone “COPIA PIANO PER LATER” (testo pronto da incollare).
+          <div class="sep"></div>
 
-5) TELEPROMPTER:
-- Area “incolla output ChatGPT” e bottone “SPLIT TELEPROMPTER” che estrae TELEPROMPTER_1..6 e li distribuisce in 6 textbox.
-- Ogni textbox ha bottone “COPIA (CapCut)”.
+          <div class="row">
+            <button class="btn primary" id="btnExportTxt">EXPORT TXT</button>
+            <span class="kbd">Salva: prompt + piano Later + teleprompter + tempi</span>
+          </div>
+        </div>
+      </div>
 
-6) SORA ROLE PLAY (08:30):
-- Ogni mattina alle 08:30 (timezone browser) appare overlay a schermo intero:
-  “È ORA DI ROLE PLAY — APRI SORA”
-  con bottone gigante “APRI SORA ORA” che apre un link SORA (campo configurabile).
-- Alternanza automatica giornaliera:
-  Giorni dispari: SORA fa il VENDITORE
-  Giorni pari: SORA fa l’ACQUIRENTE
-- Mostra lo script/istruzioni role play e un bottone “COPIA SCRIPT ROLE PLAY” da incollare in Sora.
-- Campo configurabile in alto: “Sora URL” (salvato in localStorage). Se vuoto, il bottone apre solo un placeholder.
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 1</span>
+            <h2 style="margin-top:8px">CHATGPT — COPIA PROMPT MASTER</h2>
+            <p class="sub">Click → boom: prompt completo con output richiesti.</p>
+          </div>
+          <div class="row">
+            <button class="btn big primary" id="btnCopyMaster">CLICK</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="boom" id="boomMaster"></div>
+          <div class="copyRow">
+            <button class="btn" id="btnCopyMasterSmall">COPIA</button>
+            <button class="btn" id="btnCopyMasterTele">COPIA PER TELEPROMPTER</button>
+          </div>
+        </div>
+      </div>
 
-CONFIGURAZIONI (salvate):
-- Area (Torino / Valle di Susa / Torino + Valle di Susa)
-- WhatsApp/Telefono pubblico
-- Email pubblica
-- Link form (opt-in)
-- Firma
-- Data start ciclo
-- Orari 6 slot
-- Later URL (prefill con quello sopra)
-- Sora URL (configurabile)
-- Kill switch ON/OFF:
-  - Se ON: disabilita bottoni che “pubblicano/contattano” (ma lascia copia prompt)
-  - Mostra banner rosso “KILL ON: solo bozze”.
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 2</span>
+            <h2 style="margin-top:8px">CANVA IA — COPIA PROMPT EN (vertical A4 + 1080x1920)</h2>
+            <p class="sub">Prompt in inglese. Testi in italiano (placeholder).</p>
+          </div>
+          <div class="row">
+            <button class="btn big primary" id="btnCopyCanvaEn">CLICK</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="boom" id="boomCanvaEn"></div>
+          <div class="copyRow">
+            <button class="btn" id="btnCopyCanvaEnSmall">COPIA</button>
+            <button class="btn" id="btnCopyCanvaEnTele">COPIA PER TELEPROMPTER</button>
+          </div>
+        </div>
+      </div>
 
-STEP OPERATIVI (verticale):
-STEP 1: “CHATGPT — COPIA PROMPT MASTER” (bottone copia)
-- Genera prompt master che produce:
-  TELEPROMPTER_1..6
-  POST_CAPTION_1..6
-  POST_GROUPI
-  COMMENTI_STRATEGICI (10)
-  VOLANTINO_AL_RESIDENTE
-  LETTERA_AL_RESIDENTE
-  INBOX_REPLY_CONSENSO
-- Il prompt deve includere area, CTA, vincoli GDPR-safe.
-- (Nota: NON fare scraping, NON cercare dati personali.)
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 3</span>
+            <h2 style="margin-top:8px">LATER — APRI + COPIA PIANO</h2>
+            <p class="sub">Rotazione social + 6 pubblicazioni/giorno → copia piano pronto.</p>
+          </div>
+          <div class="row">
+            <button class="btn big primary" id="btnOpenLater">APRI LATER</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="col smallInput">
+              <label>Input orari (6 slot)</label>
+              <input type="text" id="slotsInput" value="08:30,11:00,13:30,16:00,18:30,21:00"/>
+            </div>
+            <div class="col smallInput">
+              <label>Data start ciclo (per Giorno 1/2/3)</label>
+              <input type="date" id="cycleStartInput"/>
+            </div>
+            <div class="col" style="min-width:220px">
+              <label>Giorno ciclo calcolato</label>
+              <input type="text" id="cycleDayOut" readonly />
+            </div>
+          </div>
 
-STEP 2: “CANVA IA — COPIA PROMPT EN (vertical A4 + 1080x1920)”
-- Prompt in inglese. Testi in italiano (placeholder).
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnBuildPlan">GENERA TABELLA</button>
+            <button class="btn good" id="btnCopyPlan">COPIA PIANO PER LATER</button>
+          </div>
 
-STEP 3: “LATER — APRI + COPIA PIANO”
+          <div class="sep"></div>
 
-STEP 4: “CAPCUT — TELEPROMPTER + TIMER REGISTRAZIONE”
+          <table class="tbl" id="planTable">
+            <thead>
+              <tr>
+                <th>slot #</th>
+                <th>ora</th>
+                <th>canale</th>
+                <th>asset</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
 
-STEP 5: “PROCEDURE TOP PRODUCER — NUOVO FUNZIONARIO”
-- Checklist guidata “FAI QUESTO” (ma testi identici)
+          <div class="boom" id="boomPlan" style="margin-top:12px"></div>
+        </div>
+      </div>
 
-STEP 6: “SISTEMA COMPLETO — ARCHIVIO”
-- Accordion con sezioni e bottoni copia per ognuna:
-  - Procedura N°1 AMV (integrale)
-  - Script contatto zona / ex contatto (integrale)
-  - Prompt Canva Docs (integrale)
-  - JOB TO BE DONE – Processo Top Producer (integrale)
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 4</span>
+            <h2 style="margin-top:8px">CAPCUT — TELEPROMPTER + TIMER REGISTRAZIONE</h2>
+            <p class="sub">Incolla output ChatGPT → split automatico in 6 → copia (CapCut). + timer registrazione.</p>
+          </div>
+          <div class="row">
+            <button class="btn big primary" id="btnSplitTeleprompter">SPLIT TELEPROMPTER</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <label>Area “incolla output ChatGPT”</label>
+          <textarea id="tpInput" placeholder="Incolla qui l'output (con TELEPROMPTER_1..6)"></textarea>
 
-CONTENUTO INTEGRALE (NON MODIFICARE NULLA, INCOLLA ESATTO):
-[INIZIO CONTENUTO]
+          <div class="sep"></div>
+
+          <div class="teleGrid" id="tpGrid"></div>
+
+          <div class="sep"></div>
+
+          <div class="timerBox">
+            <div class="timerPanel">
+              <div class="row" style="justify-content:space-between">
+                <div>
+                  <p class="mini" style="margin:0;color:var(--muted);font-weight:900;letter-spacing:.25px">TIMER REGISTRAZIONE (CapCut)</p>
+                  <div class="timerVal" id="recTimerVal">00:00:00</div>
+                </div>
+                <div class="row">
+                  <button class="btn primary" id="recStart">START</button>
+                  <button class="btn" id="recStop">STOP</button>
+                  <button class="btn" id="recReset">RESET</button>
+                </div>
+              </div>
+              <div class="timerMeta">
+                <span class="pill"><span class="dot"></span><strong>Ieri registrazione</strong> <span id="recYesterday">—</span></span>
+              </div>
+            </div>
+
+            <div class="timerPanel">
+              <div class="row" style="justify-content:space-between">
+                <div>
+                  <p class="mini" style="margin:0;color:var(--muted);font-weight:900;letter-spacing:.25px">TIMER PRODUZIONE (totale giornata)</p>
+                  <div class="timerVal" id="prodTimerVal">00:00:00</div>
+                </div>
+                <div class="row">
+                  <button class="btn primary" id="prodStart">START</button>
+                  <button class="btn" id="prodStop">STOP</button>
+                  <button class="btn" id="prodReset">RESET</button>
+                </div>
+              </div>
+              <div class="timerMeta">
+                <span class="pill"><span class="dot"></span><strong>Ieri</strong> <span id="prodYesterday">—</span></span>
+                <span class="pill"><span class="dot"></span><strong>Oggi</strong> <span id="prodTodaySaved">—</span></span>
+              </div>
+              <div class="boom" id="prodChallenge" style="margin-top:10px"></div>
+              <div class="msgBox" id="improveBox">
+                <h3>MIGLIORAMENTO → CHECK AL CAPO</h3>
+                <div class="boom" id="checkMsg"></div>
+                <div class="copyRow">
+                  <button class="btn good" id="btnCopyCheckMsg">COPIA</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint">
+            <span class="dot warn" style="margin-top:5px"></span>
+            <div>
+              <strong>Nota</strong><br>
+              “Ieri hai fatto (tempo ieri). Oggi riuscirai a fare meglio?”
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 5</span>
+            <h2 style="margin-top:8px">PROCEDURE TOP PRODUCER — NUOVO FUNZIONARIO</h2>
+            <p class="sub">TOP PRODUCER (FAI QUESTO) — per nuovo funzionario</p>
+          </div>
+          <div class="row">
+            <button class="btn big primary" id="btnResetChecklist">RESET CHECKLIST</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="checklist" id="checklist"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <span class="stepTag"><span class="dot"></span>STEP 6</span>
+            <h2 style="margin-top:8px">SISTEMA COMPLETO — ARCHIVIO</h2>
+            <p class="sub">Accordion collassabile + copia per ogni sottosezione.</p>
+          </div>
+          <div class="row">
+            <button class="btn" id="btnCopyAllSystem">COPIA TUTTO SISTEMA</button>
+            <button class="btn" id="btnExpandAll">APRI TUTTO</button>
+            <button class="btn" id="btnCollapseAll">CHIUDI TUTTO</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <details class="acc" id="acc1">
+            <summary>
+              <span>Procedura N°1 AMV (integrale)</span>
+              <span class="pill"><span class="dot accent"></span>COPY</span>
+            </summary>
+            <div class="accBody">
+              <div class="row">
+                <button class="btn" data-copy="amv">COPIA</button>
+                <button class="btn" data-copy-tp="amv">COPIA PER TELEPROMPTER</button>
+              </div>
+              <div class="sep"></div>
+              <pre id="amv"></pre>
+            </div>
+          </details>
+
+          <div style="height:10px"></div>
+
+          <details class="acc" id="acc2">
+            <summary>
+              <span>Script contatto zona / ex contatto (integrale)</span>
+              <span class="pill"><span class="dot accent"></span>COPY</span>
+            </summary>
+            <div class="accBody">
+              <div class="row">
+                <button class="btn" data-copy="contatto">COPIA</button>
+                <button class="btn" data-copy-tp="contatto">COPIA PER TELEPROMPTER</button>
+              </div>
+              <div class="sep"></div>
+              <pre id="contatto"></pre>
+            </div>
+          </details>
+
+          <div style="height:10px"></div>
+
+          <details class="acc" id="acc3">
+            <summary>
+              <span>Prompt Canva Docs (integrale)</span>
+              <span class="pill"><span class="dot accent"></span>COPY</span>
+            </summary>
+            <div class="accBody">
+              <div class="row">
+                <button class="btn" data-copy="canvadocs">COPIA</button>
+                <button class="btn" data-copy-tp="canvadocs">COPIA PER TELEPROMPTER</button>
+              </div>
+              <div class="sep"></div>
+              <pre id="canvadocs"></pre>
+            </div>
+          </details>
+
+          <div style="height:10px"></div>
+
+          <details class="acc" id="acc4">
+            <summary>
+              <span>JOB TO BE DONE – Processo Top Producer (integrale)</span>
+              <span class="pill"><span class="dot accent"></span>COPY</span>
+            </summary>
+            <div class="accBody">
+              <div class="row">
+                <button class="btn" data-copy="job">COPIA</button>
+                <button class="btn" data-copy-tp="job">COPIA PER TELEPROMPTER</button>
+              </div>
+              <div class="sep"></div>
+              <pre id="job"></pre>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footerActions">
+    <button class="btn bad" id="btnQuickKill">KILL</button>
+    <button class="btn" id="btnToTop">↑ TOP</button>
+  </div>
+
+  <div class="overlay" id="soraOverlay">
+    <div class="overlayCard">
+      <div class="overlayTop">
+        <div>
+          <h2>È ORA DI ROLE PLAY — APRI SORA</h2>
+          <p class="sub" id="soraModeLine" style="margin:6px 0 0"></p>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnCloseOverlay">CHIUDI</button>
+        </div>
+      </div>
+      <div class="overlayBody">
+        <div class="row">
+          <div class="col">
+            <label>Sora URL (salvato)</label>
+            <input type="text" id="soraUrlTop" placeholder="https://..."/>
+          </div>
+          <div class="col" style="min-width:280px">
+            <label>Azioni</label>
+            <div class="row">
+              <button class="btn big primary" id="btnOpenSora">APRI SORA ORA</button>
+              <button class="btn" id="btnCopySoraScript">COPIA SCRIPT ROLE PLAY</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="boom" id="soraScript"></div>
+
+        <div class="hint">
+          <span class="dot warn" style="margin-top:5px"></span>
+          <div>
+            Alternanza automatica giornaliera:<br>
+            Giorni dispari: SORA fa il VENDITORE<br>
+            Giorni pari: SORA fa l’ACQUIRENTE
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------
+    // UTIL
+    // -------------------------
+    const $ = (id)=>document.getElementById(id);
+    const pad = (n)=>String(n).padStart(2,'0');
+    const todayISO = ()=> {
+      const d=new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0,10);
+    };
+    const yesterdayISO = ()=> {
+      const d=new Date();
+      d.setDate(d.getDate()-1);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0,10);
+    };
+    const secondsToHMS = (s)=>{
+      s = Math.max(0, Math.floor(Number(s)||0));
+      const h=Math.floor(s/3600);
+      const m=Math.floor((s%3600)/60);
+      const sec=s%60;
+      return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+    };
+    const hmsToSeconds = (hms)=>{
+      const m = String(hms||"").trim().match(/^(\d{1,2}):(\d{2}):(\d{2})$/);
+      if(!m) return 0;
+      return (Number(m[1])*3600)+(Number(m[2])*60)+Number(m[3]);
+    };
+    const safeCopy = async (text)=>{
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("COPIATO");
+      }catch(e){
+        const ta=document.createElement('textarea');
+        ta.value=text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        toast("COPIATO");
+      }
+    };
+    const openNewTab = (url)=>{
+      window.open(url, "_blank", "noopener,noreferrer");
+    };
+    let toastTimer=null;
+    const toast = (msg)=>{
+      clearTimeout(toastTimer);
+      let t = document.getElementById("toast");
+      if(!t){
+        t=document.createElement("div");
+        t.id="toast";
+        t.style.position="fixed";
+        t.style.left="50%";
+        t.style.bottom="18px";
+        t.style.transform="translateX(-50%)";
+        t.style.padding="10px 12px";
+        t.style.borderRadius="999px";
+        t.style.border="1px solid rgba(30,42,54,.9)";
+        t.style.background="rgba(18,22,27,.92)";
+        t.style.color="var(--text)";
+        t.style.fontWeight="900";
+        t.style.letterSpacing=".25px";
+        t.style.zIndex="99999";
+        t.style.boxShadow="0 12px 30px rgba(0,0,0,.4)";
+        document.body.appendChild(t);
+      }
+      t.textContent=msg;
+      t.style.opacity="1";
+      toastTimer=setTimeout(()=>{t.style.opacity="0"}, 900);
+    };
+
+    // -------------------------
+    // STORAGE KEYS
+    // -------------------------
+    const K = {
+      cfg: "ce_cfg_v1",
+      kill: "ce_kill_v1",
+      prodToday: (d)=>`ce_prod_${d}`,
+      recToday: (d)=>`ce_rec_${d}`,
+      checklist: "ce_checklist_v1",
+      lastSoraShown: "ce_sora_shown_v1"
+    };
+
+    // -------------------------
+    // CONTENUTO INTEGRALE (NON MODIFICARE NULLA, INCOLLA ESATTO)
+    // -------------------------
+    const INTEGRALE = `[INIZIO CONTENUTO]
 
 AGGIUNGI PROCEDURA GUIDATA TOP PRODUCER (FAI QUESTO) — PER NUOVO FUNZIONARIO
 🔴 PROCEDURA N°1 — AMV
@@ -557,11 +1352,904 @@ Testimonianza del cliente
 
 La procedura guidata porta a tutto questo
 
-[FINE CONTENUTO]
+[FINE CONTENUTO]`;
 
-REQUISITO EXTRA:
-- In alto: barra “STATO” con pillole: KILL, Giorno ciclo, Oggi, Ieri totale, Ieri registrazione.
-- Un pulsante “EXPORT TXT” che salva localmente tutti i prompt, il piano Later e i tempi.
+    // Split integrale into subsections (but keep exact text blocks inside each section)
+    const splitSections = ()=>{
+      const t = INTEGRALE;
 
-OUTPUT FINALE:
-Restituisci SOLO il file HTML completo.
+      const amvStart = t.indexOf("🔴 PROCEDURA N°1 — AMV");
+      const contStart = t.indexOf("2    SCRIPT CONTATTO ZONA / EX CONTATTO");
+      const canvaStart = t.indexOf("Create a Canva Docs document (A4 portrait)");
+      const jobStart = t.indexOf("🧠 JOB TO BE DONE – PROCESSO TOP PRODUCER (END TO END) — Versione integrata 1:1");
+
+      const amv = t.slice(amvStart, contStart).trimEnd();
+      const cont = t.slice(contStart, canvaStart).trimEnd();
+      const canvadocs = t.slice(canvaStart, jobStart).trimEnd();
+      const job = t.slice(jobStart).trimEnd();
+
+      return {amv, cont, canvadocs, job};
+    };
+
+    // -------------------------
+    // BUILD PROMPTS
+    // -------------------------
+    const buildMasterPrompt = ()=>{
+      const cfg = getCfg();
+      const area = cfg.area || "Torino";
+      const phone = cfg.phone || "";
+      const email = cfg.email || "";
+      const form = cfg.formLink || "";
+      const firma = cfg.signature || "";
+      const slots = (cfg.slots || "08:30,11:00,13:30,16:00,18:30,21:00");
+
+      return [
+`Sei un “CERVELLO OPERATIVO” per un funzionario immobiliare. Genera SOLO testo pronto per l’operatività.
+
+CONTESTO:
+- Area: ${area}
+- WhatsApp/Telefono pubblico: ${phone}
+- Email pubblica: ${email}
+- Link form (opt-in): ${form}
+- Firma: ${firma}
+- Orari 6 slot: ${slots}
+
+OBIETTIVO:
+Produrre contenuti e messaggi per 6 pubblicazioni/giorno + gestione contatti + materiali di vendita, massimizzando output e minimizzando tempo.
+
+VINCOLI (GDPR-safe):
+- NON fare scraping.
+- NON cercare dati personali.
+- NON chiedere né usare dati sensibili.
+- Usa solo informazioni generiche e inviti all’opt-in (form) o contatto volontario.
+- Linguaggio chiaro e rispettoso. Niente promesse non verificabili.
+
+OUTPUT OBBLIGATORIO (mantieni questa struttura e intestazioni ESATTE):
+TELEPROMPTER_1:
+TELEPROMPTER_2:
+TELEPROMPTER_3:
+TELEPROMPTER_4:
+TELEPROMPTER_5:
+TELEPROMPTER_6:
+
+POST_CAPTION_1:
+POST_CAPTION_2:
+POST_CAPTION_3:
+POST_CAPTION_4:
+POST_CAPTION_5:
+POST_CAPTION_6:
+
+POST_GROUPI:
+COMMENTI_STRATEGICI (10):
+VOLANTINO_AL_RESIDENTE:
+LETTERA_AL_RESIDENTE:
+INBOX_REPLY_CONSENSO:
+
+ISTRUZIONI CONTENUTO:
+- Le 6 pubblicazioni devono essere diverse tra loro (angoli diversi), coerenti con l’area.
+- CTA SEMPRE: contatto WhatsApp/telefono, email, e link opt-in (se presente). Se manca, CTA solo WhatsApp/telefono.
+- Ogni TELEPROMPTER deve essere breve, parlato, con hook nei primi 2 secondi.
+- Le caption: 1) hook, 2) valore, 3) CTA.
+- POST_GROUPI: 1 post unico adatto a Facebook Gruppi (tono umano, utile, non spam).
+- COMMENTI_STRATEGICI: 10 commenti brevi per aumentare conversazioni sotto post di terzi (stile: domanda utile + micro valore).
+- VOLANTINO_AL_RESIDENTE: testo breve stile volantino (senza dati personali).
+- LETTERA_AL_RESIDENTE: testo più formale (senza dati personali).
+- INBOX_REPLY_CONSENSO: risposta inbox che chiede consenso e indirizza al form opt-in.
+
+FORMATO:
+- Italiano.
+- Niente tabelle complesse.
+- Niente teoria. Solo output pronti da copiare e usare.`
+      ].join("\n");
+    };
+
+    const buildCanvaEnPrompt = ()=>{
+      const cfg = getCfg();
+      const area = cfg.area || "Torino";
+      const phone = cfg.phone || "";
+      const email = cfg.email || "";
+      const form = cfg.formLink || "";
+      const firma = cfg.signature || "";
+
+      return [
+`You are a Canva AI creative director. Create TWO deliverables with premium modern style, clean whitespace, using Brand Kit colors/fonts (Primary/Secondary/Accent).
+
+DELIVERABLE A — A4 Vertical (Portrait) Flyer (Italian text placeholders):
+- Topic: local real estate agency value + guided process + clear CTA
+- Must include placeholders:
+  [Cover Image]
+  [QR WhatsApp]
+  [QR Slot Booking]
+  [MAP Office]
+- Include a bold headline, 3 short value bullets, 1 mini “how it works” section, and a strong CTA box.
+
+DELIVERABLE B — 1080x1920 Vertical Story/Reel Cover (Italian text placeholders):
+- Big hook headline in Italian
+- Subheadline in Italian
+- CTA line in Italian
+- Minimal icons
+
+CONTEXT (use in the Italian placeholders):
+- Area: ${area}
+- WhatsApp/Telefono pubblico: ${phone}
+- Email pubblica: ${email}
+- Opt-in form link: ${form}
+- Signature: ${firma}
+
+RULES:
+- Output must be copy-ready instructions for Canva AI.
+- Keep it concise and operational.
+- Do not add personal data. GDPR-safe.`
+      ].join("\n");
+    };
+
+    // -------------------------
+    // ROTAZIONE SOCIAL + PIANO LATER
+    // -------------------------
+    const ROT = [
+      ["Instagram Reels","Facebook Reels","TikTok","YouTube Shorts","LinkedIn","Facebook Gruppi"],
+      ["TikTok","YouTube Shorts","LinkedIn","Facebook Gruppi","Instagram Reels","Facebook Reels"],
+      ["LinkedIn","Facebook Gruppi","Instagram Reels","Facebook Reels","TikTok","YouTube Shorts"]
+    ];
+    const computeCycleDay = (startISO, nowISO)=>{
+      if(!startISO) return null;
+      const s=new Date(startISO+"T00:00:00");
+      const n=new Date(nowISO+"T00:00:00");
+      const diffDays = Math.floor((n - s)/(24*3600*1000));
+      const idx = ((diffDays % 3) + 3) % 3;
+      return idx+1;
+    };
+    const parseSlots = (s)=>{
+      return String(s||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,6);
+    };
+    const buildPlan = ()=>{
+      const slots = parseSlots($("slotsInput").value);
+      const start = $("cycleStartInput").value;
+      const day = computeCycleDay(start, todayISO());
+      const tbody = $("planTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      $("boomPlan").textContent = "";
+
+      if(!day){
+        $("cycleDayOut").value = "—";
+        $("boomPlan").textContent = "Inserisci la data start ciclo.";
+        return null;
+      }
+      $("cycleDayOut").value = `Giorno ${day}`;
+      const channels = ROT[day-1];
+
+      const rows = [];
+      for(let i=0;i<6;i++){
+        const tr=document.createElement("tr");
+        const slotNum=i+1;
+        const ora=slots[i] || "";
+        const canale=channels[i] || "";
+        const asset="";
+        [slotNum, ora, canale, asset].forEach((v, idx)=>{
+          const td=document.createElement(idx===0?"td":"td");
+          td.textContent = String(v);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+        rows.push({slotNum, ora, canale, asset});
+      }
+
+      const txt = [
+        `DATA: ${todayISO()}`,
+        `CICLO: Giorno ${day}`,
+        ``,
+        ...rows.map(r=>`SLOT ${r.slotNum} — ${r.ora} — ${r.canale} — ASSET: ${r.asset}`)
+      ].join("\n");
+
+      $("boomPlan").textContent = txt;
+      return {day, txt, rows};
+    };
+
+    // -------------------------
+    // TELEPROMPTER SPLIT
+    // -------------------------
+    const makeTPBoxes = ()=>{
+      const grid=$("tpGrid");
+      grid.innerHTML="";
+      for(let i=1;i<=6;i++){
+        const wrap=document.createElement("div");
+        wrap.className="tpCard";
+        wrap.innerHTML = `
+          <div class="tpHead">
+            <strong>TELEPROMPTER_${i}</strong>
+            <button class="btn" data-tp-copy="${i}">COPIA (CapCut)</button>
+          </div>
+          <textarea id="tp${i}" placeholder="TELEPROMPTER_${i}"></textarea>
+        `;
+        grid.appendChild(wrap);
+      }
+    };
+    const extractTeleprompters = (text)=>{
+      const out = Array(6).fill("");
+      const re = /(TELEPROMPTER\s*[_ ]?\s*([1-6])\s*[:\-])([\s\S]*?)(?=(?:\n\s*TELEPROMPTER\s*[_ ]?\s*[1-6]\s*[:\-])|\s*$)/gi;
+      let m;
+      let found=false;
+      while((m=re.exec(text))!==null){
+        found=true;
+        const idx = Number(m[2]) - 1;
+        const content = (m[3]||"").trim();
+        out[idx]=content;
+      }
+      if(found) return out;
+
+      // fallback: split by double-newline blocks, then fill
+      const blocks = String(text||"").split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
+      if(blocks.length>=6){
+        return blocks.slice(0,6);
+      }
+      // fallback2: split evenly by lines
+      const lines = String(text||"").split("\n");
+      const chunk = Math.ceil(lines.length/6) || 1;
+      for(let i=0;i<6;i++){
+        out[i]=lines.slice(i*chunk, (i+1)*chunk).join("\n").trim();
+      }
+      return out;
+    };
+
+    // -------------------------
+    // TIMERS
+    // -------------------------
+    function createTimer({valEl, keyFn, yesterdayEl, todaySavedEl, challengeEl, improveBoxEl, checkMsgEl}){
+      let running=false;
+      let startTs=0;
+      let elapsed=0;
+      let tick=null;
+
+      const nowKey = ()=> keyFn(todayISO());
+      const loadToday = ()=>{
+        elapsed = Number(localStorage.getItem(nowKey())||0);
+        render();
+      };
+      const saveToday = ()=>{
+        localStorage.setItem(nowKey(), String(elapsed));
+        if(todaySavedEl) todaySavedEl.textContent = secondsToHMS(elapsed);
+      };
+      const loadYesterday = ()=>{
+        const y = Number(localStorage.getItem(keyFn(yesterdayISO()))||0);
+        if(yesterdayEl) yesterdayEl.textContent = y ? secondsToHMS(y) : "—";
+        return y;
+      };
+      const render = ()=>{
+        valEl.textContent = secondsToHMS(elapsed + (running ? Math.floor((Date.now()-startTs)/1000) : 0));
+      };
+
+      const start=()=>{
+        if(running) return;
+        running=true;
+        startTs=Date.now();
+        tick=setInterval(render, 250);
+        toast("START");
+      };
+      const stop=(onStopCb)=>{
+        if(!running){
+          // still save to ensure persistence
+          saveToday();
+          if(onStopCb) onStopCb();
+          toast("STOP");
+          return;
+        }
+        const add = Math.floor((Date.now()-startTs)/1000);
+        elapsed += Math.max(0, add);
+        running=false;
+        clearInterval(tick);
+        tick=null;
+        render();
+        saveToday();
+        if(onStopCb) onStopCb();
+        toast("STOP");
+      };
+      const reset=()=>{
+        running=false;
+        clearInterval(tick);
+        tick=null;
+        elapsed=0;
+        render();
+        saveToday();
+        toast("RESET");
+      };
+
+      // init
+      loadToday();
+      const y = loadYesterday();
+      if(challengeEl){
+        const challenge = y ? `Ieri hai fatto ${secondsToHMS(y)}. Oggi riuscirai a fare meglio?` : `Ieri hai fatto (tempo ieri). Oggi riuscirai a fare meglio?`;
+        challengeEl.textContent = challenge;
+      }
+      if(todaySavedEl) todaySavedEl.textContent = elapsed ? secondsToHMS(elapsed) : "—";
+
+      return {start, stop, reset, getToday:()=>Number(localStorage.getItem(nowKey())||0), getYesterday:()=>Number(localStorage.getItem(keyFn(yesterdayISO()))||0), refreshYesterday:loadYesterday, refreshToday:loadToday};
+    }
+
+    // -------------------------
+    // KILL SWITCH
+    // -------------------------
+    const isKillOn = ()=> (localStorage.getItem(K.kill) === "1");
+    const setKill = (on)=>{
+      localStorage.setItem(K.kill, on ? "1":"0");
+      renderKill();
+    };
+    const renderKill = ()=>{
+      const on = isKillOn();
+      $("valKill").textContent = on ? "ON" : "OFF";
+      $("dotKill").className = "dot " + (on ? "bad" : "good");
+      $("btnToggleKill").textContent = "KILL SWITCH: " + (on ? "ON" : "OFF");
+      $("btnToggleKill").className = "btn " + (on ? "bad" : "warn");
+      $("bannerKill").style.display = on ? "block" : "none";
+
+      // Disable "pubblicano/contattano": open Later + open Sora
+      $("btnOpenLater").disabled = on;
+      $("btnOpenSora").disabled = on;
+    };
+
+    // -------------------------
+    // CFG
+    // -------------------------
+    const getCfg = ()=>{
+      try{
+        return JSON.parse(localStorage.getItem(K.cfg)||"{}") || {};
+      }catch(e){
+        return {};
+      }
+    };
+    const setCfg = (cfg)=>{
+      localStorage.setItem(K.cfg, JSON.stringify(cfg||{}));
+      toast("SALVATO");
+      renderStatus();
+    };
+    const loadCfgToUI = ()=>{
+      const cfg=getCfg();
+      $("cfgArea").value = cfg.area || "Torino";
+      $("cfgPhone").value = cfg.phone || "";
+      $("cfgEmail").value = cfg.email || "";
+      $("cfgFormLink").value = cfg.formLink || "";
+      $("cfgSignature").value = cfg.signature || "";
+      $("cfgStartDate").value = cfg.startDate || "";
+      $("cfgSlots").value = cfg.slots || "08:30,11:00,13:30,16:00,18:30,21:00";
+      $("cfgLaterUrl").value = cfg.laterUrl || "https://app.later.com/9H8EZ/schedule/calendar";
+      $("cfgSoraUrl").value = cfg.soraUrl || "";
+
+      $("slotsInput").value = $("cfgSlots").value;
+      $("cycleStartInput").value = $("cfgStartDate").value;
+      $("soraUrlTop").value = $("cfgSoraUrl").value;
+
+      $("boomMaster").textContent = buildMasterPrompt();
+      $("boomCanvaEn").textContent = buildCanvaEnPrompt();
+      buildPlan();
+    };
+    const saveCfgFromUI = ()=>{
+      const cfg = {
+        area: $("cfgArea").value,
+        phone: $("cfgPhone").value,
+        email: $("cfgEmail").value,
+        formLink: $("cfgFormLink").value,
+        signature: $("cfgSignature").value,
+        startDate: $("cfgStartDate").value,
+        slots: $("cfgSlots").value,
+        laterUrl: $("cfgLaterUrl").value,
+        soraUrl: $("cfgSoraUrl").value
+      };
+      setCfg(cfg);
+      // sync
+      $("slotsInput").value = cfg.slots || $("slotsInput").value;
+      $("cycleStartInput").value = cfg.startDate || $("cycleStartInput").value;
+      $("soraUrlTop").value = cfg.soraUrl || $("soraUrlTop").value;
+
+      $("boomMaster").textContent = buildMasterPrompt();
+      $("boomCanvaEn").textContent = buildCanvaEnPrompt();
+      buildPlan();
+    };
+
+    // -------------------------
+    // STATUS BAR
+    // -------------------------
+    const renderStatus = ()=>{
+      $("valToday").textContent = todayISO();
+      const cfg=getCfg();
+      const day = computeCycleDay(cfg.startDate || $("cycleStartInput").value, todayISO());
+      $("valCycleDay").textContent = day ? `Giorno ${day}` : "—";
+
+      const yTotal = localStorage.getItem(`ce_prod_${yesterdayISO()}`);
+      const yRec = localStorage.getItem(`ce_rec_${yesterdayISO()}`);
+      $("valYTotal").textContent = (yTotal && Number(yTotal)>0) ? secondsToHMS(Number(yTotal)) : "—";
+      $("valYRec").textContent = (yRec && Number(yRec)>0) ? secondsToHMS(Number(yRec)) : "—";
+    };
+
+    // -------------------------
+    // TOP PRODUCER CHECKLIST
+    // -------------------------
+    const CHECK_ITEMS = [
+`🔴 PROCEDURA N°1 — AMV`,
+`(Appena Messo in Vendita)`,
+`OBIETTIVO:`,
+`•	Convocare persone all’Open House`,
+`•	Generare nuovi contatti venditori`,
+`•	Posizionarti come riferimento di zona`,
+`QUANDO SI USA`,
+`•	Hai un immobile tuo appena acquisito`,
+`•	Oppure un immobile di un collega`,
+`•	L’immobile è già pronto (foto, carta identità, open house fissato)`,
+`COSA FAI (OPERATIVO)`,
+`1️⃣ ZONA`,
+`•	Prendi le abitazioni intorno all’immobile`,
+`•	Raggio: condominio / strada / micro-zona`,
+`•	Target: residenti reali, non passanti`,
+`2️⃣ MODALITÀ`,
+`•	Porta a porta`,
+`•	Oppure citofono / contatto diretto`,
+`•	Tono: professionale, calmo, autorevole`,
+`•	SCRIPT UFFICIALE AMV (DA DIRE PAROLA PER PAROLA)`,
+`FAI VEDERE IL VOLANTINO CHE NON LASCIARAI AL CLIENTE`,
+`SE MI LASCIA IL SUO NUMERO LO MANDO TRAMITE WHAT APP`,
+`EMAIL?`,
+`DOMANDA 1 (QUALIFICA SOFT)`,
+`•	Risposta SÌ →`,
+`•	Risposta NO →`,
+`DOMANDA 2 (ACQUISIZIONE VENDITORI)`,
+`⏸️ STOP.`,
+`•	Ascolti`,
+`•	Ringrazi`,
+`•	Prendi il contatto solo se te lo offrono`,
+`•	CHIUSURA`,
+`•	GRAZIE Sig………Buona giornata …..dai del lei SEMPRE`,
+`REGOLE FERREE`,
+` ❌ NON chiedi “se vuole vendere casa”❌ NON dire “posso farle una valutazione?”❌ NON improvvisare❌ NON parlare di commissioni❌ NON parlare di sconti❌ NON sembrare disperato`,
+`2    SCRIPT CONTATTO ZONA / EX CONTATTO`,
+`⏸️ STOP. RESPIRA.`,
+`DOMANDA 1 – PASSAPAROLA MIRATO`,
+`Se SÌ →`,
+`Se NO →`,
+`❌ Non insistere❌ Non spiegare`,
+`(FACOLTATIVA) DOMANDA 2 – PERSONALE`,
+`❌ Non aprire trattative❌ Non proporre valutazioni`,
+`DOMANDA 3 – CHIUSURA E AMPLIAMENTO`,
+`👉 Saluti👉 Fine👉 Vai via`
+    ];
+    const loadChecklistState = ()=>{
+      try{ return JSON.parse(localStorage.getItem(K.checklist)||"[]") || []; }catch(e){ return []; }
+    };
+    const saveChecklistState = (arr)=>{
+      localStorage.setItem(K.checklist, JSON.stringify(arr||[]));
+    };
+    const renderChecklist = ()=>{
+      const box=$("checklist");
+      box.innerHTML="";
+      const st=loadChecklistState();
+      CHECK_ITEMS.forEach((txt, idx)=>{
+        const div=document.createElement("div");
+        div.className="checkItem";
+        const checked = !!st[idx];
+        div.innerHTML = `
+          <input type="checkbox" id="chk_${idx}" ${checked ? "checked":""} />
+          <div class="txt">${txt}</div>
+        `;
+        box.appendChild(div);
+        div.querySelector("input").addEventListener("change",(e)=>{
+          const a=loadChecklistState();
+          a[idx]=e.target.checked;
+          saveChecklistState(a);
+        });
+      });
+    };
+
+    // -------------------------
+    // SORA OVERLAY (08:30)
+    // -------------------------
+    const buildSoraScript = ()=>{
+      const cfg=getCfg();
+      const area = cfg.area || "Torino";
+      const phone = cfg.phone || "";
+      const email = cfg.email || "";
+      const form = cfg.formLink || "";
+      const firma = cfg.signature || "";
+      const d=new Date();
+      const dayNum = d.getDate();
+      const odd = dayNum % 2 === 1;
+      const mode = odd ? "Giorni dispari: SORA fa il VENDITORE" : "Giorni pari: SORA fa l’ACQUIRENTE";
+
+      const seller = `
+RUOLO: VENDITORE (SORA)
+SCENARIO:
+- Proprietario in area: ${area}
+- Obiettivo: capire se e quando vendere, senza dare dati sensibili.
+REGOLE:
+- Nessun dato personale.
+- Se chiedi contatti: indirizza solo a opt-in/WhatsApp.
+
+SCRIPT:
+1) Apri con: “Mi dica in 1 frase cosa la preoccupa di più nel vendere.”
+2) 3 domande secche:
+   - “Tempistiche: vendere subito o più avanti?”
+   - “Motivo: cambio casa, investimento o altro?”
+   - “Vincolo: deve comprare prima di vendere?”
+3) Chiusura con CTA:
+   - “Se vuole, le mando una mini-roadmap e la procedura guidata. Contatto: WhatsApp/Telefono ${phone} — Email ${email} — Form opt-in ${form}”
+FIRMA:
+${firma}
+      `.trim();
+
+      const buyer = `
+RUOLO: ACQUIRENTE (SORA)
+SCENARIO:
+- Acquirente interessato all’area: ${area}
+- Obiettivo: qualificare interesse e guidare verso un prossimo step (opt-in/WhatsApp) senza dati sensibili.
+REGOLE:
+- Nessun dato personale.
+- Niente promesse non verificabili.
+
+SCRIPT:
+1) Apri con: “In 1 frase: cosa deve avere la casa per essere ‘quella giusta’?”
+2) 3 domande secche:
+   - “Budget e flessibilità (range)?”
+   - “Tempistiche: entro 30/60/90 giorni?”
+   - “Mutuo: già pre-approvato o da verificare?”
+3) Chiusura con CTA:
+   - “Se vuole, le invio una guida rapida + prossimi step. Contatto: WhatsApp/Telefono ${phone} — Email ${email} — Form opt-in ${form}”
+FIRMA:
+${firma}
+      `.trim();
+
+      return {mode, script: odd ? seller : buyer};
+    };
+
+    const shouldShowSoraOverlayNow = ()=>{
+      const now=new Date();
+      const hh=now.getHours(), mm=now.getMinutes();
+      if(hh!==8 || mm!==30) return false;
+      const key = todayISO();
+      return localStorage.getItem(K.lastSoraShown) !== key;
+    };
+
+    const showSoraOverlay = ()=>{
+      const {mode, script} = buildSoraScript();
+      $("soraModeLine").textContent = mode;
+      $("soraScript").textContent = script;
+      $("soraOverlay").style.display="flex";
+      localStorage.setItem(K.lastSoraShown, todayISO());
+    };
+    const hideSoraOverlay = ()=>{
+      $("soraOverlay").style.display="none";
+    };
+
+    // -------------------------
+    // EXPORT TXT
+    // -------------------------
+    const exportTxt = ()=>{
+      const cfg=getCfg();
+      const plan = $("boomPlan").textContent || "";
+      const master = $("boomMaster").textContent || buildMasterPrompt();
+      const canva = $("boomCanvaEn").textContent || buildCanvaEnPrompt();
+      const tp = [];
+      for(let i=1;i<=6;i++){
+        tp.push(`TELEPROMPTER_${i}:\n${($("tp"+i)?.value||"").trim()}\n`);
+      }
+      const prodT = localStorage.getItem(`ce_prod_${todayISO()}`) || "0";
+      const prodY = localStorage.getItem(`ce_prod_${yesterdayISO()}`) || "0";
+      const recT = localStorage.getItem(`ce_rec_${todayISO()}`) || "0";
+      const recY = localStorage.getItem(`ce_rec_${yesterdayISO()}`) || "0";
+
+      const txt = [
+        `CERVELLO ELETTRONICO — EXPORT TXT`,
+        `DATA: ${todayISO()}`,
+        ``,
+        `CONFIGURAZIONI:`,
+        `Area: ${cfg.area||""}`,
+        `WhatsApp/Telefono pubblico: ${cfg.phone||""}`,
+        `Email pubblica: ${cfg.email||""}`,
+        `Link form (opt-in): ${cfg.formLink||""}`,
+        `Firma: ${cfg.signature||""}`,
+        `Data start ciclo: ${cfg.startDate||""}`,
+        `Orari 6 slot: ${cfg.slots||""}`,
+        `Later URL: ${cfg.laterUrl||""}`,
+        `Sora URL: ${cfg.soraUrl||""}`,
+        `KILL: ${isKillOn() ? "ON" : "OFF"}`,
+        ``,
+        `TIMER PRODUZIONE:`,
+        `Oggi: ${secondsToHMS(Number(prodT))}`,
+        `Ieri: ${secondsToHMS(Number(prodY))}`,
+        `Delta (Oggi - Ieri): ${secondsToHMS(Math.abs(Number(prodT)-Number(prodY)))} (${Number(prodT)-Number(prodY)}s)`,
+        ``,
+        `TIMER REGISTRAZIONE:`,
+        `Oggi: ${secondsToHMS(Number(recT))}`,
+        `Ieri: ${secondsToHMS(Number(recY))}`,
+        ``,
+        `STEP 1 — PROMPT MASTER:`,
+        master,
+        ``,
+        `STEP 2 — CANVA IA PROMPT EN:`,
+        canva,
+        ``,
+        `STEP 3 — PIANO LATER:`,
+        plan,
+        ``,
+        `STEP 4 — TELEPROMPTER SPLIT:`,
+        tp.join("\n"),
+        ``,
+        `SISTEMA COMPLETO (INTEGRALE):`,
+        INTEGRALE
+      ].join("\n");
+
+      const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+      const a=document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `export_${todayISO()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+      toast("EXPORT OK");
+    };
+
+    // -------------------------
+    // INIT UI
+    // -------------------------
+    makeTPBoxes();
+    renderChecklist();
+
+    // Load integrale subsections into accordion pre
+    const sections = splitSections();
+    $("amv").textContent = sections.amv;
+    $("contatto").textContent = sections.cont;
+    $("canvadocs").textContent = sections.canvadocs;
+    $("job").textContent = sections.job;
+
+    // Master + Canva initial render
+    $("boomMaster").textContent = buildMasterPrompt();
+    $("boomCanvaEn").textContent = buildCanvaEnPrompt();
+
+    // KILL init
+    renderKill();
+
+    // CFG init
+    loadCfgToUI();
+    renderStatus();
+
+    // Cycle day output init
+    $("cycleDayOut").value = computeCycleDay($("cycleStartInput").value, todayISO()) ? `Giorno ${computeCycleDay($("cycleStartInput").value, todayISO())}` : "—";
+
+    // Timers init
+    const recTimer = createTimer({
+      valEl: $("recTimerVal"),
+      keyFn: (d)=>K.recToday(d),
+      yesterdayEl: $("recYesterday"),
+      todaySavedEl: null,
+      challengeEl: null
+    });
+
+    const prodTimer = createTimer({
+      valEl: $("prodTimerVal"),
+      keyFn: (d)=>K.prodToday(d),
+      yesterdayEl: $("prodYesterday"),
+      todaySavedEl: $("prodTodaySaved"),
+      challengeEl: $("prodChallenge"),
+      improveBoxEl: $("improveBox"),
+      checkMsgEl: $("checkMsg")
+    });
+
+    // Refresh status with yesterday values
+    const refreshTopPills = ()=>{
+      renderStatus();
+      // update challenge line too
+      const y=prodTimer.getYesterday();
+      $("prodChallenge").textContent = y ? `Ieri hai fatto ${secondsToHMS(y)}. Oggi riuscirai a fare meglio?` : `Ieri hai fatto (tempo ieri). Oggi riuscirai a fare meglio?`;
+      $("prodYesterday").textContent = y ? secondsToHMS(y) : "—";
+      const yr=recTimer.getYesterday();
+      $("recYesterday").textContent = yr ? secondsToHMS(yr) : "—";
+    };
+    refreshTopPills();
+
+    // -------------------------
+    // EVENTS
+    // -------------------------
+    $("btnSaveCfg").addEventListener("click", saveCfgFromUI);
+    $("btnToggleKill").addEventListener("click", ()=> setKill(!isKillOn()));
+    $("btnQuickKill").addEventListener("click", ()=> setKill(!isKillOn()));
+    $("btnExportTxt").addEventListener("click", exportTxt);
+
+    $("btnToTop").addEventListener("click", ()=> window.scrollTo({top:0, behavior:"smooth"}));
+
+    // STEP 1 buttons
+    $("btnCopyMaster").addEventListener("click", async ()=>{
+      const t = buildMasterPrompt();
+      $("boomMaster").textContent = t;
+      await safeCopy(t);
+    });
+    $("btnCopyMasterSmall").addEventListener("click", async ()=>{
+      await safeCopy($("boomMaster").textContent || buildMasterPrompt());
+    });
+    $("btnCopyMasterTele").addEventListener("click", async ()=>{
+      const t = $("boomMaster").textContent || buildMasterPrompt();
+      await safeCopy(t);
+    });
+
+    // STEP 2
+    $("btnCopyCanvaEn").addEventListener("click", async ()=>{
+      const t = buildCanvaEnPrompt();
+      $("boomCanvaEn").textContent = t;
+      await safeCopy(t);
+    });
+    $("btnCopyCanvaEnSmall").addEventListener("click", async ()=>{
+      await safeCopy($("boomCanvaEn").textContent || buildCanvaEnPrompt());
+    });
+    $("btnCopyCanvaEnTele").addEventListener("click", async ()=>{
+      await safeCopy($("boomCanvaEn").textContent || buildCanvaEnPrompt());
+    });
+
+    // STEP 3
+    $("btnOpenLater").addEventListener("click", ()=>{
+      const cfg=getCfg();
+      const url = (cfg.laterUrl || $("cfgLaterUrl").value || "https://app.later.com/9H8EZ/schedule/calendar").trim();
+      if(!url) return;
+      openNewTab(url);
+    });
+    $("btnBuildPlan").addEventListener("click", ()=>{
+      // persist slots/start into cfg fields too (without forcing save)
+      $("cfgSlots").value = $("slotsInput").value;
+      $("cfgStartDate").value = $("cycleStartInput").value;
+      $("cycleDayOut").value = computeCycleDay($("cycleStartInput").value, todayISO()) ? `Giorno ${computeCycleDay($("cycleStartInput").value, todayISO())}` : "—";
+      buildPlan();
+      renderStatus();
+    });
+    $("btnCopyPlan").addEventListener("click", async ()=>{
+      const plan = buildPlan();
+      if(plan?.txt) await safeCopy(plan.txt);
+    });
+    $("slotsInput").addEventListener("change", ()=>{ buildPlan(); });
+    $("cycleStartInput").addEventListener("change", ()=>{ buildPlan(); renderStatus(); });
+
+    // STEP 4 teleprompter split
+    $("btnSplitTeleprompter").addEventListener("click", ()=>{
+      const arr = extractTeleprompters($("tpInput").value);
+      for(let i=1;i<=6;i++){
+        $("tp"+i).value = arr[i-1] || "";
+      }
+      toast("SPLIT OK");
+    });
+    $("tpGrid").addEventListener("click", async (e)=>{
+      const btn = e.target.closest("[data-tp-copy]");
+      if(!btn) return;
+      const idx = Number(btn.getAttribute("data-tp-copy"));
+      const t = ($("tp"+idx).value || "").trim();
+      await safeCopy(t);
+    });
+
+    // Timers buttons
+    $("recStart").addEventListener("click", ()=> recTimer.start());
+    $("recStop").addEventListener("click", ()=> { recTimer.stop(()=>{ refreshTopPills(); }); });
+    $("recReset").addEventListener("click", ()=> { recTimer.reset(); refreshTopPills(); });
+
+    $("prodStart").addEventListener("click", ()=> prodTimer.start());
+    $("prodStop").addEventListener("click", ()=> {
+      prodTimer.stop(()=>{
+        refreshTopPills();
+        const today = Number(localStorage.getItem(`ce_prod_${todayISO()}`)||0);
+        const y = Number(localStorage.getItem(`ce_prod_${yesterdayISO()}`)||0);
+
+        // “Se STOP di oggi < tempo di ieri, mostra box verde...”
+        if(y>0 && today < y){
+          const cfg=getCfg();
+          const area = cfg.area || "Torino";
+          const delta = y - today; // improvement in seconds
+          const msg =
+`CHECK AL CAPO
+Data: ${todayISO()}
+Area: ${area}
+Tempo oggi: ${secondsToHMS(today)}
+Tempo ieri: ${secondsToHMS(y)}
+Delta: -${secondsToHMS(delta)}
+
+Output: 6 pubblicazioni schedulate + teleprompter pronto + Canva pronto.`;
+          $("checkMsg").textContent = msg;
+          $("improveBox").style.display = "block";
+        }else{
+          $("improveBox").style.display = "none";
+        }
+      });
+    });
+    $("prodReset").addEventListener("click", ()=> { prodTimer.reset(); $("improveBox").style.display="none"; refreshTopPills(); });
+
+    $("btnCopyCheckMsg").addEventListener("click", async ()=>{
+      await safeCopy($("checkMsg").textContent || "");
+    });
+
+    // Checklist reset
+    $("btnResetChecklist").addEventListener("click", ()=>{
+      saveChecklistState([]);
+      renderChecklist();
+      toast("RESET OK");
+    });
+
+    // Accordion copy buttons
+    document.body.addEventListener("click", async (e)=>{
+      const b = e.target.closest("[data-copy]");
+      const bt = e.target.closest("[data-copy-tp]");
+      if(b){
+        const id=b.getAttribute("data-copy");
+        const t=$(id).textContent;
+        await safeCopy(t);
+      }
+      if(bt){
+        const id=bt.getAttribute("data-copy-tp");
+        const t=$(id).textContent;
+        await safeCopy(t);
+      }
+    });
+
+    $("btnCopyAllSystem").addEventListener("click", async ()=>{
+      await safeCopy(INTEGRALE);
+    });
+    $("btnExpandAll").addEventListener("click", ()=>{
+      document.querySelectorAll("details.acc").forEach(d=>d.open=true);
+    });
+    $("btnCollapseAll").addEventListener("click", ()=>{
+      document.querySelectorAll("details.acc").forEach(d=>d.open=false);
+    });
+
+    // Keep cfg slots/start synced (soft)
+    $("cfgSlots").addEventListener("change", ()=>{
+      $("slotsInput").value = $("cfgSlots").value;
+      buildPlan();
+    });
+    $("cfgStartDate").addEventListener("change", ()=>{
+      $("cycleStartInput").value = $("cfgStartDate").value;
+      buildPlan();
+      renderStatus();
+    });
+
+    // Open Later URL update
+    $("cfgLaterUrl").addEventListener("change", ()=>{
+      const cfg=getCfg();
+      cfg.laterUrl = $("cfgLaterUrl").value;
+      setCfg(cfg);
+    });
+
+    // Sora URL update (both inputs)
+    const syncSoraUrl = (val)=>{
+      $("cfgSoraUrl").value = val;
+      $("soraUrlTop").value = val;
+      const cfg=getCfg();
+      cfg.soraUrl = val;
+      setCfg(cfg);
+    };
+    $("cfgSoraUrl").addEventListener("change", ()=> syncSoraUrl($("cfgSoraUrl").value));
+    $("soraUrlTop").addEventListener("change", ()=> syncSoraUrl($("soraUrlTop").value));
+
+    // Sora overlay buttons
+    $("btnCloseOverlay").addEventListener("click", hideSoraOverlay);
+    $("btnOpenSora").addEventListener("click", ()=>{
+      const url = ($("soraUrlTop").value || "").trim();
+      if(url){
+        openNewTab(url);
+      }else{
+        openNewTab("about:blank");
+      }
+    });
+    $("btnCopySoraScript").addEventListener("click", async ()=>{
+      await safeCopy($("soraScript").textContent || "");
+    });
+
+    // Sora overlay scheduler
+    const soraTick = ()=>{
+      if(shouldShowSoraOverlayNow()){
+        $("soraScript").textContent = buildSoraScript().script;
+        $("soraModeLine").textContent = buildSoraScript().mode;
+        showSoraOverlay();
+      }
+    };
+    setInterval(soraTick, 1000);
+    // in case opened exactly at 08:30
+    soraTick();
+
+    // Status pills refresh periodically
+    setInterval(renderStatus, 2500);
+
+    // Ensure open buttons disabled when kill on
+    renderKill();
+    refreshTopPills();
+  </script>
+</body>
+</html>
