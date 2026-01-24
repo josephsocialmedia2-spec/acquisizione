@@ -1,875 +1,567 @@
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MACCHINA — Step by Step Verticale (CLICK → BOOM)</title>
-  <style>
-    :root{
-      --bg:#050711; --card:#0b1220; --line:#22304d; --txt:#e9eefc; --muted:#93a4c7;
-      --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; --accent:#3c568d;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,var(--bg) 0%, #070a12 60%, var(--bg) 100%);color:var(--txt)}
-    header{position:sticky;top:0;z-index:5;background:rgba(7,10,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px}
-    h1{margin:0;font-size:16px;letter-spacing:.2px}
-    .sub{margin-top:6px;color:var(--muted);font-size:12px}
-    main{max-width:920px;margin:0 auto;padding:14px}
-    .card{background:rgba(11,18,32,.92);border:1px solid var(--line);border-radius:14px;padding:12px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-    label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
-    input,select,textarea{
-      width:100%;padding:10px;border-radius:12px;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);outline:none
-    }
-    textarea{min-height:90px;resize:vertical}
-    .btn{
-      appearance:none;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);
-      padding:10px 12px;border-radius:12px;cursor:pointer
-    }
-    .btn:hover{border-color:#3c568d}
-    .btn.primary{background:linear-gradient(180deg,#15264a,#0a1533);border-color:var(--accent)}
-    .btn.ok{border-color:rgba(52,211,153,.7)}
-    .btn.warn{border-color:rgba(251,191,36,.7)}
-    .btn.bad{border-color:rgba(251,113,133,.85)}
-    .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#070c16;border-radius:999px;padding:8px 10px;color:var(--muted);font-size:12px}
-    .dot{width:8px;height:8px;border-radius:50%}
-    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
-    .sep{height:1px;background:var(--line);margin:12px 0}
-    .mini{color:var(--muted);font-size:12px}
-    .step{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-    .stepTitle{font-weight:800}
-    .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px;white-space:nowrap}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .timerBox{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .timeBig{font-variant-numeric:tabular-nums;font-size:18px;font-weight:900}
-    pre{margin:0;white-space:pre-wrap;word-break:break-word;background:#050915;border:1px solid #22304d;border-radius:12px;padding:12px;color:#d9e4ff}
-    .toast{position:fixed;right:14px;bottom:14px;background:#070c16;border:1px solid var(--line);padding:10px 12px;border-radius:12px;display:none;z-index:10}
-    .successBox{border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.08);border-radius:14px;padding:12px}
-    .warnBox{border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);border-radius:14px;padding:12px}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#070c16;border:1px solid #243252;color:var(--txt);padding:2px 6px;border-radius:8px;font-size:12px}
-    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#070c16}
-    th,td{padding:10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
-    th{background:#050915;color:var(--muted);text-align:left;font-weight:700}
-    tr:last-child td{border-bottom:none}
-    .muted{color:var(--muted)}
-  </style>
-</head>
-
-<body>
-<header>
-  <h1>MACCHINA — STEP BY STEP VERTICALE (CLICK → BOOM)</h1>
-  <div class="sub">
-    Zero decisioni. Solo operatività. 6 pubblicazioni/giorno con rotazione 3 giorni.
-    Timer totale + timer registrazione. Confronto con ieri + “CHECK AL CAPO” automatico quando migliori.
-  </div>
-</header>
-
-<main>
-  <!-- CONFIG -->
-  <div class="card">
-    <div class="row">
-      <div style="flex:1;min-width:240px">
-        <label>Area</label>
-        <select id="area">
-          <option>Torino</option>
-          <option>Valle di Susa</option>
-          <option selected>Torino + Valle di Susa</option>
-        </select>
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>WhatsApp / Telefono (pubblico)</label>
-        <input id="phone" placeholder="+39..." />
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>Link Form (opt-in) / QR</label>
-        <input id="formLink" placeholder="https://..." />
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <div style="flex:1;min-width:240px">
-        <label>Email (pubblica) (facoltativa)</label>
-        <input id="email" placeholder="info@..." />
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>Firma (facoltativa)</label>
-        <input id="sign" placeholder="Nome Cognome" />
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>Stile (1 riga)</label>
-        <input id="style" value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist." />
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <div style="flex:1;min-width:240px">
-        <label>Orari pubblicazione (6 slot)</label>
-        <input id="times" value="08:30,11:00,13:30,16:00,18:30,21:00" />
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>Data start ciclo 3 giorni</label>
-        <input id="cycleStart" type="date" />
-      </div>
-      <div style="flex:1;min-width:240px">
-        <label>Later URL (fisso)</label>
-        <input id="laterUrl" value="https://app.later.com/9H8EZ/schedule/calendar" />
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <button class="btn primary ok" id="save">Salva</button>
-      <button class="btn" id="demo">Esempio</button>
-      <span class="pill" id="killPill"><span class="dot ok"></span><span id="killTxt">KILL SWITCH: OFF</span></span>
-      <button class="btn bad" id="toggleKill">Toggle Kill</button>
-      <button class="btn warn" id="openLaterTop">Apri Later</button>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="row">
-      <span class="pill"><span class="dot warn"></span><span id="cycleLabel">Oggi: Giorno ?</span></span>
-      <span class="pill"><span class="dot ok"></span><span id="todayLabel">Oggi: ?</span></span>
-      <span class="pill"><span class="dot warn"></span><span id="yesterdayLabel">Ieri: ?</span></span>
-      <span class="pill"><span class="dot ok"></span><span id="yTotalLabel">Ieri (totale): --:--:--</span></span>
-      <span class="pill"><span class="dot ok"></span><span id="yRecLabel">Ieri (registrazione): --:--:--</span></span>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- DAILY TOTAL TIMER -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">TIMER GIORNATA (totale)</div>
-          <div class="mini">Start quando inizi. Stop quando hai: testi + Canva + Later + teleprompter pronti.</div>
-        </div>
-        <span class="badge" id="totalStatus">IN ATTESA</span>
-      </div>
-
-      <div class="timerBox">
-        <div class="timeBig" id="totalTime">00:00:00</div>
-        <div class="actions">
-          <button class="btn primary" id="startTotal">START</button>
-          <button class="btn" id="stopTotal">STOP</button>
-          <button class="btn" id="resetTotal">RESET</button>
-        </div>
-        <span class="pill"><span class="dot ok"></span><span id="challengeText">Oggi riuscirai a fare meglio?</span></span>
-      </div>
-
-      <div id="improveBox" style="display:none" class="successBox">
-        <div style="font-weight:900">✅ MIGLIORAMENTO → CHECK AL CAPO (AUTOMATICO)</div>
-        <div class="mini" id="improveMsg" style="margin-top:6px"></div>
-        <div class="actions" style="margin-top:10px">
-          <button class="btn ok" id="copyCapoMsg">Copia messaggio “Check al capo”</button>
-        </div>
-      </div>
-
-      <div id="noImproveBox" style="display:none" class="warnBox">
-        <div style="font-weight:900">🟡 Oggi non hai migliorato (ancora)</div>
-        <div class="mini" id="noImproveMsg" style="margin-top:6px"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP-BY-STEP VERTICAL -->
-  <div class="card" style="margin-top:12px">
-    <!-- STEP 1 -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">STEP 1 — CHATGPT (CLICK → BOOM)</div>
-          <div class="mini">Copia prompt → incolla in ChatGPT → copia output.</div>
-        </div>
-        <span class="badge">CLICK → BOOM</span>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="copyChatGPT">Copia prompt ChatGPT</button>
-        <button class="btn" id="copyOnlyTeleprompter">Copia SOLO prompt Teleprompter</button>
-        <button class="btn" id="copyInboxPrompt">Copia prompt Inbox (GDPR)</button>
-        <button class="btn" id="copyTerritoryPrompt">Copia prompt Territorio (volantino+lettera)</button>
-        <button class="btn" id="copyCommentsPrompt">Copia prompt Commenti (10)</button>
-      </div>
-      <pre id="promptChatGPT"></pre>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- STEP 2 -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">STEP 2 — CANVA IA (CLICK → BOOM)</div>
-          <div class="mini">Prompt EN → genera layout verticali (A4 + 1080×1920) → esporta.</div>
-        </div>
-        <span class="badge">CLICK → BOOM</span>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="copyCanva">Copia prompt Canva (EN)</button>
-      </div>
-      <pre id="promptCanva"></pre>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- STEP 3 -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">STEP 3 — LATER (6 pubblicazioni) (CLICK → BOOM)</div>
-          <div class="mini">Apri Later → incolla piano → schedula 6 post.</div>
-        </div>
-        <span class="badge">CLICK → BOOM</span>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary warn" id="openLater">Apri Later</button>
-        <button class="btn" id="copyLaterPlan">Copia piano per Later</button>
-      </div>
-
-      <div style="margin-top:10px">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:80px">#</th>
-              <th style="width:120px">Ora</th>
-              <th>Canale (rotazione 3 giorni)</th>
-              <th>Asset</th>
-            </tr>
-          </thead>
-          <tbody id="scheduleBody"></tbody>
-        </table>
-      </div>
-
-      <div style="margin-top:10px">
-        <pre id="laterPlan"></pre>
-      </div>
-
-      <div class="mini">Later URL: <span class="kbd" id="laterUrlBadge">https://app.later.com/9H8EZ/schedule/calendar</span></div>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- STEP 4 -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">STEP 4 — TELEPROMPTER (CapCut) + TIMER REGISTRAZIONE (CLICK → BOOM)</div>
-          <div class="mini">Incolla output ChatGPT → Split → Copia testo per CapCut → registra 6 video.</div>
-        </div>
-        <span class="badge">CLICK → BOOM</span>
-      </div>
-
-      <label>Incolla output ChatGPT (tutto)</label>
-      <textarea id="raw" placeholder="Incolla qui l'output completo di ChatGPT (con TELEPROMPTER_1..6)"></textarea>
-
-      <div class="actions">
-        <button class="btn primary" id="split">SPLIT TELEPROMPTER (1..6)</button>
-        <button class="btn" id="clearTeleprompter">Pulisci campi</button>
-      </div>
-
-      <div class="sep"></div>
-
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">TIMER REGISTRAZIONE (CapCut)</div>
-          <div class="mini">Start quando inizi a registrare. Stop quando finisci il 6°.</div>
-        </div>
-        <span class="badge" id="recStatus">IN ATTESA</span>
-      </div>
-      <div class="timerBox">
-        <div class="timeBig" id="recTime">00:00:00</div>
-        <div class="actions">
-          <button class="btn primary" id="startRec">START</button>
-          <button class="btn" id="stopRec">STOP</button>
-          <button class="btn" id="resetRec">RESET</button>
-        </div>
-      </div>
-
-      <div class="sep"></div>
-
-      <div class="row">
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 1</label><textarea id="tp1"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp1')">Copia (CapCut)</button></div>
-        </div>
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 2</label><textarea id="tp2"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp2')">Copia (CapCut)</button></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 3</label><textarea id="tp3"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp3')">Copia (CapCut)</button></div>
-        </div>
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 4</label><textarea id="tp4"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp4')">Copia (CapCut)</button></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 5</label><textarea id="tp5"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp5')">Copia (CapCut)</button></div>
-        </div>
-        <div style="flex:1;min-width:260px" class="card">
-          <label>TELEPROMPTER 6</label><textarea id="tp6"></textarea>
-          <div class="actions"><button class="btn ok" onclick="copyVal('tp6')">Copia (CapCut)</button></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- STEP 5 -->
-    <div class="step">
-      <div class="stepHead">
-        <div>
-          <div class="stepTitle">STEP 5 — EXPORT (CLICK → BOOM)</div>
-          <div class="mini">Esporta un file TXT con: prompt + piano Later + tempi di oggi.</div>
-        </div>
-        <span class="badge">CLICK → BOOM</span>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="exportTxt">Esporta TXT</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast">Copiato ✅</div>
-</main>
-
-<script>
-  const $ = (id)=>document.getElementById(id);
-  const STORAGE_KEY = "macchina_vertical_ops_v2";
-
-  const CHANNELS = [
-    "Instagram Reels",
-    "Facebook Reels",
-    "TikTok",
-    "YouTube Shorts",
-    "LinkedIn",
-    "Facebook Gruppi (post informativo)"
-  ];
-  const ROTATION = {
-    1: [0,1,2,3,4,5],
-    2: [2,3,4,5,0,1],
-    3: [4,5,0,1,2,3],
-  };
-  const ASSETS = [
-    "Video (Teleprompter 1)",
-    "Video (Teleprompter 2)",
-    "Video (Teleprompter 3)",
-    "Video (Teleprompter 4)",
-    "Video (Teleprompter 5)",
-    "Video (Teleprompter 6)"
-  ];
-
-  const state = {
-    kill:false,
-    totalTimer: { running:false, start:0, elapsed:0, raf:null },
-    recTimer:   { running:false, start:0, elapsed:0, raf:null },
-  };
-
-  function pad(n){return String(n).padStart(2,"0")}
-  function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-  function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-  function fmt(ms){
-    const s=Math.floor(ms/1000);
-    const hh=Math.floor(s/3600);
-    const mm=Math.floor((s%3600)/60);
-    const ss=s%60;
-    return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
-  }
-  function toast(msg){
-    const el=$("toast"); el.textContent=msg; el.style.display="block";
-    clearTimeout(window.__t); window.__t=setTimeout(()=>el.style.display="none",1100);
-  }
-  async function copyText(t){ await navigator.clipboard.writeText(t); toast("Copiato ✅"); }
-  function copyVal(id){ copyText($(id).value||""); }
-
-  function parseTimes(){
-    const parts=($("times").value||"").split(",").map(s=>s.trim()).filter(Boolean);
-    while(parts.length<6) parts.push("00:00");
-    return parts.slice(0,6);
-  }
-
-  function cycleDay(){
-    const startStr=$("cycleStart").value || todayISO();
-    const start=new Date(startStr+"T00:00:00");
-    const now=new Date(); const t=new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffDays=Math.floor((t-start)/(1000*60*60*24));
-    const idx=((diffDays%3)+3)%3;
-    return idx+1;
-  }
-
-  function renderKill(){
-    const pill=$("killPill");
-    const dot=pill.querySelector(".dot");
-    const txt=$("killTxt");
-    if(state.kill){ dot.className="dot bad"; txt.textContent="KILL SWITCH: ON (STOP)"; }
-    else { dot.className="dot ok"; txt.textContent="KILL SWITCH: OFF"; }
-  }
-
-  function save(){
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    saved.area = $("area").value;
-    saved.phone = $("phone").value.trim();
-    saved.formLink = $("formLink").value.trim();
-    saved.email = $("email").value.trim();
-    saved.sign = $("sign").value.trim();
-    saved.style = $("style").value.trim();
-    saved.times = $("times").value.trim();
-    saved.cycleStart = $("cycleStart").value;
-    saved.laterUrl = $("laterUrl").value.trim();
-    saved.kill = state.kill;
-
-    saved.dayTimes = saved.dayTimes || {};
-    const t = todayISO();
-    saved.dayTimes[t] = saved.dayTimes[t] || {};
-    saved.dayTimes[t].totalElapsed = state.totalTimer.elapsed;
-    saved.dayTimes[t].recElapsed = state.recTimer.elapsed;
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  }
-
-  function load(){
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    $("area").value = saved.area || "Torino + Valle di Susa";
-    $("phone").value = saved.phone || "";
-    $("formLink").value = saved.formLink || "";
-    $("email").value = saved.email || "";
-    $("sign").value = saved.sign || "";
-    $("style").value = saved.style || "Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
-    $("times").value = saved.times || "08:30,11:00,13:30,16:00,18:30,21:00";
-    $("laterUrl").value = saved.laterUrl || "https://app.later.com/9H8EZ/schedule/calendar";
-    if (saved.cycleStart) $("cycleStart").value = saved.cycleStart;
-    if (!$("cycleStart").value) $("cycleStart").valueAsDate = new Date();
-    state.kill = !!saved.kill;
-
-    // restore today's elapsed
-    if (saved.dayTimes && saved.dayTimes[todayISO()]){
-      state.totalTimer.elapsed = saved.dayTimes[todayISO()].totalElapsed || 0;
-      state.recTimer.elapsed = saved.dayTimes[todayISO()].recElapsed || 0;
-    }
-
-    renderKill();
-    renderTopLabels();
-    renderSchedule();
-    renderPrompts();
-    renderLaterPlan();
-    updateTimersUI();
-    updateChallenge();
-  }
-
-  function getSavedElapsed(day, key){
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return saved.dayTimes?.[day]?.[key] || 0;
-  }
-
-  function renderTopLabels(){
-    $("cycleLabel").textContent = `Oggi: Giorno ${cycleDay()} (ciclo 3 giorni)`;
-    $("todayLabel").textContent = `Oggi: ${todayISO()}`;
-    $("yesterdayLabel").textContent = `Ieri: ${yesterdayISO()}`;
-    $("laterUrlBadge").textContent = $("laterUrl").value.trim() || "https://app.later.com/9H8EZ/schedule/calendar";
-
-    const yTot = getSavedElapsed(yesterdayISO(), "totalElapsed");
-    const yRec = getSavedElapsed(yesterdayISO(), "recElapsed");
-    $("yTotalLabel").textContent = `Ieri (totale): ${yTot ? fmt(yTot) : "--:--:--"}`;
-    $("yRecLabel").textContent = `Ieri (registrazione): ${yRec ? fmt(yRec) : "--:--:--"}`;
-  }
-
-  function renderSchedule(){
-    const d = cycleDay();
-    const times = parseTimes();
-    const map = ROTATION[d];
-    const body = $("scheduleBody");
-    body.innerHTML = "";
-    for(let i=0;i<6;i++){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><strong>#${i+1}</strong></td>
-        <td>${times[i]}</td>
-        <td>${CHANNELS[map[i]]}</td>
-        <td class="muted">${ASSETS[i]}</td>
-      `;
-      body.appendChild(tr);
-    }
-  }
-
-  function renderLaterPlan(){
-    const d=cycleDay();
-    const times=parseTimes();
-    const map=ROTATION[d];
-    const lines=[];
-    lines.push(`PIANO OGGI — Giorno ${d} (ciclo 3 giorni) — ${todayISO()}`);
-    for(let i=0;i<6;i++){
-      lines.push(`${times[i]} — ${CHANNELS[map[i]]} — ${ASSETS[i]}`);
-    }
-    lines.push("");
-    const form = $("formLink").value.trim() || "[FORM]";
-    const phone = $("phone").value.trim() || "[WHATSAPP]";
-    lines.push(`CTA: ${form} | WhatsApp: ${phone}`);
-    $("laterPlan").textContent = lines.join("\n");
-  }
-
-  function renderPrompts(){
-    const area = $("area").value;
-    const phone = $("phone").value.trim() || "[WHATSAPP]";
-    const form  = $("formLink").value.trim() || "[FORM]";
-    const email = $("email").value.trim() || "[EMAIL]";
-    const sign  = $("sign").value.trim() || "[FIRMA]";
-    const style = $("style").value.trim() || "Utile, locale, neutro.";
-    const d = cycleDay();
-    const times = parseTimes().join(", ");
-
-    const master = `
-Sei una IA centrale per acquisizione immobiliare.
-DEVI generare SOLO testi in ITALIANO pronti da incollare.
-Area: ${area}
-Data: ${todayISO()}
-Ciclo pubblicazioni: Giorno ${d} (3 giorni, 6 post/giorno)
-Orari (Europe/Rome): ${times}
-
-VINCOLI (OBBLIGATORI):
-- zero vendita aggressiva
-- zero promesse o prezzi
-- zero contatto a freddo
-- solo inbound e consenso (GDPR)
-- tono: ${style}
-
-CTA STANDARD (sempre uguale, soft):
-"Checklist gratuita: ${form} oppure WhatsApp ${phone} (email: ${email})"
-
-GENERA SOLO QUESTO (OUTPUT SECCO, NO SPIEGAZIONI):
-
-1) TELEPROMPTER_1 ... TELEPROMPTER_6 (6 script)
-- Durata: 35–55 secondi ciascuno
-- Hook 1 frase + 2-3 punti + CTA soft finale
-- Linguaggio parlato, naturale
-- Ogni script tema diverso, stesso stile
-- Nessuna parentesi, nessuna regia
-
-2) POST_CAPTION_1 ... POST_CAPTION_6 (6 didascalie)
-- Max 80 parole ciascuna
-- Coerenti con i rispettivi teleprompter
-- CTA soft finale
-
-3) POST_GROUPI (1 testo max 80 parole) tono aiuto, zero promozione
-
-4) COMMENTI_STRATEGICI (10) — 1 frase ciascuno, chiusura soft: "se vuoi ti giro la checklist"
-
-5) VOLANTINO_AL_RESIDENTE (max 120 parole) con CTA (QR/form + WhatsApp)
-
-6) LETTERA_AL_RESIDENTE (max 180 parole), chiusura con firma: ${sign}
-
-7) INBOX_REPLY_CONSENSO (Sì/No), tono naturale
-`.trim();
-
-    const teleOnly = `
-Genera SOLO TELEPROMPTER_1 ... TELEPROMPTER_6 (6 script) in ITALIANO.
-Area: ${area}
-Vincoli:
-- 35–55 secondi ciascuno
-- Hook + 2-3 punti + CTA soft finale
-- CTA: "Checklist gratuita: ${form} oppure WhatsApp ${phone}"
-Output: SOLO i 6 script etichettati TELEPROMPTER_1..6, senza altro.
-`.trim();
-
-    const inboxOnly = `
-Scrivi SOLO un messaggio inbox (ITALIANO) per chi chiede info.
-Area: ${area}
-Obiettivo: inviare materiale + chiedere consenso ricontatto.
-Vincoli:
-- tono naturale
-- domanda chiara Sì/No
-- zero linguaggio legale
-Includi: ${form} e WhatsApp ${phone}
-Output: SOLO il messaggio.
-`.trim();
-
-    const territoryOnly = `
-Scrivi SOLO:
-A) VOLANTINO "AL RESIDENTE" (max 120 parole)
-B) LETTERA "AL RESIDENTE" (max 180 parole)
-Area: ${area}
-Tono: utile, locale, neutro, zero vendita.
-CTA: ${form} + WhatsApp ${phone}
-Firma lettera: ${sign}
-Output: SOLO i testi con intestazioni A) e B).
-`.trim();
-
-    const commentsOnly = `
-Genera 10 commenti brevi in italiano per rispondere a post pubblici di persone che parlano di vendita casa.
-Area: ${area}
-Tono: utile e locale, mai promozionale.
-Vincoli:
-- 1 frase ciascuno
-- chiusura soft: "se vuoi ti giro una checklist gratuita: ${form}"
-Output: lista numerata 1-10.
-`.trim();
-
-    const canvaEN = `
-Vertical, easy-to-understand, step-by-step layout.
-Clean and minimal real estate design.
-White background, neutral colors, modern sans-serif.
-
-Create 2 vertical templates:
-A) A4 vertical flyer: headline + "3 steps" bullets + QR placeholder + contacts
-B) 1080x1920 vertical reel cover/story: headline + 3 steps + CTA area
-
-Not salesy. Local community feel.
-`.trim();
-
-    $("promptChatGPT").textContent = master;
-    $("promptCanva").textContent = canvaEN;
-
-    // stash “sub-prompts” for dedicated buttons
-    $("promptChatGPT").dataset.teleOnly = teleOnly;
-    $("promptChatGPT").dataset.inboxOnly = inboxOnly;
-    $("promptChatGPT").dataset.territoryOnly = territoryOnly;
-    $("promptChatGPT").dataset.commentsOnly = commentsOnly;
-  }
-
-  // ---------- Timers ----------
-  function tick(timer, labelEl){
-    const now=Date.now();
-    const elapsed = timer.elapsed + (timer.running ? (now - timer.start) : 0);
-    labelEl.textContent = fmt(elapsed);
-    timer.raf = requestAnimationFrame(()=>tick(timer,labelEl));
-  }
-  function startTimer(timer, labelEl, statusEl, statusText){
-    if (timer.running) return;
-    timer.running=true;
-    timer.start=Date.now();
-    statusEl.textContent = statusText || "IN CORSO";
-    tick(timer,labelEl);
-    toast("START ✅");
-  }
-  function stopTimer(timer, labelEl, statusEl, statusText){
-    if (!timer.running) return;
-    const now=Date.now();
-    timer.elapsed += (now - timer.start);
-    timer.running=false;
-    cancelAnimationFrame(timer.raf);
-    labelEl.textContent = fmt(timer.elapsed);
-    statusEl.textContent = statusText || "FERMO";
-    save();
-    toast("STOP ✅");
-  }
-  function resetTimer(timer, labelEl, statusEl){
-    timer.running=false;
-    timer.start=0;
-    timer.elapsed=0;
-    cancelAnimationFrame(timer.raf);
-    labelEl.textContent="00:00:00";
-    statusEl.textContent="IN ATTESA";
-    save();
-    toast("RESET ✅");
-  }
-  function updateTimersUI(){
-    $("totalTime").textContent = fmt(state.totalTimer.elapsed);
-    $("recTime").textContent = fmt(state.recTimer.elapsed);
-  }
-
-  function updateChallenge(){
-    const y = getSavedElapsed(yesterdayISO(), "totalElapsed");
-    const t = state.totalTimer.elapsed;
-    const challenge = y > 0
-      ? `Ieri hai fatto ${fmt(y)}. Oggi riuscirai a fare meglio?`
-      : `Nessun tempo salvato ieri. Oggi imposta il baseline.`;
-    $("challengeText").textContent = challenge;
-
-    $("improveBox").style.display="none";
-    $("noImproveBox").style.display="none";
-
-    if (y > 0 && t > 0){
-      if (t < y){
-        const delta = y - t;
-        $("improveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Miglioramento: -${fmt(delta)}.`;
-        $("improveBox").style.display="block";
-      } else {
-        const delta = t - y;
-        $("noImproveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Peggioramento: +${fmt(delta)}.`;
-        $("noImproveBox").style.display="block";
-      }
-    }
-  }
-
-  function buildCapoMessage(){
-    const y = getSavedElapsed(yesterdayISO(), "totalElapsed");
-    const t = state.totalTimer.elapsed;
-    const area = $("area").value;
-    const delta = y - t;
-    return `CHECK AL CAPO ✅
-Area: ${area}
-Oggi (tempo produzione): ${fmt(t)}
-Ieri: ${fmt(y)}
-Miglioramento: -${fmt(delta)}
-Output: 6 pubblicazioni schedulate + teleprompter pronto + Canva pronto.`;
-  }
-
-  // ---------- Teleprompter split ----------
-  function splitTeleprompter(){
-    const raw=($("raw").value||"").trim();
-    if(!raw){ toast("Incolla l’output ChatGPT"); return; }
-
-    const getSection=(n)=>{
-      const re=new RegExp(`TELEPROMPTER_${n}\\s*[:\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*TELEPROMPTER_\\d\\s*[:\\-]?|\\n\\s*POST_CAPTION_\\d\\s*[:\\-]?|$)`,"i");
-      const m=raw.match(re);
-      return m ? m[1].trim() : "";
-    };
-
-    $("tp1").value=getSection(1);
-    $("tp2").value=getSection(2);
-    $("tp3").value=getSection(3);
-    $("tp4").value=getSection(4);
-    $("tp5").value=getSection(5);
-    $("tp6").value=getSection(6);
-
-    toast("Split ✅");
-  }
-
-  function clearTeleprompter(){
-    $("raw").value="";
-    ["tp1","tp2","tp3","tp4","tp5","tp6"].forEach(id=>$(id).value="");
-    toast("Pulito ✅");
-  }
-
-  // ---------- Export TXT ----------
-  function exportTxt(){
-    const blocks = [];
-    blocks.push(`# MACCHINA — ${todayISO()}`);
-    blocks.push(`Area: ${$("area").value}`);
-    blocks.push(`Orari: ${parseTimes().join(", ")}`);
-    blocks.push(`Later: ${$("laterUrl").value.trim()}`);
-    blocks.push("");
-    blocks.push("## Piano Later");
-    blocks.push($("laterPlan").textContent);
-    blocks.push("");
-    blocks.push("## Prompt ChatGPT");
-    blocks.push($("promptChatGPT").textContent);
-    blocks.push("");
-    blocks.push("## Prompt Canva");
-    blocks.push($("promptCanva").textContent);
-    blocks.push("");
-    blocks.push(`## Tempi Oggi`);
-    blocks.push(`Totale: ${fmt(state.totalTimer.elapsed)}`);
-    blocks.push(`Registrazione: ${fmt(state.recTimer.elapsed)}`);
-    blocks.push("");
-    blocks.push("## Teleprompter (se presenti)");
-    ["tp1","tp2","tp3","tp4","tp5","tp6"].forEach((id, i)=>{
-      const t = $(id).value.trim();
-      if (t) blocks.push(`TELEPROMPTER_${i+1}\n${t}\n`);
-    });
-
-    const blob = new Blob([blocks.join("\n")], {type:"text/plain;charset=utf-8"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `macchina_${todayISO()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("TXT esportato ✅");
-  }
-
-  // ---------- Actions ----------
-  function openLater(){
-    const url = $("laterUrl").value.trim() || "https://app.later.com/9H8EZ/schedule/calendar";
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  // ---------- Wire up UI ----------
-  $("save").addEventListener("click", ()=>{
-    save();
-    renderTopLabels();
-    renderSchedule();
-    renderPrompts();
-    renderLaterPlan();
-    updateChallenge();
-    toast("Salvato ✅");
-  });
-
-  $("demo").addEventListener("click", ()=>{
-    $("area").value="Torino + Valle di Susa";
-    $("phone").value="+39 3XX XXX XXXX";
-    $("formLink").value="https://forms.gle/tuo-link";
-    $("email").value="info@esempio.it";
-    $("sign").value="Nome Cognome";
-    $("style").value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
-    $("times").value="08:30,11:00,13:30,16:00,18:30,21:00";
-    $("cycleStart").valueAsDate=new Date();
-    $("laterUrl").value="https://app.later.com/9H8EZ/schedule/calendar";
-    save();
-    renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
-    toast("Esempio ✅");
-  });
-
-  $("toggleKill").addEventListener("click", ()=>{
-    state.kill = !state.kill;
-    save();
-    renderKill();
-    toast(state.kill ? "KILL ON 🛑" : "KILL OFF ✅");
-  });
-
-  $("openLaterTop").addEventListener("click", openLater);
-  $("openLater").addEventListener("click", openLater);
-
-  $("copyChatGPT").addEventListener("click", ()=>copyText($("promptChatGPT").textContent));
-  $("copyOnlyTeleprompter").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.teleOnly || ""));
-  $("copyInboxPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.inboxOnly || ""));
-  $("copyTerritoryPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.territoryOnly || ""));
-  $("copyCommentsPrompt").addEventListener("click", ()=>copyText($("promptChatGPT").dataset.commentsOnly || ""));
-
-  $("copyCanva").addEventListener("click", ()=>copyText($("promptCanva").textContent));
-  $("copyLaterPlan").addEventListener("click", ()=>copyText($("laterPlan").textContent));
-
-  $("split").addEventListener("click", splitTeleprompter);
-  $("clearTeleprompter").addEventListener("click", clearTeleprompter);
-
-  $("exportTxt").addEventListener("click", exportTxt);
-
-  // timers total
-  $("startTotal").addEventListener("click", ()=>{
-    if(state.kill) toast("KILL ON: solo bozze (no pubblicazioni/contatti)");
-    startTimer(state.totalTimer, $("totalTime"), $("totalStatus"), "IN CORSO");
-  });
-  $("stopTotal").addEventListener("click", ()=>{
-    stopTimer(state.totalTimer, $("totalTime"), $("totalStatus"), "FERMO");
-    updateChallenge();
-  });
-  $("resetTotal").addEventListener("click", ()=>{
-    resetTimer(state.totalTimer, $("totalTime"), $("totalStatus"));
-    updateChallenge();
-  });
-
-  // timers recording
-  $("startRec").addEventListener("click", ()=>startTimer(state.recTimer, $("recTime"), $("recStatus"), "REGISTRAZIONE"));
-  $("stopRec").addEventListener("click", ()=>{
-    stopTimer(state.recTimer, $("recTime"), $("recStatus"), "FERMO");
-    renderTopLabels();
-  });
-  $("resetRec").addEventListener("click", ()=>{
-    resetTimer(state.recTimer, $("recTime"), $("recStatus"));
-    renderTopLabels();
-  });
-
-  // check al capo
-  $("copyCapoMsg").addEventListener("click", ()=>copyText(buildCapoMessage()));
-
-  // live updates
-  ["area","phone","formLink","email","sign","style","times","cycleStart","laterUrl"].forEach(id=>{
-    $(id).addEventListener("input", ()=>{
-      renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
-    });
-    $(id).addEventListener("change", ()=>{
-      renderTopLabels(); renderSchedule(); renderPrompts(); renderLaterPlan();
-    });
-  });
-
-  // init
-  load();
-</script>
-</body>
-</html>
+OBIETTIVO:
+Genera un singolo file HTML (con CSS + JS inline) che sia un “CERVELLO ELETTRONICO” per la gestione operativa dei funzionari di agenzia. Deve massimizzare operatività (click → boom), saturare il mercato e liberare tempo per la ricerca. Nessuna teoria, nessuna spiegazione: solo interfaccia operativa.
+
+REGOLE FERREE:
+- NON omettere, NON inventare, NON riassumere, NON modificare nulla del sistema qui sotto.
+- TUTTI i testi e le procedure incollati nella sezione “CONTENUTO INTEGRALE” devono essere riportati nel codice ESATTAMENTE uguali, parola per parola, stessa punteggiatura, stessi numeri, stessi orari, stessi simboli, stessa formattazione (a capo inclusi).
+- Non cambiare i contenuti: devi solo ORGANIZZARLI in UI step-by-step verticale e renderli “copia/incolla” con bottoni.
+- Output finale: SOLO codice HTML completo, pronto da salvare come “macchina.html”. Nessun commento esterno.
+
+LAYOUT UI (obbligatorio):
+- Layout VERTICALE, molto semplice, leggibile, con blocchi “STEP 1, STEP 2, …”.
+- Ogni step ha: pulsante gigante “CLICK” + risultato “BOOM” (copy/ open/ timer).
+- Nessun menu complesso, nessuna decisione richiesta: tutto guidato.
+- Ogni blocco di testo deve avere: “COPIA” e “COPIA PER TELEPROMPTER” se pertinente.
+- Sezione “TOP PRODUCER (FAI QUESTO) — per nuovo funzionario”: checklist guidata con checkbox (ma senza modificare i testi originali).
+- Sezione “SISTEMA COMPLETO” con accordion (collassabile) ma con bottoni di copia per ogni sottosezione.
+
+AUTOMAZIONI (JS):
+1) TIMER PRODUZIONE (totale giornata):
+- Pulsanti: START / STOP / RESET.
+- Salva il tempo per data in localStorage.
+- Mostra: “Ieri hai fatto (tempo ieri). Oggi riuscirai a fare meglio?”
+- Se STOP di oggi < tempo di ieri, mostra box verde: “MIGLIORAMENTO → CHECK AL CAPO” e genera automaticamente un messaggio pronto (con bottone COPIA).
+- Il “CHECK AL CAPO” deve includere: data, area, tempo oggi, tempo ieri, delta, e la frase: “Output: 6 pubblicazioni schedulate + teleprompter pronto + Canva pronto.”
+
+2) TIMER REGISTRAZIONE (CapCut):
+- Pulsanti: START / STOP / RESET.
+- Salva tempo registrazione per data.
+- Mostra “Ieri registrazione: …” se presente.
+
+3) APERTURE LINK (CLICK):
+- Bottone “APRI LATER” che apre in nuova scheda (noopener,noreferrer):
+  https://app.later.com/9H8EZ/schedule/calendar
+
+4) ROTAZIONE SOCIAL + 6 PUBBLICAZIONI/GIORNO:
+- Input orari: default "08:30,11:00,13:30,16:00,18:30,21:00"
+- Crea tabella 6 righe: slot #, ora, canale, asset.
+- Rotazione fissa 3 giorni (sempre uguale):
+  Giorno 1: Instagram Reels, Facebook Reels, TikTok, YouTube Shorts, LinkedIn, Facebook Gruppi
+  Giorno 2: TikTok, YouTube Shorts, LinkedIn, Facebook Gruppi, Instagram Reels, Facebook Reels
+  Giorno 3: LinkedIn, Facebook Gruppi, Instagram Reels, Facebook Reels, TikTok, YouTube Shorts
+- Calcolo Giorno 1/2/3 basato su “data start ciclo” inserita dall’utente.
+- Bottone “COPIA PIANO PER LATER” (testo pronto da incollare).
+
+5) TELEPROMPTER:
+- Area “incolla output ChatGPT” e bottone “SPLIT TELEPROMPTER” che estrae TELEPROMPTER_1..6 e li distribuisce in 6 textbox.
+- Ogni textbox ha bottone “COPIA (CapCut)”.
+
+6) SORA ROLE PLAY (08:30):
+- Ogni mattina alle 08:30 (timezone browser) appare overlay a schermo intero:
+  “È ORA DI ROLE PLAY — APRI SORA”
+  con bottone gigante “APRI SORA ORA” che apre un link SORA (campo configurabile).
+- Alternanza automatica giornaliera:
+  Giorni dispari: SORA fa il VENDITORE
+  Giorni pari: SORA fa l’ACQUIRENTE
+- Mostra lo script/istruzioni role play e un bottone “COPIA SCRIPT ROLE PLAY” da incollare in Sora.
+- Campo configurabile in alto: “Sora URL” (salvato in localStorage). Se vuoto, il bottone apre solo un placeholder.
+
+CONFIGURAZIONI (salvate):
+- Area (Torino / Valle di Susa / Torino + Valle di Susa)
+- WhatsApp/Telefono pubblico
+- Email pubblica
+- Link form (opt-in)
+- Firma
+- Data start ciclo
+- Orari 6 slot
+- Later URL (prefill con quello sopra)
+- Sora URL (configurabile)
+- Kill switch ON/OFF:
+  - Se ON: disabilita bottoni che “pubblicano/contattano” (ma lascia copia prompt)
+  - Mostra banner rosso “KILL ON: solo bozze”.
+
+STEP OPERATIVI (verticale):
+STEP 1: “CHATGPT — COPIA PROMPT MASTER” (bottone copia)
+- Genera prompt master che produce:
+  TELEPROMPTER_1..6
+  POST_CAPTION_1..6
+  POST_GROUPI
+  COMMENTI_STRATEGICI (10)
+  VOLANTINO_AL_RESIDENTE
+  LETTERA_AL_RESIDENTE
+  INBOX_REPLY_CONSENSO
+- Il prompt deve includere area, CTA, vincoli GDPR-safe.
+- (Nota: NON fare scraping, NON cercare dati personali.)
+
+STEP 2: “CANVA IA — COPIA PROMPT EN (vertical A4 + 1080x1920)”
+- Prompt in inglese. Testi in italiano (placeholder).
+
+STEP 3: “LATER — APRI + COPIA PIANO”
+
+STEP 4: “CAPCUT — TELEPROMPTER + TIMER REGISTRAZIONE”
+
+STEP 5: “PROCEDURE TOP PRODUCER — NUOVO FUNZIONARIO”
+- Checklist guidata “FAI QUESTO” (ma testi identici)
+
+STEP 6: “SISTEMA COMPLETO — ARCHIVIO”
+- Accordion con sezioni e bottoni copia per ognuna:
+  - Procedura N°1 AMV (integrale)
+  - Script contatto zona / ex contatto (integrale)
+  - Prompt Canva Docs (integrale)
+  - JOB TO BE DONE – Processo Top Producer (integrale)
+
+CONTENUTO INTEGRALE (NON MODIFICARE NULLA, INCOLLA ESATTO):
+[INIZIO CONTENUTO]
+
+AGGIUNGI PROCEDURA GUIDATA TOP PRODUCER (FAI QUESTO) — PER NUOVO FUNZIONARIO
+🔴 PROCEDURA N°1 — AMV
+(Appena Messo in Vendita)
+OBIETTIVO:
+•	Convocare persone all’Open House
+•	Generare nuovi contatti venditori
+•	Posizionarti come riferimento di zona
+________________________________________
+QUANDO SI USA
+•	Hai un immobile tuo appena acquisito
+•	Oppure un immobile di un collega
+•	L’immobile è già pronto (foto, carta identità, open house fissato)
+COSA FAI (OPERATIVO)
+1️⃣ ZONA
+•	Prendi le abitazioni intorno all’immobile
+•	Raggio: condominio / strada / micro-zona
+•	Target: residenti reali, non passanti
+________________________________________
+2️⃣ MODALITÀ
+•	Porta a porta
+•	Oppure citofono / contatto diretto
+•	Tono: professionale, calmo, autorevole
+•	
+•	SCRIPT UFFICIALE AMV (DA DIRE PAROLA PER PAROLA)
+•	“Buongiorno, mi chiamo ___ e sono dell’Agenzia ___.
+La contatto perché abbiamo appena messo in vendita un immobile nel vostro quartiere, precisamente in via ___.
+Si tratta di un immobile composto da ___, con un prezzo di ___ euro.
+Sabato dalle 10:00 alle 12:00 organizziamo un Open House, dove chiunque può venire a vederlo.”
+FAI VEDERE IL VOLANTINO CHE NON LASCIARAI AL CLIENTE
+SE MI LASCIA IL SUO NUMERO LO MANDO TRAMITE WHAT APP
+EMAIL?
+DOMANDA 1 (QUALIFICA SOFT)
+“Mi chiedevo: conosce qualcuno che vorrebbe avvicinarsi a vivere in questa zona?”
+•	Risposta SÌ →
+“Perfetto, se vuole può invitarlo direttamente all’Open House.”
+•	Risposta NO →
+“Perfetto, LE LASCIO UN VOLANTINO COSI CI CONOSCE .”
+DOMANDA 2 (ACQUISIZIONE VENDITORI)
+“Le chiedo un ultimo aiuto.
+Le persone che abitano nella casa che stiamo vendendo stanno cercando qualcosa di più grande / più piccolo.
+Tra i suoi conoscenti o nel condominio, anche in altre zone, c’è qualcuno che in questo momento potrebbe avere bisogno di vendere casa?”
+⏸️ STOP.
+•	Ascolti
+•	Ringrazi
+•	Prendi il contatto solo se te lo offrono
+
+•	CHIUSURA
+•	“La ringrazio, intanto se vuole passare sabato è il benvenuto.”
+•	GRAZIE Sig………Buona giornata …..dai del lei SEMPRE
+REGOLE FERREE
+ ❌ NON chiedi “se vuole vendere casa”❌ NON dire “posso farle una valutazione?”❌ NON improvvisare❌ NON parlare di commissioni❌ NON parlare di sconti❌ NON sembrare disperato
+2    SCRIPT CONTATTO ZONA / EX CONTATTO
+“Buongiorno, sono ___ dell’Agenzia ___.
+Ci eravamo sentiti qualche mese fa per la vendita di una casa vicino a dove abita lei.
+Glielo dico subito: l’immobile è stato venduto.
+La chiamo perché, come faccio sempre, informo le persone della zona e chiedo un piccolo aiuto, se posso.”
+⏸️ STOP. RESPIRA.
+DOMANDA 1 – PASSAPAROLA MIRATO
+“Conosce qualcuno che nei prossimi mesi potrebbe avere bisogno di vendere casa?”
+Se SÌ →
+“Perfetto, se vuole mi dice solo il nome e poi valuto io se ha senso sentirlo.”
+Se NO →
+“Va benissimo.”
+❌ Non insistere❌ Non spiegare
+(FACOLTATIVA) DOMANDA 2 – PERSONALE
+“E lei invece, non ora, ma più avanti… ha mai pensato di vendere?
+Qualsiasi risposta →
+“Perfetto, grazie per la chiarezza.”
+
+❌ Non aprire trattative❌ Non proporre valutazioni
+DOMANDA 3 – CHIUSURA E AMPLIAMENTO
+“Ultima cosa e poi la lascio: tra i suoi conoscenti, anche in altre zone, c’è qualcuno che oggi potrebbe avere bisogno di vendere casa?”
+⏸️ STOP.“La ringrazio davvero per il tempo e la disponibilità.Buona giornata.”👉 Saluti👉 Fine👉 Vai via
+
+Create a Canva Docs document (A4 portrait) in ITALIAN for a property owner. Use Canva Brand Kit colors/fonts (Primary/Secondary/Accent). Style: premium modern, clean, whitespace. Include placeholders for: [QR WhatsApp], [QR Slot Booking], [MAP Office], [Cover Image].
+
+OUTPUT: ready-to-export PDF with:
+1) Cover + Title: “Procedura Guidata di Vendita – Dal conferimento incarico alla conclusione dell’affare”
+   Subtitle: “Tu sai sempre cosa succede, quando succede e perché.”
+2) Page “Orari Fissi (non cambiano)” in big boxes:
+   - OPEN HOUSE (famiglie) Sabato 10:30–11:30 (1 ora): Slot 10:30–11:00 / 11:00–11:30 (solo su appuntamento)
+   - RITIRO PROPOSTE in ufficio Lunedì 11:00–12:30 (solo appuntamento, 30’): 11:00–11:30 / 11:30–12:00 / 12:00–12:30
+   - SPORTELLO PROFESSIONISTI (solo su richiesta e su appuntamento): Venerdì 17:30–18:30
+     Consulente credito 17:30–18:00; Geometra/Ingegnere 18:00–18:30
+3) Page “Regole Non Negoziabili” (callout):
+   - Visite solo su appuntamento; Open House solo sabato; evento 1 ora con 2 slot
+   - Durante Open House: NO trattative a voce
+   - Proposte: si ritirano in ufficio lunedì 11:00–12:30
+   - Comunico solo il NUMERO di proposte/interessati
+   - Proprietario NON presente durante visite/evento
+   - Fermo ma autorevole, mai maleducazione
+   - Standard “Top immobile”: ordine/pulizia; se serve imbiancatura rigorosa
+   - Carta d’Identità consegnata a chi prenota
+4) “Cosa facciamo NOI vs Cosa fa il PROPRIETARIO” (table):
+   - NOI: preparazione immobile+materiali; promo online/offline; gestione slot; open house; gestione proposte; report
+   - PROPRIETARIO: documenti; standard casa; non presente; non contatti diretti con acquirenti
+5) “Materiale Promo (Checklist)”:
+   - Carta d’Identità immobile (PDF+stampa) + documenti disponibili
+   - “Passi per comprare questa casa”
+   - Descrizione stile IKEA
+   - Foto + mini video (se disponibile)
+   - Volantino “APPENA MESSO IN VENDITA”
+   - Foglio Visita (deve vendere? mutuo? chi decide?)
+   - Messaggi WhatsApp (slot, T-2/T-1, ritiro proposte)
+6) “Piano Offline Volantini” (keep exact numbers):
+   - 2500 volantini; 10 giorni; 65 euro; 250 al giorno
+   - Obiettivo: non digital + follow-up per nuovi immobili
+7) “Timeline 14 giorni” as a table (Day 0–Day 14):
+   Day0 firma+roadmap+blocco date+documenti; Day1 top immobile; Day2 materiali; Day3 pubblicazione+volantino;
+   Days4-6 riempi slot (09:30–11:00 + 16:30–17:30) + invio carta ai prenotati + profilazione;
+   Day7 controllo; Days8-11 conferme T-5/T-2/T-1 + prenota professionisti;
+   Day12 sabato open house; Day13 conferme; Day14 lunedì ritiro proposte
+8) “Script Open House” in a box (exact text):
+   “Benvenuti. Visite solo su appuntamento.
+   Oggi non facciamo trattative a voce: per correttezza raccogliamo eventuali proposte in modo ordinato.
+   Le proposte si ritirano in ufficio lunedì 11:00–12:30 (su appuntamento).
+   Io comunico solo il numero di proposte/interessati.”
+9) “Regole Negoziazione (stile asta)”:
+   - Niente prezzo suggerito a voce
+   - Risposta standard se chiedono “a quanto offrire” (exact):
+     “Non posso dirti un prezzo perché sarebbe scorretto verso gli altri e ti farebbe sbagliare strategia.
+      Quello che posso dirti è il numero di interessati/proposte.
+      Se la vuoi davvero, scriviamo una proposta fatta bene.”
+10) “Proposte in Ufficio”:
+   - Lunedì 11:00–12:30, slot 30’, vademecum: carta identità letta + tempi + mutuo + proposta scritta
+11) “Assegni + Note operative/legali”:
+   - Caparra: importo NON fissato per legge; concordato tra parti; indicare “caparra confirmatoria ex art. 1385 c.c.”
+   - Provvigione: dovuta ed esigibile alla comunicazione dell’accettazione della proposta (“accettazione comunicata”)
+   - Assegni ≥ 1.000€: beneficiario + “non trasferibile”
+   - Assegno provvigione: 5% come da accordi; incasso alla comunicazione accettazione
+12) “Kit Proposta” checklist:
+   documento; dati mutuo se serve; assegno caparra venditore; assegno provvigione agenzia 5%
+13) “Report al proprietario”:
+   - Sabato 12:00 report visite+feedback+proposte attese
+   - Lunedì 13:00 report numero proposte+condizioni+strategia
+14) “Template WhatsApp” (4 blocks):
+   - Slot: “Perfetto. Open House sabato 10:30–11:30. Scegli lo slot: 10:30 oppure 11:00. Appena scegli, ti confermo e ti invio la Carta d’Identità.”
+   - Proposte: “Le proposte si ritirano in ufficio (Piazza 25 Aprile, Sant’Ambrogio) lunedì 11:00–12:30 su appuntamento. Slot: 11:00 / 11:30 / 12:00. Quale ti blocco?”
+   - Kit: “Per fare la proposta porta: documento, dati mutuo se serve, assegno caparra, assegno provvigione 5% (incassabile alla comunicazione dell’accettazione).”
+   - T-2: “Tra 2 giorni: visita guidata + chiarimenti. Nota: durante l’evento non si tratta a voce. Le proposte si ritirano in ufficio lunedì 11:00–12:30.”
+15) Page “Obiezioni del proprietario (spazio note)” with blank lines:
+   Obiezione / Cosa teme / Risposta / Esito
+Footer on every page:
+WhatsApp 3713708294 — Ufficio: Piazza 25 Aprile, Sant’Ambrogio
+
+🧠 JOB TO BE DONE – PROCESSO TOP PRODUCER (END TO END) — Versione integrata 1:1
+🔴 JOB 0 — MINDSET / IDENTITÀ (BASE DI TUTTO)
+
+Quando lavoro sul mio business
+Voglio restare fedele al programma (azioni da #1)
+Così da mantenere controllo, costanza e potere decisionale
+
+Regola operativa: “Un inizio → 5-4-3-2-1 AVANTI” (azione immediata)
+Mantra: “Sono il numero 1” → fai azioni da numero 1
+
+🔴 FASE 1 — FIX / ATTRAZIONE (INGRESSO SISTEMA)
+🔴 JOB 1 — ATTRAZIONE (FIX)
+
+Quando voglio entrare in contatto con nuovi potenziali clienti
+Voglio attirare persone già predisposte e non ostili
+Così da evitare inseguimenti, resistenze e trattative deboli
+
+Output: Fix = da fonte acquisizione = 2 appuntamenti
+Regola interna: “In canna sono + avanti di noi” (io preparo prima)
+
+🔵 FASE 2 — EDUCAZIONE ① (PRIMA DI PARLARE)
+🔴 JOB 2 — EDUCAZIONE ①
+
+Quando il contatto entra nel mio mondo
+Voglio educarlo prima di parlare
+Così da posizionarmi come riferimento e abbassare le obiezioni
+
+Strumenti (da appunti):
+
+Testo riepilogo
+
+Video
+
+Appuntamenti
+
+🟡 FASE 3 — PRE-CHIAMATA (PRED. + PERFEZIONE)
+🔴 JOB 3 — PRE-CHIAMATA
+
+Quando devo sentirlo per la prima volta
+Voglio arrivare preparato e con autorità
+Così da guidare la conversazione e non subirla
+
+Azioni 1:1 dalle note:
+
+Crea la prechiamata → Predeterminazione
+
+“Chi è in target”
+
+Piano di vendita → tanti input/visioni → PERFEZIONE
+
+🔵 FASE 4 — EDUCAZIONE ② (FIDUCIA + PROVA SOCIALE)
+🔴 JOB 4 — EDUCAZIONE ②
+
+Quando il contatto mi conosce già
+Voglio rinforzare fiducia e prova sociale
+Così da aumentare adesione e coinvolgimento
+
+Strumenti:
+
+Video testimonianza
+
+Open house
+
+🟣 FASE 5 — RELAZIONE (PRIMA DELL’APPUNTAMENTO)
+🔴 JOB 5 — RELAZIONE
+
+Quando il cliente si avvicina alla decisione
+Voglio creare connessione emotiva + narrativa
+Così da rendere naturale la scelta di lavorare con me
+
+Timing già presente: 2 giorni prima / 1 giorno prima
+
+🟦 FASE 6 — CALL ANTEPRIMA (SET-UP DECISIONALE)
+🔴 JOB 6 — CALL ANTEPRIMA
+
+Quando devo fissare l’appuntamento
+Voglio arrivare con aspettativa alta e contesto chiaro
+Così da non dover “convincere” durante l’incontro
+
+📌 FASE 7 — APPUNTAMENTO PER INCARICO (CHIUSURA)
+🔴 JOB 7 — APPUNTAMENTO PER INCARICO
+
+Quando sono faccia a faccia con il cliente
+Voglio chiudere senza chiedere
+Così da ottenere l’incarico come conseguenza logica
+
+Leve già presenti + confermate dalle note:
+
+inversione preda/predatore
+
+elementi di prova
+
+coinvolgimento emotivo
+
+deciso in chiusura
+
+“Se sei lì non devi più chiedere nulla”
+
+“L’80% del lavoro fatto prima”
+
+🟪 FASE 8 — PREPARAZIONE IMMOBILE (TOP IMMOBILE)
+🔴 JOB 8 — PREPARARE IMMOBILE “TOP”
+
+Quando prendo un immobile in carico
+Voglio prepararlo in modo rigoroso
+Così da aumentare desiderio, velocità e qualità delle offerte
+
+Note 1:1:
+
+Mai mollare = polvere e imbiancatura rigorosa → TOP IMMOBILE
+
+Prima 120 giorni / adesso 42 giorni
+
+Tempo per le visite -90% (meno tempo dedicato)
+
+Obiettivo: “Efficaci ed efficienti”
+
+🟩 FASE 9 — MATERIALI & PACKAGING (CARTA IDENTITÀ + IKEA)
+🔴 JOB 9 — MATERIALE PROMOZIONALE + PACKAGING
+
+Quando devo mettere in vendita e presentare l’immobile
+Voglio costruire un pacchetto informativo chiaro e diverso
+Così da aumentare fiducia e decisione (meno domande, più azione)
+
+1:1 dalle note:
+
+Carta d’identità dell’immobile (tutte le informazioni)
+
+Passi da compiere per comprare questa casa
+
+Packaging “stupendo” con possibilità di allegare tutto all’interno
+
+Cartello/descrizione come all’IKEA → qualcosa di diverso!
+
+“Open House: preparo descrizione immobili”
+
+🟨 FASE 10 — PROMOZIONE MULTICANALE (ANCHE OFFLINE)
+🔴 JOB 10 — PROMOZIONE (SITI + VOLANTINO + FOLLOW-UP)
+
+Quando un immobile è appena messo in vendita
+Voglio attivare promozione immediata online e offline
+Così da intercettare domanda “non digitale” e generare flusso rapido
+
+1:1 dalle note:
+
+Promozione → Siti vari
+
+Volantino ad ok → lo distribuisco
+
+Follow-up x cercare nuovi immobili
+
+“Appena messo in vendita!”
+
+“Gli anziani no digitali.”
+
+🟦 FASE 11 — OPEN HOUSE (EVENTO COMPETITIVO)
+🔴 JOB 11 — OPEN HOUSE (CREARE TEMPO + CONCORRENZA)
+
+Quando devo trasformare interesse in decisione
+Voglio usare l’open house come evento guidato
+Così da creare concorrenza e accelerare offerte/negoziazione
+
+Regole 1:1:
+
+Open house = quando parte l’incarico (20 giorni dopo)
+
+Open house si fanno di sabato
+
+Deve creare il giusto tempo x creare la concorrenza
+
+Dura 1 ora
+
+Slot 30 minuti → 8:00 / 8:30 (2° slot)
+
+Sequenza (dalle note “linea”):
+
+Promozione → Preparazione → Reperibilità → Evento → Negoziazione → Incremento del proprietario
+
+↓
+
+Ribasso → Vendo la casa → Video testimonianza
+
+🧩 FASE 12 — PROFILAZIONE ACQUIRENTE (PRIMA VISITA)
+🔴 JOB 12 — 1ª VISITA (CAPIRE COSA SI PUÒ FARE)
+
+Quando accompagno un cliente in visita
+Voglio far emergere vincoli e possibilità reali
+Così da guidare verso proposta/decisione senza dispersione
+
+1:1 dalle note:
+
+“1ª visita: devo far capire cosa si può fare?”
+
+Foglio visita immobile:
+
+deve vendere per acquistare
+
+ha bisogno di mutuo?
+
+risorse delle entrate
+
+“attiva prima, arriva meglio” (nota)
+
+Professionisti coinvolti:
+
+Consulenti del credito
+
+“Mediatore creditizio deve dare ok”
+
+🟥 FASE 13 — NEGOZIAZIONE (MODALITÀ “ASTE”)
+🔴 JOB 13 — NEGOZIAZIONE GUIDATA
+
+Quando arrivo a offerte e trattativa
+Voglio mantenere controllo del frame
+Così da aumentare valore, evitare caos e chiudere meglio
+
+Regole 1:1:
+
+Vademecum:
+
+“Hai letto la carta d’identità?”
+
+“Ritiro offerte da a ?”
+
+2 assegni
+
+Se chiedono il prezzo offerte: assolutamente NO
+
+“Do il numero delle proposte”
+
+È come il concetto delle aste (focus su “quella casa”)
+
+Stile:
+
+“Mai maleducazione”
+
+Fermo ma autorevole
+
+🟠 FASE 14 — GESTIONE PROPRIETARIO (CONTROLLO AMBIENTE)
+🔴 JOB 14 — PROPRIETARIO FUORI SCENA
+
+Quando gestisco visite/open house/negoziazione
+Voglio tenere il proprietario fuori dal processo operativo
+Così da evitare interferenze, frizioni e “trattative sporche”
+
+Nota 1:1: “Proprietario fuori dalle palle!!”
+Esempi tipici:
+
+“Ma la cucina potrebbero tenerla!”
+
+“In trattativa… mi ha detto che…”
+
+🟩 FASE 15 — METRICHE ECONOMICHE (SCONTO, MARGINE, COMMISSIONE)
+🔴 JOB 15 — AUMENTARE MARGINE SENZA LAVORARE DI PIÙ
+
+Quando gestisco trattative e pricing
+Voglio ridurre sconto medio e migliorare VTM/margine
+Così da aumentare guadagno e rendere il proprietario “fan”
+
+Numeri 1:1:
+
+Sconto medio -1%
+100.000 → 99.000
+
+“Il proprietario diventa tuo fan”
+
+“Aumento la mia commissione (almeno 500€ di provvigione)”
+
+VTM = valore transazioni media
+
+Esempio:
+
+Fatturato 200.000 / 30 transazioni / Costi 120.000
+
+VTM = 6.666
+
+CM = 4.000
+
+GM = 2.666 €
+
+Scenario migliorativo:
+
++1% → VTM = 8.000 €
+
+GM = 4.800 €
+
++54.000 in più lavorando uguale ma meglio
+
+🔁 FASE 16 — POST-VENDITA + TESTIMONIANZA + REFERRAL
+🔴 JOB 16 — TESTIMONIANZA E RIPARTENZA (VENDO + ACQUISISCO)
+
+Quando ho venduto o sto vendendo bene
+Voglio trasformare ogni cliente in prova sociale e nuova pipeline
+Così da acquisire più facilmente (sistema che si autoalimenta)
+
+1:1 dalle note:
+
+“Vendo e acquisisco → si ricorda dell’immobile x? Abbiamo venduto”
+
+Testimonianza del cliente
+
+“Come funziona?”
+
+“Mi pagano abbastanza”
+
+“Dedico + tempo ai clienti / lavoro e/o vita privata”
+
+La procedura guidata porta a tutto questo
+
+[FINE CONTENUTO]
+
+REQUISITO EXTRA:
+- In alto: barra “STATO” con pillole: KILL, Giorno ciclo, Oggi, Ieri totale, Ieri registrazione.
+- Un pulsante “EXPORT TXT” che salva localmente tutti i prompt, il piano Later e i tempi.
+
+OUTPUT FINALE:
+Restituisci SOLO il file HTML completo.
