@@ -3,615 +3,636 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Macchina Acquisizione — Programma Operativo (Torino + Valle di Susa)</title>
+  <title>Macchina Operativa — Step by Step (Verticale)</title>
   <style>
-    :root { --bg:#0b0f19; --card:#121a2a; --muted:#93a4c7; --txt:#e9eefc; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; --line:#22304d; }
+    :root{
+      --bg:#070a12; --card:#0b1220; --line:#22304d; --txt:#e9eefc; --muted:#93a4c7;
+      --ok:#34d399; --warn:#fbbf24; --bad:#fb7185; --accent:#3c568d;
+    }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,#070a12 0%, #0b0f19 40%, #070a12 100%);color:var(--txt)}
-    header{padding:20px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,15,25,.92);backdrop-filter: blur(8px);z-index:5}
-    h1{margin:0;font-size:18px;letter-spacing:.2px}
-    .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
-    main{max-width:1100px;margin:0 auto;padding:16px}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:rgba(18,26,42,.88);border:1px solid var(--line);border-radius:14px;padding:14px}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;background:linear-gradient(180deg,#050711 0%, #070a12 60%, #050711 100%);color:var(--txt)}
+    header{position:sticky;top:0;z-index:5;background:rgba(7,10,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 14px}
+    h1{margin:0;font-size:16px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:12px}
+    main{max-width:860px;margin:0 auto;padding:14px}
+    .card{background:rgba(11,18,32,.9);border:1px solid var(--line);border-radius:14px;padding:12px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px 10px;border-radius:10px;border:1px solid #2a3b5f;background:#0b1220;color:var(--txt);outline:none}
-    textarea{min-height:84px;resize:vertical}
-    .btn{appearance:none;border:1px solid #2a3b5f;background:#0b1220;color:var(--txt);padding:10px 12px;border-radius:10px;cursor:pointer}
+    label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
+    input,select,textarea{
+      width:100%;padding:10px;border-radius:12px;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);outline:none
+    }
+    textarea{min-height:88px;resize:vertical}
+    .btn{
+      appearance:none;border:1px solid #2a3b5f;background:#070c16;color:var(--txt);
+      padding:10px 12px;border-radius:12px;cursor:pointer
+    }
     .btn:hover{border-color:#3c568d}
-    .btn.primary{background:linear-gradient(180deg,#1b2a4a,#111b33);border-color:#3c568d}
+    .btn.primary{background:linear-gradient(180deg,#15264a,#0a1533);border-color:var(--accent)}
     .btn.ok{border-color:rgba(52,211,153,.6)}
-    .btn.warn{border-color:rgba(251,191,36,.6)}
     .btn.bad{border-color:rgba(251,113,133,.7)}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#0b1220;color:var(--muted);font-size:12px}
-    .pill .dot{width:8px;height:8px;border-radius:50%}
+    .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#070c16;border-radius:999px;padding:8px 10px;color:var(--muted);font-size:12px}
+    .dot{width:8px;height:8px;border-radius:50%}
     .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
-    .section{margin-top:12px}
-    .section h2{margin:0 0 10px;font-size:15px}
-    details{border:1px solid var(--line);border-radius:12px;background:#0b1220;margin:10px 0;overflow:hidden}
-    summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
-    summary::-webkit-details-marker{display:none}
-    .sumLeft{display:flex;flex-direction:column;gap:4px}
-    .sumTitle{font-weight:650;font-size:13px}
-    .sumHint{color:var(--muted);font-size:12px}
-    .sumRight{display:flex;gap:8px;align-items:center}
-    .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px}
-    .content{padding:12px;border-top:1px solid var(--line)}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#0a0f1c;border:1px solid #243252;color:var(--txt);padding:2px 6px;border-radius:8px;font-size:12px}
-    pre{margin:10px 0 0;white-space:pre-wrap;word-break:break-word;background:#070c16;border:1px solid #22304d;border-radius:12px;padding:12px;color:#d9e4ff}
-    .mini{color:var(--muted);font-size:12px;margin-top:8px}
-    .toast{position:fixed;right:14px;bottom:14px;background:#0b1220;border:1px solid var(--line);padding:10px 12px;border-radius:12px;color:var(--txt);font-size:13px;display:none;z-index:10}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:760px){.split{grid-template-columns:1fr}}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+    .mini{color:var(--muted);font-size:12px}
+    .step{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .stepHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .stepTitle{font-weight:750}
+    .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .timerBox{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .timeBig{font-variant-numeric:tabular-nums;font-size:18px;font-weight:800}
+    .toast{position:fixed;right:14px;bottom:14px;background:#070c16;border:1px solid var(--line);padding:10px 12px;border-radius:12px;display:none;z-index:10}
+    .successBox{border:1px solid rgba(52,211,153,.35);background:rgba(52,211,153,.08);border-radius:14px;padding:12px}
+    .warnBox{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:14px;padding:12px}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#070c16;border:1px solid #243252;color:var(--txt);padding:2px 6px;border-radius:8px;font-size:12px}
   </style>
 </head>
 <body>
 <header>
-  <h1>Macchina Acquisizione — Programma Operativo (HTML)</h1>
-  <div class="sub">Copia & incolla guidato: <span class="kbd">ChatGPT</span> → testi IT • <span class="kbd">Canva AI</span> → grafica EN • Controllo umano + Kill Switch</div>
+  <h1>MACCHINA OPERATIVA — VERTICALE (CLICK → BOOM)</h1>
+  <div class="sub">Zero decisioni. Solo operatività. Timer incluso. Confronto con ieri + “Check al capo” automatico quando migliori.</div>
 </header>
 
 <main>
-  <div class="grid">
-    <!-- LEFT: CONTROL PANEL -->
-    <div class="card">
-      <div class="row">
-        <div style="flex:1;min-width:240px">
-          <label>Area operativa</label>
-          <select id="area">
-            <option value="Torino">Torino</option>
-            <option value="Valle di Susa">Valle di Susa</option>
-            <option value="Torino + Valle di Susa" selected>Torino + Valle di Susa</option>
-          </select>
-        </div>
-        <div style="flex:1;min-width:200px">
-          <label>Lingua grafica (Canva)</label>
-          <input id="langCanva" value="English" />
-        </div>
-        <div style="flex:1;min-width:220px">
-          <label>Lingua testi (pubblico)</label>
-          <input id="langTxt" value="Italiano" />
-        </div>
+  <!-- CONFIG -->
+  <div class="card">
+    <div class="row">
+      <div style="flex:1;min-width:240px">
+        <label>Area</label>
+        <select id="area">
+          <option>Torino</option>
+          <option>Valle di Susa</option>
+          <option selected>Torino + Valle di Susa</option>
+        </select>
       </div>
-
-      <div class="row" style="margin-top:10px">
-        <div style="flex:1;min-width:260px">
-          <label>WhatsApp / Telefono (pubblico)</label>
-          <input id="phone" placeholder="+39..." />
-        </div>
-        <div style="flex:1;min-width:260px">
-          <label>Email (pubblica)</label>
-          <input id="email" placeholder="info@..." />
-        </div>
-        <div style="flex:1;min-width:260px">
-          <label>Link Form (opt-in) / QR</label>
-          <input id="formLink" placeholder="https://..." />
-        </div>
+      <div style="flex:1;min-width:240px">
+        <label>WhatsApp / Telefono (pubblico)</label>
+        <input id="phone" placeholder="+39..." />
       </div>
-
-      <div class="row" style="margin-top:10px">
-        <div style="flex:1;min-width:260px">
-          <label>Nome firma (facoltativo)</label>
-          <input id="sign" placeholder="Nome e Cognome" />
-        </div>
-        <div style="flex:1;min-width:260px">
-          <label>Stile (1 riga)</label>
-          <input id="style" value="Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist." />
-        </div>
+      <div style="flex:1;min-width:240px">
+        <label>Link Form (opt-in) / QR</label>
+        <input id="formLink" placeholder="https://..." />
       </div>
-
-      <div class="row" style="margin-top:10px">
-        <button class="btn primary ok" id="save">Salva impostazioni</button>
-        <button class="btn warn" id="fillDemo">Compila esempio</button>
-        <span class="pill" id="killPill"><span class="dot ok"></span><span id="killTxt">KILL SWITCH: OFF</span></span>
-        <button class="btn bad" id="toggleKill">Toggle Kill Switch</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:1;min-width:240px">
+        <label>Firma (facoltativa)</label>
+        <input id="sign" placeholder="Nome Cognome" />
       </div>
-
-      <div class="mini">
-        Regola: se Kill Switch = ON → non pubblicare/contattare. Solo generazione bozze.
+      <div style="flex:1;min-width:240px">
+        <label>Orari pubblicazione (6 slot)</label>
+        <input id="times" value="08:30,11:00,13:30,16:00,18:30,21:00" />
+      </div>
+      <div style="flex:1;min-width:240px">
+        <label>Data start ciclo 3 giorni</label>
+        <input id="cycleStart" type="date" />
       </div>
     </div>
 
-    <!-- RIGHT: DAILY RUN -->
-    <div class="card">
-      <div class="section">
-        <h2>Avvio quotidiano (08:00)</h2>
-        <div class="split">
-          <div>
-            <div class="pill"><span class="dot ok"></span>1) Genera testi (ChatGPT)</div>
-            <div class="mini">Apri ChatGPT → copia prompt → incolla → ottieni testi IT.</div>
-            <button class="btn primary" id="copyDailyChatGPT">Copia Prompt Giornaliero (ChatGPT)</button>
-          </div>
-          <div>
-            <div class="pill"><span class="dot warn"></span>2) Genera grafica (Canva AI)</div>
-            <div class="mini">Apri Canva → Canva AI / Magic Design → incolla prompt EN.</div>
-            <button class="btn primary" id="copyDailyCanva">Copia Prompt Grafica (Canva AI)</button>
-          </div>
-        </div>
-        <div style="margin-top:12px" class="split">
-          <div>
-            <div class="pill"><span class="dot ok"></span>3) Inbox + consenso</div>
-            <div class="mini">Risposte pronte (GDPR-safe) per DM/WhatsApp/email.</div>
-            <button class="btn" id="copyInbox">Copia Risposta Inbox + Consenso</button>
-          </div>
-          <div>
-            <div class="pill"><span class="dot warn"></span>4) Territorio “Al residente”</div>
-            <div class="mini">Volantino + lettera non nominativa + QR/form.</div>
-            <button class="btn" id="copyTerritoryPack">Copia Pacchetto Territorio (testi)</button>
-          </div>
-        </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary ok" id="save">Salva</button>
+      <button class="btn" id="demo">Esempio</button>
+      <span class="pill" id="killPill"><span class="dot ok"></span><span id="killTxt">KILL SWITCH: OFF</span></span>
+      <button class="btn bad" id="toggleKill">Toggle Kill</button>
+    </div>
 
-        <div style="margin-top:12px" class="row">
-          <button class="btn ok" id="approveAll">APPROVA TUTTO (oggi)</button>
-          <button class="btn bad" id="blockAll">BLOCCA TUTTO (oggi)</button>
-          <button class="btn" id="exportTxt">Esporta “file di testo” (TXT)</button>
-        </div>
+    <div class="sep"></div>
 
-        <div class="mini">
-          “Esporta TXT” crea un file locale con tutte le bozze (copiabile in Notion/Drive).
+    <div class="row">
+      <span class="pill"><span class="dot warn"></span><span id="cycleLabel">Oggi: Giorno ?</span></span>
+      <span class="pill"><span class="dot ok"></span><span id="todayLabel">Oggi: ?</span></span>
+      <span class="pill"><span class="dot warn"></span><span id="yesterdayLabel">Ieri: ?</span></span>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- DAILY TOTAL TIMER -->
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">TIMER GIORNATA (totale)</div>
+          <div class="mini">Start quando inizi. Stop quando hai schedulato tutto + copiato teleprompter.</div>
         </div>
+        <span class="badge" id="totalStatus">IN ATTESA</span>
+      </div>
+
+      <div class="timerBox">
+        <div class="timeBig" id="totalTime">00:00:00</div>
+        <div class="actions">
+          <button class="btn primary" id="startTotal">START</button>
+          <button class="btn" id="stopTotal">STOP</button>
+          <button class="btn" id="resetTotal">RESET</button>
+        </div>
+        <span class="pill"><span class="dot ok"></span><span id="challengeText">Oggi riuscirai a fare meglio?</span></span>
+      </div>
+
+      <div id="improveBox" style="display:none" class="successBox">
+        <div style="font-weight:800">✅ MIGLIORAMENTO RILEVATO → CHECK AL CAPO (AUTOMATICO)</div>
+        <div class="mini" id="improveMsg" style="margin-top:6px"></div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn ok" id="copyCapoMsg">Copia messaggio “Check al capo”</button>
+        </div>
+      </div>
+
+      <div id="noImproveBox" style="display:none" class="warnBox">
+        <div style="font-weight:800">🟡 Oggi non hai migliorato (ancora)</div>
+        <div class="mini" id="noImproveMsg" style="margin-top:6px"></div>
       </div>
     </div>
   </div>
 
-  <!-- PROCEDURES -->
-  <div class="card section">
-    <h2>Procedure (aprire → copiare → incollare)</h2>
-
-    <details open>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Prompt Giornaliero ChatGPT (genera tutto)</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: testi IT completi</div>
+  <!-- STEPS (VERTICAL, CLICK->BOOM) -->
+  <div class="card" style="margin-top:12px">
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">STEP 1 — APRI CHATGPT → COPIA & INCOLLA → BOOM (testi + teleprompter)</div>
+          <div class="mini">Click “Copia prompt” → incolla in ChatGPT → copia output.</div>
         </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('dailyChatGPT')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="dailyChatGPT"></pre>
+        <span class="badge">CLICK → BOOM</span>
       </div>
-    </details>
-
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Prompt Canva AI (grafica)</div>
-          <div class="sumHint">📍 DOVE: Canva → Canva AI / Magic Design → Copia & incolla</div>
-        </div>
-        <div class="sumRight">
-          <span class="tag">EN</span>
-          <button class="btn" type="button" onclick="copyFrom('dailyCanva')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="dailyCanva"></pre>
+      <div class="actions">
+        <button class="btn primary" id="copyChatGPT">Copia prompt ChatGPT</button>
       </div>
-    </details>
+      <pre id="promptChatGPT" style="margin:0"></pre>
+    </div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Commenti Strategici (10) per post pubblici</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → poi incolla come commenti (pubblici)</div>
-        </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('commentsPrompt')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="commentsPrompt"></pre>
-      </div>
-    </details>
+    <div class="sep"></div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Script Campanello (15 sec)</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: 3 frasi max</div>
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">STEP 2 — APRI CANVA IA → INCOLLA PROMPT (EN) → BOOM (layout)</div>
+          <div class="mini">Canva AI / Magic Design → prompt EN → esporta.</div>
         </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('doorbellPrompt')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="doorbellPrompt"></pre>
+        <span class="badge">CLICK → BOOM</span>
       </div>
-    </details>
+      <div class="actions">
+        <button class="btn primary" id="copyCanva">Copia prompt Canva (EN)</button>
+      </div>
+      <pre id="promptCanva" style="margin:0"></pre>
+    </div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Checklist gratuita (lead magnet)</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: 7 punti</div>
-        </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('checklistPrompt')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="checklistPrompt"></pre>
-      </div>
-    </details>
+    <div class="sep"></div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Inbox + Consenso (Sì/No) GDPR-safe</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: template risposta</div>
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">STEP 3 — APRI LATER → SCHEDULA 6 POST (rotazione 3 giorni)</div>
+          <div class="mini">Click “Apri Later” → incolla piano orari+canali → schedula.</div>
         </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('inboxPrompt')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="inboxPrompt"></pre>
+        <span class="badge">CLICK → BOOM</span>
       </div>
-    </details>
+      <div class="actions">
+        <button class="btn primary" id="openLater">Apri Later</button>
+        <button class="btn" id="copyLaterPlan">Copia piano per Later</button>
+      </div>
+      <pre id="laterPlan" style="margin:0"></pre>
+      <div class="mini">Later URL: <span class="kbd">https://app.later.com/9H8EZ/schedule/calendar</span></div>
+    </div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Pacchetto Territorio (Volantino + Lettera)</div>
-          <div class="sumHint">📍 DOVE: ChatGPT → Copia & incolla → Output: testo volantino + lettera</div>
-        </div>
-        <div class="sumRight">
-          <span class="tag">IT</span>
-          <button class="btn" type="button" onclick="copyFrom('territoryPrompt')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="territoryPrompt"></pre>
-      </div>
-    </details>
+    <div class="sep"></div>
 
-    <details>
-      <summary>
-        <div class="sumLeft">
-          <div class="sumTitle">Programma: Spegnimento di Sicurezza (Kill Switch)</div>
-          <div class="sumHint">📍 DOVE: qui → regole operative da applicare sempre</div>
+    <div class="step">
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">STEP 4 — TELEPROMPTER (CapCut) → COPIA TESTO → BOOM (registri)</div>
+          <div class="mini">Incolla qui l’output di ChatGPT (sezione TELEPROMPTER_1..6) → Split → “Copia per CapCut”.</div>
         </div>
-        <div class="sumRight">
-          <span class="tag">RULES</span>
-          <button class="btn" type="button" onclick="copyFrom('killRules')">Copia</button>
-        </div>
-      </summary>
-      <div class="content">
-        <pre id="killRules"></pre>
+        <span class="badge">CLICK → BOOM</span>
       </div>
-    </details>
+
+      <label>Incolla output ChatGPT (tutto)</label>
+      <textarea id="raw" placeholder="Incolla qui l'output completo di ChatGPT..."></textarea>
+
+      <div class="actions">
+        <button class="btn primary" id="split">SPLIT TELEPROMPTER (1..6)</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Recording timer (optional) -->
+      <div class="stepHead">
+        <div>
+          <div class="stepTitle">TIMER REGISTRAZIONE (CapCut)</div>
+          <div class="mini">Start quando inizi a registrare. Stop quando hai finito il 6° video.</div>
+        </div>
+        <span class="badge" id="recStatus">IN ATTESA</span>
+      </div>
+      <div class="timerBox">
+        <div class="timeBig" id="recTime">00:00:00</div>
+        <div class="actions">
+          <button class="btn primary" id="startRec">START</button>
+          <button class="btn" id="stopRec">STOP</button>
+          <button class="btn" id="resetRec">RESET</button>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 1</label><textarea id="tp1"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp1')">Copia (CapCut)</button></div>
+        </div>
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 2</label><textarea id="tp2"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp2')">Copia (CapCut)</button></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 3</label><textarea id="tp3"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp3')">Copia (CapCut)</button></div>
+        </div>
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 4</label><textarea id="tp4"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp4')">Copia (CapCut)</button></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 5</label><textarea id="tp5"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp5')">Copia (CapCut)</button></div>
+        </div>
+        <div style="flex:1;min-width:260px" class="card">
+          <label>TELEPROMPTER 6</label><textarea id="tp6"></textarea>
+          <div class="actions"><button class="btn ok" onclick="copyVal('tp6')">Copia (CapCut)</button></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <div class="toast" id="toast">Copiato ✅</div>
 </main>
 
 <script>
-  // ---------- State ----------
-  const $ = (id) => document.getElementById(id);
+  const $ = (id)=>document.getElementById(id);
+  const LATER_URL = "https://app.later.com/9H8EZ/schedule/calendar";
+
+  // 6 canali — in 3 giorni giri tutto con pattern fisso
+  const CHANNELS = [
+    "Instagram Reels",
+    "Facebook Reels",
+    "TikTok",
+    "YouTube Shorts",
+    "LinkedIn",
+    "Facebook Gruppi (post informativo)"
+  ];
+  const ROTATION = {
+    1: [0,1,2,3,4,5],
+    2: [2,3,4,5,0,1],
+    3: [4,5,0,1,2,3],
+  };
+  const ASSETS = [
+    "Video (Teleprompter 1)",
+    "Video (Teleprompter 2)",
+    "Video (Teleprompter 3)",
+    "Video (Teleprompter 4)",
+    "Video (Teleprompter 5)",
+    "Video (Teleprompter 6)"
+  ];
 
   const state = {
-    kill: false,
-    approvedToday: null, // 'APPROVED' | 'BLOCKED' | null
+    kill:false,
+    totalTimer: { running:false, start:0, elapsed:0, raf:null },
+    recTimer:   { running:false, start:0, elapsed:0, raf:null },
   };
 
-  function loadSettings() {
-    const saved = JSON.parse(localStorage.getItem("macchina_settings") || "{}");
-    if (saved.area) $("area").value = saved.area;
-    if (saved.langCanva) $("langCanva").value = saved.langCanva;
-    if (saved.langTxt) $("langTxt").value = saved.langTxt;
-    if (saved.phone) $("phone").value = saved.phone;
-    if (saved.email) $("email").value = saved.email;
-    if (saved.formLink) $("formLink").value = saved.formLink;
-    if (saved.sign) $("sign").value = saved.sign;
-    if (saved.style) $("style").value = saved.style;
-    if (typeof saved.kill === "boolean") state.kill = saved.kill;
+  const STORAGE_KEY = "macchina_vertical_v1";
+  function pad(n){return String(n).padStart(2,"0")}
+  function todayISO(){
+    const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  function yesterdayISO(){
+    const d=new Date(); d.setDate(d.getDate()-1);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  function fmt(ms){
+    const s=Math.floor(ms/1000);
+    const hh=Math.floor(s/3600);
+    const mm=Math.floor((s%3600)/60);
+    const ss=s%60;
+    return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+  }
+  function toast(msg){
+    const el=$("toast"); el.textContent=msg; el.style.display="block";
+    clearTimeout(window.__t); window.__t=setTimeout(()=>el.style.display="none",1100);
+  }
+  async function copyText(t){ await navigator.clipboard.writeText(t); toast("Copiato ✅"); }
+  function copyVal(id){ copyText($(id).value||""); }
+
+  function load(){
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    $("area").value = saved.area || "Torino + Valle di Susa";
+    $("phone").value = saved.phone || "";
+    $("formLink").value = saved.formLink || "";
+    $("sign").value = saved.sign || "";
+    $("times").value = saved.times || "08:30,11:00,13:30,16:00,18:30,21:00";
+    if (saved.cycleStart) $("cycleStart").value = saved.cycleStart;
+    if (!$("cycleStart").value) $("cycleStart").valueAsDate = new Date();
+    state.kill = !!saved.kill;
+
+    // restore today elapsed (if any)
+    if (saved.dayTimes && saved.dayTimes[todayISO()]){
+      state.totalTimer.elapsed = saved.dayTimes[todayISO()].totalElapsed || 0;
+      state.recTimer.elapsed = saved.dayTimes[todayISO()].recElapsed || 0;
+    }
+
     renderKill();
-    renderAllPrompts();
+    renderCycle();
+    renderPrompts();
+    renderLaterPlan();
+    updateTotalsUI();
+    updateChallenge();
   }
 
-  function saveSettings() {
-    const saved = {
-      area: $("area").value,
-      langCanva: $("langCanva").value,
-      langTxt: $("langTxt").value,
-      phone: $("phone").value.trim(),
-      email: $("email").value.trim(),
-      formLink: $("formLink").value.trim(),
-      sign: $("sign").value.trim(),
-      style: $("style").value.trim(),
-      kill: state.kill
-    };
-    localStorage.setItem("macchina_settings", JSON.stringify(saved));
-    toast("Salvato ✅");
-    renderAllPrompts();
+  function save(){
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    saved.area = $("area").value;
+    saved.phone = $("phone").value.trim();
+    saved.formLink = $("formLink").value.trim();
+    saved.sign = $("sign").value.trim();
+    saved.times = $("times").value.trim();
+    saved.cycleStart = $("cycleStart").value;
+    saved.kill = state.kill;
+
+    // persist per-day timings
+    saved.dayTimes = saved.dayTimes || {};
+    const t = todayISO();
+    saved.dayTimes[t] = saved.dayTimes[t] || {};
+    saved.dayTimes[t].totalElapsed = state.totalTimer.elapsed;
+    saved.dayTimes[t].recElapsed = state.recTimer.elapsed;
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   }
 
-  function fillDemo() {
-    $("area").value = "Torino + Valle di Susa";
-    $("phone").value = "+39 3XX XXX XXXX";
-    $("email").value = "info@esempio.it";
-    $("formLink").value = "https://forms.gle/tuo-link";
-    $("sign").value = "Nome Cognome";
-    $("style").value = "Utile, locale, neutro. Zero vendita aggressiva. CTA soft verso checklist.";
-    saveSettings();
+  function demo(){
+    $("area").value="Torino + Valle di Susa";
+    $("phone").value="+39 3XX XXX XXXX";
+    $("formLink").value="https://forms.gle/tuo-link";
+    $("sign").value="Nome Cognome";
+    $("times").value="08:30,11:00,13:30,16:00,18:30,21:00";
+    $("cycleStart").valueAsDate=new Date();
+    save(); renderPrompts(); renderLaterPlan(); renderCycle(); toast("Esempio ✅");
   }
 
-  function toggleKill() {
+  function toggleKill(){
     state.kill = !state.kill;
-    saveSettings();
-    renderKill();
-    toast(state.kill ? "Kill Switch ON 🛑" : "Kill Switch OFF ✅");
+    save(); renderKill(); renderPrompts(); toast(state.kill ? "KILL ON 🛑" : "KILL OFF ✅");
   }
-
-  function renderKill() {
-    const pill = $("killPill");
-    const dot = pill.querySelector(".dot");
-    const txt = $("killTxt");
-    if (state.kill) {
-      dot.className = "dot bad";
-      txt.textContent = "KILL SWITCH: ON (STOP)";
+  function renderKill(){
+    const pill=$("killPill"); const dot=pill.querySelector(".dot"); const txt=$("killTxt");
+    if (state.kill){
+      dot.className="dot bad"; txt.textContent="KILL SWITCH: ON (STOP)";
     } else {
-      dot.className = "dot ok";
-      txt.textContent = "KILL SWITCH: OFF";
+      dot.className="dot ok"; txt.textContent="KILL SWITCH: OFF";
     }
   }
 
-  function todayISO() {
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2,"0");
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  function cycleDay(){
+    const startStr=$("cycleStart").value;
+    const start=new Date((startStr||todayISO())+"T00:00:00");
+    const now=new Date(); const t=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays=Math.floor((t-start)/(1000*60*60*24));
+    const idx=((diffDays%3)+3)%3;
+    return idx+1;
+  }
+  function parseTimes(){
+    const parts=($("times").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+    while(parts.length<6) parts.push("00:00");
+    return parts.slice(0,6);
+  }
+  function renderCycle(){
+    const d=cycleDay();
+    $("cycleLabel").textContent=`Oggi: Giorno ${d} (ciclo 3 giorni)`;
+    $("todayLabel").textContent=`Oggi: ${todayISO()}`;
+    $("yesterdayLabel").textContent=`Ieri: ${yesterdayISO()}`;
   }
 
-  // ---------- Prompts ----------
-  function getVars() {
-    return {
-      area: $("area").value,
-      phone: $("phone").value.trim() || "[INSERISCI WHATSAPP]",
-      email: $("email").value.trim() || "[INSERISCI EMAIL]",
-      formLink: $("formLink").value.trim() || "[INSERISCI LINK FORM]",
-      sign: $("sign").value.trim() || "[FIRMA FACOLTATIVA]",
-      style: $("style").value.trim() || "Utile, locale, neutro.",
-      date: todayISO(),
-      kill: state.kill ? "ON" : "OFF",
-    };
-  }
+  function renderPrompts(){
+    const area=$("area").value;
+    const phone=$("phone").value.trim() || "[WHATSAPP]";
+    const form=$("formLink").value.trim() || "[FORM]";
+    const sign=$("sign").value.trim() || "[FIRMA]";
+    const times=parseTimes().join(", ");
+    const d=cycleDay();
 
-  function renderAllPrompts() {
-    const v = getVars();
-
-    const dailyChatGPT = `
+    const promptChatGPT = `
 Sei una IA centrale per acquisizione immobiliare.
 DEVI generare SOLO testi in ITALIANO pronti da incollare.
-Area: ${v.area}
-Data: ${v.date}
+Area: ${area}
+Data: ${todayISO()}
+Ciclo pubblicazioni: Giorno ${d} (3 giorni, 6 post/giorno)
+Orari (Europe/Rome): ${times}
 
 VINCOLI (OBBLIGATORI):
 - zero vendita aggressiva
 - zero promesse o prezzi
 - zero contatto a freddo
 - solo inbound e consenso (GDPR)
-- tono: ${v.style}
+- CTA soft (sempre): "Checklist gratuita: ${form} oppure WhatsApp ${phone}"
 
-CTA STANDARD (sempre uguale, soft):
-"Richiedi la checklist gratuita: ${v.formLink} oppure WhatsApp ${v.phone}"
+GENERA SOLO QUESTO (OUTPUT SECCO, NO SPIEGAZIONI):
 
-GENERA QUESTI ASSET (in quest'ordine), con intestazione chiara per ciascuno:
+1) TELEPROMPTER_1 ... TELEPROMPTER_6 (6 script)
+- Durata: 35–55 secondi ciascuno
+- Hook 1 frase + 2-3 punti + CTA soft finale
+- Linguaggio parlato, naturale
+- Ogni script tema diverso, stesso stile
+- Nessuna parentesi, nessuna regia
 
-1) POST_SOCIAL (max 120 parole) — 1 concetto, chiusura CTA soft.
-2) POST_GROUPI (max 80 parole) — tono aiuto, zero promozione.
-3) TESTO_VOLANTINO "AL RESIDENTE" (max 120 parole) — per cassetta postale, QR/form.
-4) LETTERA "AL RESIDENTE" (max 180 parole) — senza nomi, cordiale.
-5) SCRIPT_CAMPANELLO (max 15 secondi, 3 frasi) — domanda finale aperta.
-6) COMMENTI_STRATEGICI (10) — risposte utili a post pubblici; chiusura: "se vuoi ti giro la checklist".
-7) CHECKLIST_GRATUITA (7 punti) — pratica, semplice, locale.
-8) INBOX_REPLY + CONSENSO (Sì/No) — tono naturale, non legaleggiante.
+2) POST_CAPTION_1 ... POST_CAPTION_6 (6 didascalie)
+- Max 80 parole ciascuna
+- Coerenti con i rispettivi teleprompter
+- CTA soft finale
 
-OUTPUT:
-- solo testi finali
-- nessuna spiegazione
-- nessuna analisi
+3) VOLANTINO_AL_RESIDENTE (max 120 parole) con CTA (QR/form + WhatsApp)
+
+4) LETTERA_AL_RESIDENTE (max 180 parole), chiusura con firma: ${sign}
+
+5) INBOX_REPLY_CONSENSO (Sì/No), tono naturale
 `.trim();
 
-    const dailyCanva = `
-Minimal real estate design for a local Italian area.
-Clean and professional. White background, neutral colors.
-Modern sans-serif typography. Friendly and informative tone, not salesy.
-
-Layout:
-- clear headline at the top
-- short informational text
-- bullet points
-- QR code placeholder (link to form)
-- contact details area
-
-Format: A4 vertical for flyer + a variant square for social post.
-Local community feeling.
+    const promptCanva = `
+Vertical, easy-to-understand, step-by-step layout.
+Clean and minimal real estate design.
+White background, neutral colors, modern sans-serif.
+Create 2 vertical templates:
+A) A4 vertical flyer (headline + 3 bullet steps + QR placeholder + contacts)
+B) 1080x1920 vertical story/reel cover (headline + 3 steps + QR/CTA area)
+No luxury, no sales tone. Local community feel.
 `.trim();
 
-    const commentsPrompt = `
-Genera 10 commenti brevi in italiano per rispondere a post pubblici di persone che parlano di vendita casa.
-Area: ${v.area}
-Tono: utile, locale, mai promozionale.
-Vincoli:
-- non chiedere dati
-- non spingere servizi
-- chiusura soft: "se vuoi ti giro una checklist gratuita: ${v.formLink}"
-Output: lista numerata 1-10, una sola frase ciascuno.
-`.trim();
-
-    const doorbellPrompt = `
-Scrivi uno script da campanello (italiano) per ${v.area}.
-Durata: massimo 15 secondi.
-Vincoli:
-- 3 frasi massimo
-- tono educato
-- 1 domanda finale aperta
-- obiettivo: aprire conversazione neutra, non vendere
-Output: solo lo script.
-`.trim();
-
-    const checklistPrompt = `
-Crea una checklist gratuita in italiano:
-"Vendere casa a ${v.area}: cosa sapere prima di decidere"
-Contenuto:
-- 7 punti numerati
-- pratico e semplice
-- include: documenti, prezzo, tempi, visite, errori comuni
-CTA finale soft: ${v.formLink} oppure WhatsApp ${v.phone}
-Output: solo checklist.
-`.trim();
-
-    const inboxPrompt = `
-Scrivi un messaggio inbox (italiano) per chi chiede info.
-Area: ${v.area}
-Obiettivo: inviare materiale + chiedere consenso ricontatto.
-Vincoli:
-- tono naturale, umano
-- domanda chiara Sì/No
-- zero linguaggio legale
-Includi link: ${v.formLink}
-Includi WhatsApp: ${v.phone}
-Output: solo il messaggio.
-`.trim();
-
-    const territoryPrompt = `
-Scrivi in italiano due testi per territorio (non nominativi), area ${v.area}:
-
-A) VOLANTINO "AL RESIDENTE" (max 120 parole)
-- informativo
-- 1 concetto
-- CTA soft: QR/form ${v.formLink} e WhatsApp ${v.phone}
-
-B) LETTERA "AL RESIDENTE" (max 180 parole)
-- tono umano
-- nessun nome destinatario
-- chiusura con firma: ${v.sign}
-Output: separa chiaramente A) e B), solo testi finali.
-`.trim();
-
-    const killRules = `
-KILL SWITCH (stato attuale: ${v.kill})
-
-REGOLE:
-1) Se KILL=ON → NON pubblicare, NON inviare messaggi, NON contattare nessuno.
-2) Se KILL=ON → puoi SOLO generare bozze e salvarle per revisione.
-3) Se un utente chiede stop/opt-out → KILL=ON finché non gestito.
-4) Se c'è dubbio su privacy/consenso → KILL=ON.
-5) Ripartenza solo con APPROVAZIONE umana.
-
-OPERATIVITÀ:
-- Pubblica solo dopo "APPROVA".
-- Niente contatti a freddo.
-- Solo inbound e consenso.
-`.trim();
-
-    $("dailyChatGPT").textContent = dailyChatGPT;
-    $("dailyCanva").textContent = dailyCanva;
-    $("commentsPrompt").textContent = commentsPrompt;
-    $("doorbellPrompt").textContent = doorbellPrompt;
-    $("checklistPrompt").textContent = checklistPrompt;
-    $("inboxPrompt").textContent = inboxPrompt;
-    $("territoryPrompt").textContent = territoryPrompt;
-    $("killRules").textContent = killRules;
+    $("promptChatGPT").textContent = promptChatGPT;
+    $("promptCanva").textContent = promptCanva;
   }
 
-  // ---------- Copy helpers ----------
-  async function copyText(text) {
-    await navigator.clipboard.writeText(text);
-    toast("Copiato ✅");
-  }
-  function copyFrom(id) {
-    const t = $(id).textContent;
-    copyText(t);
-  }
-  function toast(msg) {
-    const el = $("toast");
-    el.textContent = msg;
-    el.style.display = "block";
-    clearTimeout(window.__toastTimer);
-    window.__toastTimer = setTimeout(() => el.style.display = "none", 1100);
+  function renderLaterPlan(){
+    const d=cycleDay();
+    const times=parseTimes();
+    const map=ROTATION[d];
+    const lines=[];
+    lines.push(`PIANO OGGI — Giorno ${d} (ciclo 3 giorni) — ${todayISO()}`);
+    for(let i=0;i<6;i++){
+      lines.push(`${times[i]} — ${CHANNELS[map[i]]} — ${ASSETS[i]}`);
+    }
+    lines.push("");
+    lines.push(`CTA: ${$("formLink").value.trim()||"[FORM]"} | WhatsApp: ${$("phone").value.trim()||"[WHATSAPP]"}`);
+    $("laterPlan").textContent = lines.join("\n");
   }
 
-  // ---------- Export TXT ----------
-  function exportTxt() {
-    const v = getVars();
-    const blocks = [
-      `# MACCHINA ACQUISIZIONE — ${v.area} — ${v.date}`,
-      `# KILL SWITCH: ${v.kill}`,
-      "",
-      "## PROMPT CHATGPT (giornaliero)",
-      $("dailyChatGPT").textContent,
-      "",
-      "## PROMPT CANVA AI (grafica)",
-      $("dailyCanva").textContent,
-      "",
-      "## PROMPT COMMENTI",
-      $("commentsPrompt").textContent,
-      "",
-      "## PROMPT CAMPANELLO",
-      $("doorbellPrompt").textContent,
-      "",
-      "## PROMPT CHECKLIST",
-      $("checklistPrompt").textContent,
-      "",
-      "## PROMPT INBOX",
-      $("inboxPrompt").textContent,
-      "",
-      "## PROMPT TERRITORIO",
-      $("territoryPrompt").textContent,
-      "",
-      "## KILL RULES",
-      $("killRules").textContent
-    ].join("\n");
-
-    const blob = new Blob([blocks], {type:"text/plain;charset=utf-8"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `macchina_${v.date}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("TXT esportato ✅");
+  // ---------- Timers ----------
+  function tick(timer, labelEl){
+    const now=Date.now();
+    const elapsed = timer.elapsed + (timer.running ? (now - timer.start) : 0);
+    labelEl.textContent = fmt(elapsed);
+    timer.raf = requestAnimationFrame(()=>tick(timer,labelEl));
+  }
+  function startTimer(timer, labelEl, statusEl, statusText){
+    if (timer.running) return;
+    timer.running=true;
+    timer.start=Date.now();
+    statusEl.textContent = statusText || "IN CORSO";
+    tick(timer,labelEl);
+    toast("START ✅");
+  }
+  function stopTimer(timer, labelEl, statusEl, statusText){
+    if (!timer.running) return;
+    const now=Date.now();
+    timer.elapsed += (now - timer.start);
+    timer.running=false;
+    cancelAnimationFrame(timer.raf);
+    labelEl.textContent = fmt(timer.elapsed);
+    statusEl.textContent = statusText || "FERMO";
+    save();
+    toast("STOP ✅");
+  }
+  function resetTimer(timer, labelEl, statusEl){
+    timer.running=false;
+    timer.start=0;
+    timer.elapsed=0;
+    cancelAnimationFrame(timer.raf);
+    labelEl.textContent="00:00:00";
+    statusEl.textContent="IN ATTESA";
+    save();
+    toast("RESET ✅");
   }
 
-  // ---------- Approve/Block (local) ----------
-  function approveAll() {
-    state.approvedToday = "APPROVED";
-    toast("APPROVATO ✅ (oggi)");
+  function updateTotalsUI(){
+    $("totalTime").textContent = fmt(state.totalTimer.elapsed + (state.totalTimer.running ? (Date.now()-state.totalTimer.start) : 0));
+    $("recTime").textContent = fmt(state.recTimer.elapsed + (state.recTimer.running ? (Date.now()-state.recTimer.start) : 0));
   }
-  function blockAll() {
-    state.approvedToday = "BLOCKED";
-    toast("BLOCCATO 🛑 (oggi)");
+
+  function getSavedDayTime(day){
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return saved.dayTimes?.[day]?.totalElapsed || 0;
+  }
+
+  function updateChallenge(){
+    const y = getSavedDayTime(yesterdayISO());
+    const t = state.totalTimer.elapsed;
+    const challenge = y > 0
+      ? `Ieri hai fatto ${fmt(y)}. Oggi riuscirai a fare meglio?`
+      : `Nessun tempo salvato ieri. Oggi imposta il tuo baseline.`;
+    $("challengeText").textContent = challenge;
+
+    // improvement check (only when today stopped and yesterday exists)
+    const improveBox = $("improveBox");
+    const noImproveBox = $("noImproveBox");
+    improveBox.style.display="none";
+    noImproveBox.style.display="none";
+
+    if (y > 0 && t > 0){
+      if (t < y){
+        const delta = y - t;
+        $("improveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Miglioramento: -${fmt(delta)}.`;
+        improveBox.style.display="block";
+      } else {
+        const delta = t - y;
+        $("noImproveMsg").textContent = `Oggi: ${fmt(t)} • Ieri: ${fmt(y)} • Peggioramento: +${fmt(delta)}.`;
+        noImproveBox.style.display="block";
+      }
+    }
+  }
+
+  function buildCapoMessage(){
+    const y = getSavedDayTime(yesterdayISO());
+    const t = state.totalTimer.elapsed;
+    const area = $("area").value;
+    const delta = y - t;
+    return `CHECK AL CAPO ✅
+Area: ${area}
+Oggi: ${fmt(t)}
+Ieri: ${fmt(y)}
+Miglioramento: -${fmt(delta)} (tempo produzione)
+Note: 6 pubblicazioni schedulate + teleprompter pronto.`;
+  }
+
+  // ---------- Teleprompter split ----------
+  function splitTeleprompter(){
+    const raw=($("raw").value||"").trim();
+    if(!raw){ toast("Incolla l’output ChatGPT"); return; }
+
+    const getSection=(n)=>{
+      const re=new RegExp(`TELEPROMPTER_${n}\\s*[:\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*TELEPROMPTER_\\d\\s*[:\\-]?|\\n\\s*POST_CAPTION_\\d\\s*[:\\-]?|$)`,"i");
+      const m=raw.match(re);
+      return m ? m[1].trim() : "";
+    };
+
+    $("tp1").value=getSection(1);
+    $("tp2").value=getSection(2);
+    $("tp3").value=getSection(3);
+    $("tp4").value=getSection(4);
+    $("tp5").value=getSection(5);
+    $("tp6").value=getSection(6);
+
+    toast("Split ✅");
   }
 
   // ---------- Buttons ----------
-  $("save").addEventListener("click", saveSettings);
-  $("fillDemo").addEventListener("click", fillDemo);
+  $("save").addEventListener("click", ()=>{ save(); renderPrompts(); renderLaterPlan(); renderCycle(); updateChallenge(); toast("Salvato ✅"); });
+  $("demo").addEventListener("click", demo);
   $("toggleKill").addEventListener("click", toggleKill);
 
-  $("copyDailyChatGPT").addEventListener("click", () => copyFrom("dailyChatGPT"));
-  $("copyDailyCanva").addEventListener("click", () => copyFrom("dailyCanva"));
-  $("copyInbox").addEventListener("click", () => copyFrom("inboxPrompt"));
-  $("copyTerritoryPack").addEventListener("click", () => copyFrom("territoryPrompt"));
+  $("copyChatGPT").addEventListener("click", ()=>copyText($("promptChatGPT").textContent));
+  $("copyCanva").addEventListener("click", ()=>copyText($("promptCanva").textContent));
 
-  $("approveAll").addEventListener("click", approveAll);
-  $("blockAll").addEventListener("click", blockAll);
-  $("exportTxt").addEventListener("click", exportTxt);
+  $("openLater").addEventListener("click", ()=>window.open(LATER_URL,"_blank","noopener,noreferrer"));
+  $("copyLaterPlan").addEventListener("click", ()=>copyText($("laterPlan").textContent));
 
-  // Live update prompts when settings change
-  ["area","langCanva","langTxt","phone","email","formLink","sign","style"].forEach(id=>{
-    $(id).addEventListener("input", () => { renderAllPrompts(); });
-    $(id).addEventListener("change", () => { renderAllPrompts(); });
+  $("split").addEventListener("click", splitTeleprompter);
+
+  // timers
+  $("startTotal").addEventListener("click", ()=>{
+    if(state.kill){ toast("KILL ON: solo bozze"); }
+    startTimer(state.totalTimer, $("totalTime"), $("totalStatus"), "IN CORSO");
+  });
+  $("stopTotal").addEventListener("click", ()=>{
+    stopTimer(state.totalTimer, $("totalTime"), $("totalStatus"), "FERMO");
+    updateChallenge();
+  });
+  $("resetTotal").addEventListener("click", ()=>{
+    resetTimer(state.totalTimer, $("totalTime"), $("totalStatus"));
+    updateChallenge();
   });
 
-  loadSettings();
+  $("startRec").addEventListener("click", ()=>startTimer(state.recTimer, $("recTime"), $("recStatus"), "REGISTRAZIONE"));
+  $("stopRec").addEventListener("click", ()=>{ stopTimer(state.recTimer, $("recTime"), $("recStatus"), "FERMO"); save(); });
+  $("resetRec").addEventListener("click", ()=>resetTimer(state.recTimer, $("recTime"), $("recStatus")));
+
+  $("copyCapoMsg").addEventListener("click", ()=>copyText(buildCapoMessage()));
+
+  // live updates
+  ["area","phone","formLink","sign","times","cycleStart"].forEach(id=>{
+    $(id).addEventListener("input", ()=>{ renderPrompts(); renderLaterPlan(); renderCycle(); });
+    $(id).addEventListener("change", ()=>{ renderPrompts(); renderLaterPlan(); renderCycle(); });
+  });
+
+  // init
+  load();
 </script>
 </body>
 </html>
